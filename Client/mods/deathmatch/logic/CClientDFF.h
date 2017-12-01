@@ -51,7 +51,7 @@ public:
     void                            Unlink                  ( void ) {};
     void                            GetPosition             ( CVector& vecPosition ) const {};
     void                            SetPosition             ( const CVector& vecPosition ) {};
-
+    RpClump*                        GetLoadedClump(ushort usModelId);
 protected:
     bool                            DoReplaceModel          ( unsigned short usModel, bool bAlphaTransparency );
     void                            UnloadDFF               ( void );
@@ -62,7 +62,6 @@ protected:
     bool                            ReplaceWeaponModel      ( RpClump* pClump, ushort usModel, bool bAlphaTransparency );
     bool                            ReplacePedModel         ( RpClump* pClump, ushort usModel, bool bAlphaTransparency );
 
-    RpClump*                        GetLoadedClump          ( ushort usModelId );
 
     class CClientDFFManager*        m_pDFFManager;
 

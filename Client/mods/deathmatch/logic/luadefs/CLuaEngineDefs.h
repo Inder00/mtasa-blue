@@ -41,6 +41,10 @@ public:
     LUA_DECLARE ( EngineGetModelIDFromName );
     LUA_DECLARE ( EngineGetModelTextureNames );
     LUA_DECLARE ( EngineGetVisibleTextureNames );
+    LUA_DECLARE(EngineDFFGetInfo);
+    LUA_DECLARE(EngineDFFGetTriangle);
+    LUA_DECLARE(EngineDFFGetVertices);
+
 
 private: 
     static void AddEngineColClass ( lua_State* luaVM );

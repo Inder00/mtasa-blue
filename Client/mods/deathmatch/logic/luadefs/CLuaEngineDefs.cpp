@@ -10,6 +10,8 @@
 *****************************************************************************/
 
 #include "StdInc.h"
+#include "d:\mtasa-blue_cr95\Client\sdk\game\RenderWare2.h"
+using namespace rw;
 
 void CLuaEngineDefs::LoadFunctions ( void )
 {
@@ -19,6 +21,9 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction ( "engineImportTXD", EngineImportTXD );
     CLuaCFunctions::AddFunction ( "engineReplaceCOL", EngineReplaceCOL );
     CLuaCFunctions::AddFunction ( "engineRestoreCOL", EngineRestoreCOL );
+    CLuaCFunctions::AddFunction("engineDFFGetInfo", EngineDFFGetInfo);
+    CLuaCFunctions::AddFunction("engineDFFGetTriangles", EngineDFFGetTriangle);
+    CLuaCFunctions::AddFunction("engineDFFGetVertices", EngineDFFGetVertices);
     CLuaCFunctions::AddFunction ( "engineReplaceModel", EngineReplaceModel );
     CLuaCFunctions::AddFunction ( "engineRestoreModel", EngineRestoreModel );
     CLuaCFunctions::AddFunction ( "engineGetModelLODDistance", EngineGetModelLODDistance );
@@ -374,40 +379,233 @@ int CLuaEngineDefs::EngineImportTXD ( lua_State* luaVM )
 }
 
 
-int CLuaEngineDefs::EngineReplaceModel ( lua_State* luaVM )
+int CLuaEngineDefs::EngineReplaceModel(lua_State* luaVM)
 {
     CClientDFF* pDFF;
     SString strModelName;
     bool bAlphaTransparency;
 
-    CScriptArgReader argStream ( luaVM );
-    argStream.ReadUserData ( pDFF );
-    argStream.ReadString ( strModelName );
-    argStream.ReadBool ( bAlphaTransparency, false );
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadString(strModelName);
+    argStream.ReadBool(bAlphaTransparency, false);
 
-    if ( !argStream.HasErrors () )
+    if (!argStream.HasErrors())
     {
-        ushort usModelID = CModelNames::ResolveModelID ( strModelName );
-        if ( usModelID != INVALID_MODEL_ID )
+        ushort usModelID = CModelNames::ResolveModelID(strModelName);
+        if (usModelID != INVALID_MODEL_ID)
         {
-            if ( pDFF->ReplaceModel ( usModelID, bAlphaTransparency ) )
+            if (pDFF->ReplaceModel(usModelID, bAlphaTransparency))
             {
-                lua_pushboolean ( luaVM, true );
+                lua_pushboolean(luaVM, true);
                 return 1;
             }
             else
-                argStream.SetCustomError( SString( "Model ID %d replace failed", usModelID ) );
+                argStream.SetCustomError(SString("Model ID %d replace failed", usModelID));
         }
         else
-            argStream.SetCustomError( "Expected valid model ID or name at argument 2" );
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
     }
-    if ( argStream.HasErrors () )
-        m_pScriptDebugging->LogCustom ( luaVM, argStream.GetFullErrorMessage () );
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
 
-    lua_pushboolean ( luaVM, false );
+    lua_pushboolean(luaVM, false);
     return 1;
 }
 
+
+int CLuaEngineDefs::EngineDFFGetInfo(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    SString strModelName;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadString(strModelName);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = CModelNames::ResolveModelID(strModelName);
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpGeometry* pGeometry = pAtomic->geometry;
+                lua_newtable(luaVM);
+
+                lua_pushstring(luaVM, "verticesCount");
+                lua_pushnumber(luaVM, pGeometry->vertices_size);
+                lua_settable(luaVM, -3);
+
+                lua_pushstring(luaVM, "trianglesCount");
+                lua_pushnumber(luaVM, pGeometry->triangles_size);
+                lua_settable(luaVM, -3);
+
+                lua_pushstring(luaVM, "radius");
+                lua_pushnumber(luaVM, pAtomic->bsphereLocal.radius);
+                lua_settable(luaVM, -3);
+
+                lua_pushstring(luaVM, "center");
+                CVector center;
+                center.fX = pAtomic->bsphereLocal.position.x;
+                center.fY = pAtomic->bsphereLocal.position.y;
+                center.fZ = pAtomic->bsphereLocal.position.z;
+                lua_pushvector(luaVM, center);
+                lua_settable(luaVM, -3);
+
+                lua_pushstring(luaVM, "flag");
+                lua_pushnumber(luaVM, pGeometry->flags);
+                lua_settable(luaVM, -3);
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineDFFGetVertices(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    SString strModelName;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadString(strModelName);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = CModelNames::ResolveModelID(strModelName);
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpGeometry* pGeometry = pAtomic->geometry;
+                lua_newtable(luaVM);
+                lua_newtable(luaVM);
+                for (uint i = 0; i < pGeometry->vertices_size; i++)
+                {
+                    RwV3d* vVert = pGeometry->morphTarget->verts + i;
+                    RwV3d* pTriangle = pGeometry->morphTarget->normals + i;
+                    CVector vPos;
+                    vPos.fX = vVert->x;
+                    vPos.fY = vVert->y;
+                    vPos.fZ = vVert->z;
+                    CVector vNormal;
+                    vNormal.fX = pTriangle->x;
+                    vNormal.fY = pTriangle->y;
+                    vNormal.fZ = pTriangle->z;
+                    lua_pushnumber(luaVM, i + 1); // start from 1 not 0
+                    lua_newtable(luaVM);
+                        lua_pushstring(luaVM, "position");
+                        lua_pushvector(luaVM, vPos);
+                        lua_settable(luaVM, -3);
+                        lua_pushstring(luaVM, "normal");
+                        lua_pushvector(luaVM, vNormal);
+                        lua_settable(luaVM, -3);
+                    lua_settable(luaVM, -3);
+                }
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+
+int CLuaEngineDefs::EngineDFFGetTriangle(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    SString strModelName;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadString(strModelName);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = CModelNames::ResolveModelID(strModelName);
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpGeometry* pGeometry = pAtomic->geometry;
+                lua_newtable(luaVM);
+                for (uint i = 0; i < pGeometry->triangles_size; i++)
+                {
+                    RwColor* rColor = pGeometry->colors + i;
+                    RpTriangle* pTriangle = pGeometry->triangles + i;
+                    lua_pushnumber(luaVM, i+1); // start from 1 not 0
+                    lua_newtable(luaVM);
+                        lua_pushnumber(luaVM, 1);
+                        lua_pushnumber(luaVM, pTriangle->v1);
+                        lua_settable(luaVM, -3);
+                        lua_pushnumber(luaVM, 2);
+                        lua_pushnumber(luaVM, pTriangle->v2);
+                        lua_settable(luaVM, -3);
+                        lua_pushnumber(luaVM, 3);
+                        lua_pushnumber(luaVM, pTriangle->v3);
+                        lua_settable(luaVM, -3);
+                        lua_pushstring(luaVM, "materialID");
+                        lua_pushnumber(luaVM, pTriangle->materialId);
+                        lua_settable(luaVM, -3);
+                        if (rColor) {
+                            lua_pushstring(luaVM, "color");
+                            lua_newtable(luaVM);
+                            lua_pushnumber(luaVM, 1);
+                            lua_pushnumber(luaVM, rColor->r);
+                            lua_settable(luaVM, -3);
+                            lua_pushnumber(luaVM, 2);
+                            lua_pushnumber(luaVM, rColor->g);
+                            lua_settable(luaVM, -3);
+                            lua_pushnumber(luaVM, 3);
+                            lua_pushnumber(luaVM, rColor->b);
+                            lua_settable(luaVM, -3);
+                            lua_pushnumber(luaVM, 4);
+                            lua_pushnumber(luaVM, rColor->a);
+                            lua_settable(luaVM, -3);
+                            lua_settable(luaVM, -3);
+                        }
+                    lua_settable(luaVM, -3);
+                }
+                return 1;
+            }
+            else
+            {
+
+            }
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
 
 int CLuaEngineDefs::EngineRestoreModel ( lua_State* luaVM )
 {

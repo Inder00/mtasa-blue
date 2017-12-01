@@ -44,6 +44,9 @@ typedef struct RpAtomic RpAtomic;
 typedef struct RwCamera RwCamera;
 typedef struct RpLight RpLight;
 
+typedef struct RpMeshHeader RpMeshHeader;
+typedef struct RwResEntry RwResEntry;
+typedef struct RpMorphTarget RpMorphTarget;
 typedef RwCamera *(*RwCameraPreCallback) (RwCamera * camera);
 typedef RwCamera *(*RwCameraPostCallback) (RwCamera * camera);
 typedef RpAtomic *(*RpAtomicCallback) (RpAtomic * atomic);
@@ -331,6 +334,13 @@ struct RpMaterials
     int        entries;
     int        unknown;
 };
+struct RpMorphTarget
+{
+    RpGeometry *parentGeom;
+    RwSphere    boundingSphere;
+    RwV3d      *verts;
+    RwV3d      *normals;
+};
 struct RpTriangle
 {
     unsigned short v1, v2, v3;
@@ -352,9 +362,10 @@ struct RpGeometry
     RpTriangle           *triangles;
     RwColor              *colors;
     RwTextureCoordinates *texcoords[RW_MAX_TEXTURE_COORDS];
-    void                 *unknown2;
-    void                 *info;
-    void                 *unknown3;
+    RpMeshHeader       *mesh;
+    RwResEntry         *repEntry;
+    RpMorphTarget      *morphTarget;
+
 };
 
 /*****************************************************************************/
