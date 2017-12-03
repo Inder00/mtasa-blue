@@ -330,8 +330,8 @@ struct RpMaterial
 };
 struct RpMaterials
 {
-    RpMaterial **materials;
     int        entries;
+    RpMaterial **materials;
     int        unknown;
 };
 struct RpMorphTarget

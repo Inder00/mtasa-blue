@@ -50,6 +50,9 @@ public:
     LUA_DECLARE(EngineDFFCreateVertex);
     LUA_DECLARE(EngineDFFDestroyVertex);
     LUA_DECLARE(EngineDFFSetPolygonVertices);
+    LUA_DECLARE(EngineDFFSetCenter);
+    LUA_DECLARE(EngineDFFSetPolygonMaterial);
+    LUA_DECLARE(EngineDFFSetGeometry);
 private: 
     static void AddEngineColClass ( lua_State* luaVM );
     static void AddEngineTxdClass ( lua_State* luaVM );

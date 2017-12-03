@@ -375,7 +375,13 @@ bool CClientDFF::IsDFFData ( const SString& strData )
     return strData.length() > 32 && memcmp( strData, "\x10\x00\x00\x00", 4 ) == 0;
 }
 
-void CClientDFF::GeometryTriangleSetVertexIndices(const RpGeometry * geo, RpTriangle * tri, unsigned short v1, unsigned short v2, unsigned short v3)
+const RpGeometry * CClientDFF::GeometryTriangleSetVertexIndices(const RpGeometry * geo, RpTriangle * tri, unsigned short v1, unsigned short v2, unsigned short v3)
 {
-    g_pGame->GetRenderWare()->GeometryTriangleSetVertexIndices( geo, tri, v1, v2, v3);
+    return g_pGame->GetRenderWare()->GeometryTriangleSetVertexIndices(geo, tri, v1, v2, v3);
+}
+
+RpGeometry * CClientDFF::GeometryTriangleSetMaterialId(RpGeometry * geo, RpTriangle * tri, RpMaterial * mat)
+{
+    if (geo && tri && mat)
+        return g_pGame->GetRenderWare()->GeometryTriangleSetMaterial(geo, tri, mat);
 }
