@@ -116,6 +116,8 @@ public:
 
     RwFrame *           GetFrameFromName            ( RpClump * pRoot, SString strName );
 
+    static void GeometryTriangleSetVertexIndices(const RpGeometry * geo, RpTriangle * tri, unsigned short v1, unsigned short v2, unsigned short v3);
+
     static void         StaticSetHooks              ( void );
     static void         StaticSetClothesReplacingHooks ( void );
     static void         RwTexDictionaryRemoveTexture( RwTexDictionary* pTXD, RwTexture* pTex );

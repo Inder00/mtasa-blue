@@ -43,9 +43,13 @@ public:
     LUA_DECLARE ( EngineGetVisibleTextureNames );
     LUA_DECLARE(EngineDFFGetInfo);
     LUA_DECLARE(EngineDFFGetTriangle);
+    LUA_DECLARE(EngineDFFGetTriangleInfo);
     LUA_DECLARE(EngineDFFGetVertices);
-
-
+    LUA_DECLARE(EngineDFFSetVertexPosition);
+    LUA_DECLARE(EngineDFFGetMaterialInfo);
+    LUA_DECLARE(EngineDFFCreateVertex);
+    LUA_DECLARE(EngineDFFDestroyVertex);
+    LUA_DECLARE(EngineDFFSetPolygonVertices);
 private: 
     static void AddEngineColClass ( lua_State* luaVM );
     static void AddEngineTxdClass ( lua_State* luaVM );

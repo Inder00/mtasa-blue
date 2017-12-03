@@ -51,7 +51,9 @@ public:
     void                            Unlink                  ( void ) {};
     void                            GetPosition             ( CVector& vecPosition ) const {};
     void                            SetPosition             ( const CVector& vecPosition ) {};
+    void GeometryTriangleSetVertexIndices(const RpGeometry * geo, RpTriangle * tri, unsigned short v1, unsigned short v2, unsigned short v3);
     RpClump*                        GetLoadedClump(ushort usModelId);
+    ushort                            uimodel = NULL;
 protected:
     bool                            DoReplaceModel          ( unsigned short usModel, bool bAlphaTransparency );
     void                            UnloadDFF               ( void );

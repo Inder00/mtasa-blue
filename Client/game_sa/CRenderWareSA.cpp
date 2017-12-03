@@ -849,3 +849,8 @@ RwFrame * CRenderWareSA::GetFrameFromName ( RpClump * pRoot, SString strName )
 {
     return RwFrameFindFrame ( RpGetFrame ( pRoot ), strName );
 }
+
+void CRenderWareSA::GeometryTriangleSetVertexIndices(const RpGeometry *geo, RpTriangle *tri, unsigned short v1, unsigned short v2, unsigned short v3)
+{
+    geo=RpGeometryTriangleSetVertexIndices(geo, tri, v1, v2, v3);
+}
