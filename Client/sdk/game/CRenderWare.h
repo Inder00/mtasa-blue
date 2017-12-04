@@ -98,8 +98,11 @@ class CRenderWare {
     virtual RwFrame *           GetFrameFromName            ( RpClump * pRoot, SString strName ) = 0;
     virtual bool                RightSizeTxd                ( const SString& strInTxdFilename, const SString& strOutTxdFilename, uint uiSizeLimit ) = 0;
     virtual void                TxdForceUnload              ( ushort usTxdId, bool bDestroyTextures ) = 0;
+
     virtual const RpGeometry * GeometryTriangleSetVertexIndices(const RpGeometry * geo, RpTriangle * tri, unsigned short v1, unsigned short v2, unsigned short v3)=0;
     virtual RpGeometry * GeometryTriangleSetMaterial(RpGeometry * geo, RpTriangle * tri, RpMaterial * mat)=0;
+    virtual RpAtomic * AtomicSetGeometry(RpAtomic * atomic, RpGeometry * geometry, unsigned int flags) = 0;
+    virtual int ClumpGetNumAtomics(RpClump * clump)=0;
 };
 
 

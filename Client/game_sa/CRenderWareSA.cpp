@@ -859,3 +859,13 @@ RpGeometry * CRenderWareSA::GeometryTriangleSetMaterial(RpGeometry * geo, RpTria
 {
     return RpGeometryTriangleSetMaterial(geo, tri, mat);
 }
+
+RpAtomic * CRenderWareSA::AtomicSetGeometry(RpAtomic * atomic, RpGeometry * geometry, unsigned int flags)
+{
+    return RpAtomicSetGeometry(atomic, geometry, flags);
+}
+
+int CRenderWareSA::ClumpGetNumAtomics(RpClump * clump)
+{
+    return RpClumpGetNumAtomics(clump);
+}

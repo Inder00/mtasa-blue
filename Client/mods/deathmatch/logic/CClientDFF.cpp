@@ -382,6 +382,15 @@ const RpGeometry * CClientDFF::GeometryTriangleSetVertexIndices(const RpGeometry
 
 RpGeometry * CClientDFF::GeometryTriangleSetMaterialId(RpGeometry * geo, RpTriangle * tri, RpMaterial * mat)
 {
-    if (geo && tri && mat)
-        return g_pGame->GetRenderWare()->GeometryTriangleSetMaterial(geo, tri, mat);
+    return g_pGame->GetRenderWare()->GeometryTriangleSetMaterial(geo, tri, mat);
+}
+
+RpAtomic * CClientDFF::AtomicSetGeometry(RpAtomic * atomic, RpGeometry * geometry, unsigned int flags)
+{
+    return g_pGame->GetRenderWare()->AtomicSetGeometry(atomic, geometry, flags);
+}
+
+int CClientDFF::ClumpGetNumAtomics(RpClump * clump)
+{
+    return g_pGame->GetRenderWare()->ClumpGetNumAtomics(clump);
 }

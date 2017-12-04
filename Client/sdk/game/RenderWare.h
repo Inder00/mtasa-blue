@@ -43,6 +43,8 @@ typedef struct RwObjectFrame RwObjectFrame;
 typedef struct RpAtomic RpAtomic;
 typedef struct RwCamera RwCamera;
 typedef struct RpLight RpLight;
+typedef class CNightVertexColors CNightVertexColors;
+
 
 typedef struct RpMeshHeader RpMeshHeader;
 typedef struct RwResEntry RwResEntry;
@@ -185,6 +187,28 @@ struct RwFrame
     unsigned char    pluginData[8];                       // padding
     char             szName[RW_FRAME_NAME_LENGTH+1];        // name (as stored in the frame extension)
 };
+struct CNightVertexColors
+{
+    RwColor *night;
+    RwColor *day;
+    float   m_fLightingState;
+};
+struct RpMesh
+{
+    unsigned short *indices;
+    unsigned int   numIndices;
+    RpMaterial    *material;
+};
+
+struct RpMeshHeader
+{
+    unsigned int   flags;
+    unsigned short numMeshes;
+    unsigned short serialNum;
+    unsigned int   totalIndicesInMesh;
+    unsigned int   firstMeshOffset;
+    RpMesh *getMeshes(void) { return (RpMesh*)(this + 1); }
+};
 struct RwTexDictionary
 {
     RwObject     object;
@@ -291,6 +315,34 @@ struct RpAtomic
     RwList           sectors;
     void             *render;
 };
+
+struct RwMatrixWeights
+{
+    float w0;
+    float w1;
+    float w2;
+    float w3;
+};
+
+struct RpSkin
+{
+    unsigned int     numBones;
+    unsigned int     numBoneIds;
+    unsigned char   *boneIds;
+    RwMatrix        *skinToBoneMatrices;
+    unsigned int     maxNumWeightsForVertex;
+    unsigned int    *vertexBoneIndices;
+    RwMatrixWeights *vertexBoneWeights;
+    char             field_1C[8];
+    unsigned int     boneLimit;
+    unsigned int     numMeshes;
+    unsigned int     numRLE;
+    unsigned char   *meshBoneRemapIndices;
+    unsigned int     meshBoneRLECount;
+    void            *meshBoneRLE;
+    void            *field_3C;
+};
+
 struct RpAtomicContainer {
     RpAtomic    *atomic;
     char        szName[17];
@@ -328,10 +380,64 @@ struct RpMaterial
     short               refs;
     short               id;
 };
+
+struct RwSurfaceProperties
+{
+    float ambient;
+    // GTA Flags
+    union
+    {
+        float specular;
+        unsigned int m_dwFlags; /* HAS_ENV_MAP   = 0x00000001,
+                                HAS_ENV_MAP_X = 0x00000002,
+                                HAS_SPECULAR  = 0x00000004 */
+    };
+    float diffuse;
+};
+
+class CBreakableGeometry
+{
+public:
+    unsigned int         m_uiPosRule;
+    unsigned short       m_usNumVertices;
+    char                 _pad0[2];
+    RwV3d               *m_pVertexPos;
+    RwTextureCoordinates *m_pTexCoors;
+    RwColor              *m_pVertexColors;
+    unsigned short       m_usNumTriangles;
+    char                 _pad1[2];
+    RpTriangle          *m_pTriangles;
+    unsigned short      *m_pMaterialAssignments;
+    unsigned short       m_usNumMaterials;
+    char                 _pad2[2];
+    RwTexture          **m_pTextures;
+    char                *m_pTextureNames;
+    char                *m_pMaskNames;
+    RwSurfaceProperties *m_pMaterialProperties;
+    /* some data here with random size
+    RwV3d                m_avVertexPos[m_usNumVertices];
+    RwTexCoords          m_asTexCoords[m_usNumVertices];
+    RwRGBA               m_asVertexColors[m_usNumVertices];
+    RpTriangle           m_asTriangles[m_usNumTriangles];
+    unsigned short       m_ausMaterialAssignments[m_usNumTriangles];
+    char                 m_acTextureNames[m_usNumMaterials][32];
+    char                 m_acMaskNames[m_usNumMaterials][32];
+    RwSurfaceProperties  m_asMaterialProperties[m_usNumMaterials];
+    */
+};
+class C2dfxStore
+{
+public:
+    unsigned int m_uiNum2dfx;
+    /* Data with random size here
+    C2dfx        m_as2dfx[m_uiNumEffects];
+    */
+};
+
 struct RpMaterials
 {
-    int        entries;
     RpMaterial **materials;
+    int        entries;
     int        unknown;
 };
 struct RpMorphTarget
@@ -343,8 +449,10 @@ struct RpMorphTarget
 };
 struct RpTriangle
 {
-    unsigned short v1, v2, v3;
-    unsigned short materialId;
+    //unsigned short v1, v2, v3;
+    //unsigned short materialId;
+    unsigned short v[3];
+    unsigned short matId;
 };
 struct RpGeometry
 {
@@ -355,7 +463,7 @@ struct RpGeometry
 
     int                  triangles_size;
     int                  vertices_size;
-    int                  unknown_size;
+    int                  morphTarget_size;
     int                  texcoords_size;
 
     RpMaterials          materials;
@@ -365,6 +473,13 @@ struct RpGeometry
     RpMeshHeader       *mesh;
     RwResEntry         *repEntry;
     RpMorphTarget      *morphTarget;
+    // RenderWare plugins
+    unsigned int        usageFlags;
+    RpSkin             *skin;
+    // GTA plugins
+    CNightVertexColors  nightVertexColors;
+    CBreakableGeometry *breakableGeometry;
+    C2dfxStore         *_2dfxStore;
 
 };
 

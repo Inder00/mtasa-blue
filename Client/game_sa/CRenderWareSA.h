@@ -116,9 +116,10 @@ public:
 
     RwFrame *           GetFrameFromName            ( RpClump * pRoot, SString strName );
 
-    const RpGeometry * GeometryTriangleSetVertexIndices(const RpGeometry * geo, RpTriangle * tri, unsigned short v1, unsigned short v2, unsigned short v3);
+    const RpGeometry * GeometryTriangleSetVertexIndices(const RpGeometry *geo, RpTriangle *tri, unsigned short v1, unsigned short v2, unsigned short v3);
     RpGeometry * GeometryTriangleSetMaterial(RpGeometry * geo, RpTriangle * tri, RpMaterial * mat);
-
+    RpAtomic * AtomicSetGeometry(RpAtomic * atomic, RpGeometry * geometry, unsigned int flags);
+    int ClumpGetNumAtomics(RpClump * clump);
     static void         StaticSetHooks              ( void );
     static void         StaticSetClothesReplacingHooks ( void );
     static void         RwTexDictionaryRemoveTexture( RwTexDictionary* pTXD, RwTexture* pTex );

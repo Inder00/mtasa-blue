@@ -53,6 +53,8 @@ public:
     void                            SetPosition             ( const CVector& vecPosition ) {};
     const RpGeometry * GeometryTriangleSetVertexIndices(const RpGeometry * geo, RpTriangle * tri, unsigned short v1, unsigned short v2, unsigned short v3);
     RpGeometry * GeometryTriangleSetMaterialId(RpGeometry * geo, RpTriangle * tri, RpMaterial * mat);
+    RpAtomic * AtomicSetGeometry(RpAtomic * atomic, RpGeometry * geometry, unsigned int flags);
+    static int ClumpGetNumAtomics(RpClump * clump);
     RpClump*                        GetLoadedClump(ushort usModelId);
     ushort                            uimodel = NULL;
     ushort                            uiGeometry = 0;
