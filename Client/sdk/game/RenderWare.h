@@ -11,6 +11,7 @@
 *
 *****************************************************************************/
 
+
 #ifndef __RENDERWARE_COMPAT
 #define __RENDERWARE_COMPAT
 
@@ -147,6 +148,35 @@ enum RpLightFlags
     LIGHT_ILLUMINATES_GEOMETRY = 2,
     LIGHT_FLAGS_LAST = RW_STRUCT_ALIGN
 };
+
+enum RpMeshHeaderFlags
+{
+    /* NOTE: trilists are denoted by absence of any other
+    *       primtype flags, so be careful that you test:
+    *        (triListFlag == (flags&triListFlag))
+    *       or:
+    *        (0 == (flags&rpMESHHEADERPRIMMASK))
+    *       and not:
+    *        (flags&triListFlag)
+    */
+    rpMESHHEADERTRISTRIP = 0x0001, /**< Render as tristrips */
+    rpMESHHEADERTRIFAN = 0x0002, /**< On PlayStation 2 these will be converted to trilists */
+    rpMESHHEADERLINELIST = 0x0004, /**< Render as linelists */
+    rpMESHHEADERPOLYLINE = 0x0008, /**< On PlayStation 2 these will be converted to linelists */
+    rpMESHHEADERPOINTLIST = 0x0010, /**< Pointlists are supported only if rendered by
+                                    *   custom pipelines; there is no default RenderWare
+                                    *   way to render pointlists. */
+
+    rpMESHHEADERPRIMMASK = 0x00FF, /**< All bits reserved for specifying primitive type */
+    rpMESHHEADERUNINDEXED = 0x0100, /**< Topology is defined implicitly by vertex
+                                    *   order, ergo the mesh contains no indices */
+};
+
+/*
+* Typedef for RpMeshHeaderFlags enumeration
+* representing the different types of mesh
+*/
+typedef enum RpMeshHeaderFlags RpMeshHeaderFlags;
 
 // RenderWare/plugin base types
 struct RwObject
@@ -548,5 +578,4 @@ struct RwError
 {
     int err1,err2;
 };
-
 #endif

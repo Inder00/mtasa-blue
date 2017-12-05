@@ -394,3 +394,11 @@ int CClientDFF::ClumpGetNumAtomics(RpClump * clump)
 {
     return g_pGame->GetRenderWare()->ClumpGetNumAtomics(clump);
 }
+RwTexture* CClientDFF::CreateTexture(int width, int height, int depth, int flags)
+{
+    return g_pGame->GetRenderWare()->RwCreateTexture(width, height,depth,flags);
+}
+RwTexture* CClientDFF::DictionaryAddTexture(RwTexDictionary * dict, RwTexture * texture)
+{
+    return g_pGame->GetRenderWare()->RwTexDictionaryAddTexture(dict, texture);
+}

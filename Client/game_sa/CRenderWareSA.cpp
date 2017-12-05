@@ -869,3 +869,14 @@ int CRenderWareSA::ClumpGetNumAtomics(RpClump * clump)
 {
     return RpClumpGetNumAtomics(clump);
 }
+
+RwTexture* CRenderWareSA::RwCreateTexture(int width, int height, int depth, int flags)
+{
+    return RwTextureCreate(RwRasterCreate(width, height, depth, flags));
+}
+
+RwTexture* CRenderWareSA::RwTexDictionaryAddTexture(RwTexDictionary * dict, RwTexture * texture)
+{
+    if(dict)
+    return RwTexDictionaryAddTexture(dict, texture);
+}

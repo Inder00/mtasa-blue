@@ -60,6 +60,8 @@ public:
     LUA_DECLARE(EngineDFFGetTrianglesByMaterialId);
     LUA_DECLARE(EngineDFFSetMaterialColor);
     LUA_DECLARE(EngineDFFSetMaterialLighting);
+    LUA_DECLARE(EngineDFFSetTextureName);
+    LUA_DECLARE(EngineDFFAddTexture);
 private: 
     static void AddEngineColClass ( lua_State* luaVM );
     static void AddEngineTxdClass ( lua_State* luaVM );

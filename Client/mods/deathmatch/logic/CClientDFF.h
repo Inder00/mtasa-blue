@@ -55,6 +55,8 @@ public:
     RpGeometry * GeometryTriangleSetMaterialId(RpGeometry * geo, RpTriangle * tri, RpMaterial * mat);
     RpAtomic * AtomicSetGeometry(RpAtomic * atomic, RpGeometry * geometry, unsigned int flags);
     static int ClumpGetNumAtomics(RpClump * clump);
+    static RwTexture* CreateTexture(int width, int height, int depth, int flags);
+    static RwTexture* DictionaryAddTexture(RwTexDictionary * dict, RwTexture * texture);
     RpClump*                        GetLoadedClump(ushort usModelId);
     ushort                            uimodel = NULL;
     ushort                            uiGeometry = 0;
