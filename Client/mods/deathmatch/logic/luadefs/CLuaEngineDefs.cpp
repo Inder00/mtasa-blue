@@ -1509,7 +1509,7 @@ int CLuaEngineDefs::EngineDFFDestroyPolygon(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    uint vertex1, vertex2, vertex3;
+    __int32 vertex1, vertex2, vertex3;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(vertex1);
@@ -1533,15 +1533,25 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
                 myMesh->indices[mesh->numIndices + 1] = vertex1;
                 myMesh->indices[mesh->numIndices + 2] = vertex2;
                 myMesh->indices[mesh->numIndices + 3] = vertex3;
-                auto iNewTrianglesSize = pGeometry->triangles_size + 1;
-                auto pMemory = reinterpret_cast<RpTriangle *>(realloc(reinterpret_cast<void *>(pGeometry->triangles), sizeof(RpTriangle) * iNewTrianglesSize));
+                int iNewTrianglesSize = pGeometry->triangles_size + 2;
 
+                auto pMemory = reinterpret_cast<RpTriangle *>(realloc(reinterpret_cast<void *>(pGeometry->triangles), sizeof(RpTriangle) * iNewTrianglesSize));
+                //auto pMemory = reinterpret_cast<RpTriangle *>(realloc(pGeometry->triangles, (size_t)(sizeof(RpTriangle) * iNewTrianglesSize)));
+                
                 if (pMemory == nullptr)
                 {
-                    lua_pushnumber(luaVM, 123);
+                    lua_pushnumber(luaVM, 111);
                     return 1;
                 }
-
+                else {
+                    lua_pushnumber(luaVM, 333);
+                    return 1;
+                }
+                /*
+                RpTriangle& triangle = pGeometry->triangles[iNewTrianglesSize];
+                triangle.v[0] = vertex1;
+                triangle.v[1] = vertex2;
+                triangle.v[2] = vertex3;
                 pGeometry->triangles = pMemory;
                 pGeometry->triangles_size = iNewTrianglesSize;
                 myMesh->numIndices += 3;
@@ -1551,7 +1561,7 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
                 triangle.v[2] = vertex3;
                 pGeometry->mesh->totalIndicesInMesh += 3;
                 lua_pushnumber(luaVM, myMesh->numIndices/3);
-                return 1;
+                return 1;*/
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
