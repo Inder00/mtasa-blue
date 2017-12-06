@@ -1533,8 +1533,17 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
                 myMesh->indices[mesh->numIndices + 1] = vertex1;
                 myMesh->indices[mesh->numIndices + 2] = vertex2;
                 myMesh->indices[mesh->numIndices + 3] = vertex3;
-                pGeometry->triangles = reinterpret_cast<RpTriangle *>(realloc(reinterpret_cast<void *>(pGeometry->triangles), pGeometry->triangles_size + 1));
-                pGeometry->triangles_size++;
+                auto iNewTrianglesSize = pGeometry->triangles_size + 1;
+                auto pMemory = reinterpret_cast<RpTriangle *>(realloc(reinterpret_cast<void *>(pGeometry->triangles), sizeof(RpTriangle) * iNewTrianglesSize));
+
+                if (pMemory == nullptr)
+                {
+                    lua_pushnumber(luaVM, 123);
+                    return 1;
+                }
+
+                pGeometry->triangles = pMemory;
+                pGeometry->triangles_size = iNewTrianglesSize;
                 myMesh->numIndices += 3;
                 RpTriangle& triangle = pGeometry->triangles[pGeometry->triangles_size - 1];
                 triangle.v[0] = vertex1;
