@@ -1537,9 +1537,7 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
                 newPolygon->x = vertex1;
                 newPolygon->y = vertex2;
                 newPolygon->z = vertex3;
-                RpTriangle *newTriangles;
-                //    newTriangles[1] = newPolygon;
-                //pGeometry->triangles[pGeometry->triangles_size]=(RwV3d*)newPolygon;
+                pGeometry->triangles[pGeometry->triangles_size]=newPolygon;
                 pGeometry->triangles_size++;
                 myMesh->numIndices += 3;
                 pGeometry->mesh->totalIndicesInMesh += 3;
