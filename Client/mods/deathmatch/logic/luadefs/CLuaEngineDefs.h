@@ -62,6 +62,8 @@ public:
     LUA_DECLARE(EngineDFFSetMaterialLighting);
     LUA_DECLARE(EngineDFFSetTextureName);
     LUA_DECLARE(EngineDFFAddTexture);
+    LUA_DECLARE(EngineDFFFlipPolygon);
+    LUA_DECLARE(EngineDFFCreatePolygon);
 private: 
     static void AddEngineColClass ( lua_State* luaVM );
     static void AddEngineTxdClass ( lua_State* luaVM );
