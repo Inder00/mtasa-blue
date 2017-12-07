@@ -1406,16 +1406,6 @@ int CLuaEngineDefs::EngineDFFCreateVertex(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
                 RpGeometry* pGeometry = pAtomic->geometry;
-                //pGeometry->vertices_size++;
-                /*RwV3d* newVertices = reinterpret_cast<RwV3d *>(realloc(reinterpret_cast<void *>(pGeometry->morphTarget->verts), pGeometry->vertices_size * sizeof(RwV3d)));
-                if (newVertices == nullptr)
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }*/
-                //pGeometry->morphTarget->verts = reinterpret_cast<RwV3d *>(malloc(pGeometry->vertices_size * sizeof(RwV3d)));
-                //RwV3d* newVertices = &pGeometry->morphTarget->verts[pGeometry->vertices_size - 1];
-                //RwV3d **newVerticesArray;
                 pGeometry->vertices_size++;
                 int lastVertex = pGeometry->vertices_size - 1;
                 RwV3d* verts = pGeometry->morphTarget->verts;
@@ -1423,7 +1413,6 @@ int CLuaEngineDefs::EngineDFFCreateVertex(lua_State* luaVM)
                 for (int i = 0; i < lastVertex; i++)
                 {
                     newVerts[i] = verts[i];
-                    //newVerts[i] = verts[i];
                 }
                 RwV3d vVert;
                 vVert.x = pos.fX;
@@ -1687,7 +1676,7 @@ int CLuaEngineDefs::EngineDFFDestroyPolygon(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    __int32 vertex1, vertex2, vertex3;
+    int vertex1, vertex2, vertex3;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(vertex1);
@@ -1707,7 +1696,26 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
                 RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
                 RpGeometry* pGeometry = pAtomic->geometry;
                 RpMesh* mesh = pGeometry->mesh->getMeshes();
-                RpMesh* myMesh = &mesh[1];
+                RpMesh* myMesh = &mesh[0];
+                pGeometry->triangles_size++;
+                uint lastPolygon = pGeometry->triangles_size - 1;
+                myMesh->numIndices += 3;
+                pGeometry->mesh->totalIndicesInMesh += 3;
+                uint numIndices = myMesh->numIndices;
+                unsigned short* polygons = myMesh->indices;
+                unsigned short* newPolygons = reinterpret_cast<unsigned short*>(malloc(numIndices * 4));    // unsigned short - size=2
+                for (int i = 0; i < numIndices-3; i++)
+                {
+                    newPolygons[i] = polygons[i];
+                }
+                newPolygons[numIndices - 1] = vertex1;
+                newPolygons[numIndices - 2] = vertex2;
+                newPolygons[numIndices - 3] = vertex3;
+                myMesh->indices = newPolygons;
+                free(newPolygons);
+                lua_pushnumber(luaVM, pGeometry->triangles_size);
+                return 1;
+                /*
                 int iNewIndicesSize = myMesh->numIndices+3;
                 myMesh->numIndices = iNewIndicesSize;
                 RpMesh* newMesh = reinterpret_cast<RpMesh *>(malloc(sizeof(RpMesh) * iNewIndicesSize));
@@ -1747,8 +1755,6 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
                 pGeometry->mesh->totalIndicesInMesh += 3;
                 lua_pushnumber(luaVM, myMesh->numIndices/3);
                 return 1;*/
-                lua_pushnumber(luaVM, iNewTrianglesSize);
-                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
