@@ -47,7 +47,6 @@ public:
     LUA_DECLARE(EngineDFFGetVertices);
     LUA_DECLARE(EngineDFFSetVertexPosition);
     LUA_DECLARE(EngineDFFGetMaterialInfo);
-    LUA_DECLARE(EngineDFFCreateVertex);
     LUA_DECLARE(EngineDFFDestroyVertex);
     LUA_DECLARE(EngineDFFSetPolygonVertices);
     LUA_DECLARE(EngineDFFSetCenter);
@@ -65,6 +64,7 @@ public:
     LUA_DECLARE(EngineDFFFlipPolygon);
     LUA_DECLARE(EngineDFFCreatePolygon);
     LUA_DECLARE(EngineDFFSelectVertices);
+    LUA_DECLARE(EngineDFFCreateVertex);
 
 private: 
     static void AddEngineColClass ( lua_State* luaVM );
