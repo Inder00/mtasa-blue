@@ -42,8 +42,8 @@ public:
     LUA_DECLARE ( EngineGetModelTextureNames );
     LUA_DECLARE ( EngineGetVisibleTextureNames );
     LUA_DECLARE(EngineDFFGetInfo);
-    LUA_DECLARE(EngineDFFGetTriangle);
-    LUA_DECLARE(EngineDFFGetTriangleInfo);
+    LUA_DECLARE(EngineDFFGetPolygons);
+    LUA_DECLARE(EngineDFFGetPolygonInfo);
     LUA_DECLARE(EngineDFFGetVertices);
     LUA_DECLARE(EngineDFFSetVertexPosition);
     LUA_DECLARE(EngineDFFGetMaterialInfo);
@@ -56,14 +56,16 @@ public:
     LUA_DECLARE(EngineDFFToString);
     LUA_DECLARE(EngineDFFGetPolygonsConnectedToVertex);
     LUA_DECLARE(EngineDFFDestroyPolygon);
-    LUA_DECLARE(engineDFFGetMeshInfo);
-    LUA_DECLARE(EngineDFFGetTrianglesByMaterialId);
+    LUA_DECLARE(EngineDFFGetMeshInfo);
+    LUA_DECLARE(EngineDFFGetPolygonsByMaterialId);
     LUA_DECLARE(EngineDFFSetMaterialColor);
     LUA_DECLARE(EngineDFFSetMaterialLighting);
     LUA_DECLARE(EngineDFFSetTextureName);
     LUA_DECLARE(EngineDFFAddTexture);
     LUA_DECLARE(EngineDFFFlipPolygon);
     LUA_DECLARE(EngineDFFCreatePolygon);
+    LUA_DECLARE(EngineDFFSelectVertices);
+
 private: 
     static void AddEngineColClass ( lua_State* luaVM );
     static void AddEngineTxdClass ( lua_State* luaVM );

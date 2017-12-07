@@ -23,9 +23,9 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFGetInfo", EngineDFFGetInfo);
     CLuaCFunctions::AddFunction("engineDFFSetGeometry", EngineDFFSetGeometry);
     CLuaCFunctions::AddFunction("engineDFFSetSetCenter", EngineDFFSetCenter);
-    CLuaCFunctions::AddFunction("engineDFFGetTriangles", EngineDFFGetTriangle);
-    CLuaCFunctions::AddFunction("engineDFFGetTrianglesByMaterialId", EngineDFFGetTrianglesByMaterialId);
-    CLuaCFunctions::AddFunction("engineDFFGetTriangleInfo", EngineDFFGetTriangleInfo);
+    CLuaCFunctions::AddFunction("engineDFFGetPolygons", EngineDFFGetPolygons);
+    CLuaCFunctions::AddFunction("engineDFFGetPolygonsByMaterialId", EngineDFFGetPolygonsByMaterialId);
+    CLuaCFunctions::AddFunction("engineDFFGetPolygonInfo", EngineDFFGetPolygonInfo);
     CLuaCFunctions::AddFunction("engineDFFGetVertices", EngineDFFGetVertices);
     CLuaCFunctions::AddFunction("engineDFFSetVertexPosition", EngineDFFSetVertexPosition);
     CLuaCFunctions::AddFunction("engineDFFGetMaterialInfo", EngineDFFGetMaterialInfo);
@@ -38,10 +38,11 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFAddTexture", EngineDFFAddTexture);
     CLuaCFunctions::AddFunction("engineDFFFlipPolygon", EngineDFFFlipPolygon);
     CLuaCFunctions::AddFunction("engineDFFToString", EngineDFFToString);
-    CLuaCFunctions::AddFunction("engineDFFGetPolygonsConnectedToVertex", EngineDFFGetPolygonsConnectedToVertex);
+    CLuaCFunctions::AddFunction("engineDFFGetPolygonsVertices", EngineDFFGetPolygonsConnectedToVertex);
     CLuaCFunctions::AddFunction("engineDFFDestroyPolygon", EngineDFFDestroyPolygon);
     CLuaCFunctions::AddFunction("engineDFFCreatePolygon", EngineDFFCreatePolygon);
-    CLuaCFunctions::AddFunction("engineDFFGetMeshInfo", engineDFFGetMeshInfo);
+    CLuaCFunctions::AddFunction("engineDFFGetMeshInfo", EngineDFFGetMeshInfo);
+    CLuaCFunctions::AddFunction("engineDFFSelectVertices", EngineDFFSelectVertices);
 
     CLuaCFunctions::AddFunction("engineReplaceModel", EngineReplaceModel);
     CLuaCFunctions::AddFunction ( "engineRestoreModel", EngineRestoreModel );
@@ -921,6 +922,94 @@ int CLuaEngineDefs::EngineDFFSetCenter(lua_State* luaVM)
     return 1;
 }
 
+bool myfunction(int i, int j) { return (i<j); }
+int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    SString sSelectType;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadString(sSelectType);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpGeometry* pGeometry = pAtomic->geometry;
+                if (sSelectType == "byMaterial") {
+
+                    uint materialId = NULL;
+                    argStream.ReadNumber(materialId);
+                    if (argStream.HasErrors())
+                    {
+                        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                    RpMesh* mesh = pGeometry->mesh->getMeshes();
+                    if (materialId > mesh->numIndices)
+                    {
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+
+                    materialId--;
+                    mesh = mesh + materialId;
+                    uint id = 0;
+                    std::vector<int> vertices;
+                    lua_newtable(luaVM);
+                    for (uint i = 0; i < mesh->numIndices / 3; i++)
+                    {
+                        unsigned short indices1 = mesh->indices[(i * 3) + 0];
+                        unsigned short indices2 = mesh->indices[(i * 3) + 1];
+                        unsigned short indices3 = mesh->indices[(i * 3) + 2];
+
+                        for (uint i2 = 0; i2 < pGeometry->triangles_size; i2++)
+                        {
+                            RpTriangle pTriangle = pGeometry->triangles[i2];
+                            if (pTriangle.v[0] == indices1 &&
+                                pTriangle.v[1] == indices2 &&
+                                pTriangle.v[2] == indices3)
+                            {
+                                if (std::find(vertices.begin(), vertices.end(), indices1) == vertices.end())
+                                    vertices.push_back(indices1);
+                                if (std::find(vertices.begin(), vertices.end(), indices2) == vertices.end())
+                                    vertices.push_back(indices2);
+                                if (std::find(vertices.begin(), vertices.end(), indices3) == vertices.end())
+                                    vertices.push_back(indices3);
+
+                            }
+                        }
+                    }
+                    std::sort(vertices.begin(), vertices.end(), myfunction);
+                    for (int i = 0; i < vertices.size(); i++) {
+                        lua_pushnumber(luaVM, i+1);
+                        lua_pushnumber(luaVM, vertices[i]+1);
+                        lua_settable(luaVM, -3);
+                    }
+                    return 1;
+                }
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
 int CLuaEngineDefs::EngineDFFGetVertices(lua_State* luaVM)
 {
     CClientDFF* pDFF;
@@ -977,7 +1066,7 @@ int CLuaEngineDefs::EngineDFFGetVertices(lua_State* luaVM)
     return 1;
 }
 
-int CLuaEngineDefs::engineDFFGetMeshInfo(lua_State* luaVM)
+int CLuaEngineDefs::EngineDFFGetMeshInfo(lua_State* luaVM)
 {
     CClientDFF* pDFF;
     uint uMeshId = NULL;
@@ -1034,7 +1123,7 @@ int CLuaEngineDefs::engineDFFGetMeshInfo(lua_State* luaVM)
     return 1;
 }
 
-int CLuaEngineDefs::EngineDFFGetTriangleInfo(lua_State* luaVM)
+int CLuaEngineDefs::EngineDFFGetPolygonInfo(lua_State* luaVM)
 {
     CClientDFF* pDFF;
     uint uTriangleId = NULL;
@@ -1154,7 +1243,7 @@ int CLuaEngineDefs::EngineDFFFlipPolygon(lua_State* luaVM)
     return 1;
 }
 
-int CLuaEngineDefs::EngineDFFGetTriangle(lua_State* luaVM)
+int CLuaEngineDefs::EngineDFFGetPolygons(lua_State* luaVM)
 {
     CClientDFF* pDFF;
     uint uiPolygonId = NULL;
@@ -1203,7 +1292,7 @@ int CLuaEngineDefs::EngineDFFGetTriangle(lua_State* luaVM)
     return 1;
 }
 
-int CLuaEngineDefs::EngineDFFGetTrianglesByMaterialId(lua_State* luaVM)
+int CLuaEngineDefs::EngineDFFGetPolygonsByMaterialId(lua_State* luaVM)
 {
     CClientDFF* pDFF;
     uint materialId = NULL;
@@ -1530,23 +1619,30 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
                 RpGeometry* pGeometry = pAtomic->geometry;
                 RpMesh* mesh = pGeometry->mesh->getMeshes();
                 RpMesh* myMesh = &mesh[1];
-                myMesh->indices[mesh->numIndices + 1] = vertex1;
-                myMesh->indices[mesh->numIndices + 2] = vertex2;
-                myMesh->indices[mesh->numIndices + 3] = vertex3;
-                int iNewTrianglesSize = pGeometry->triangles_size + 2;
+                int iNewIndicesSize = myMesh->numIndices+3;
+                myMesh->numIndices = iNewIndicesSize;
+                RpMesh* newMesh = reinterpret_cast<RpMesh *>(malloc(sizeof(RpMesh) * iNewIndicesSize));
+                myMesh = newMesh;
+                myMesh->indices[mesh->numIndices-1] = vertex1;
+                myMesh->indices[mesh->numIndices-2] = vertex2;
+                myMesh->indices[mesh->numIndices-3] = vertex3;
+                pGeometry->triangles_size++;
+                int iNewTrianglesSize = pGeometry->triangles_size;
 
-                auto pMemory = reinterpret_cast<RpTriangle *>(realloc(reinterpret_cast<void *>(pGeometry->triangles), sizeof(RpTriangle) * iNewTrianglesSize));
-                //auto pMemory = reinterpret_cast<RpTriangle *>(realloc(pGeometry->triangles, (size_t)(sizeof(RpTriangle) * iNewTrianglesSize)));
-                
-                if (pMemory == nullptr)
+                //RpTriangle* newTriangles = reinterpret_cast<RpTriangle *>(realloc(reinterpret_cast<void *>(pGeometry->triangles), sizeof(RpTriangle) * iNewTrianglesSize));
+                RpTriangle* newTriangles = reinterpret_cast<RpTriangle *>(malloc(sizeof(RpTriangle) * iNewTrianglesSize));
+                if (newTriangles == nullptr)
                 {
-                    lua_pushnumber(luaVM, 111);
+                    lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                else {
-                    lua_pushnumber(luaVM, 333);
-                    return 1;
-                }
+                pGeometry->triangles = newTriangles;
+                RpTriangle& triangle = pGeometry->triangles[iNewTrianglesSize];
+                triangle.v[0] = vertex1;
+                triangle.v[1] = vertex2;
+                triangle.v[2] = vertex3;
+                triangle.matId = 0;
+                pGeometry->triangles[iNewTrianglesSize] = triangle;
                 /*
                 RpTriangle& triangle = pGeometry->triangles[iNewTrianglesSize];
                 triangle.v[0] = vertex1;
@@ -1562,6 +1658,8 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
                 pGeometry->mesh->totalIndicesInMesh += 3;
                 lua_pushnumber(luaVM, myMesh->numIndices/3);
                 return 1;*/
+                lua_pushnumber(luaVM, iNewTrianglesSize);
+                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
