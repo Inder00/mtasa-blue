@@ -1039,23 +1039,29 @@ int CLuaEngineDefs::EngineDFFGetVertices(lua_State* luaVM)
                 {
                     RwV3d* vVert = &pGeometry->morphTarget->verts[i];
                     RwV3d* pTriangle = &pGeometry->morphTarget->normals[i];
-                    CVector vPos;
-                    vPos.fX = vVert->x;
-                    vPos.fY = vVert->y;
-                    vPos.fZ = vVert->z;
-                    CVector vNormal;
-                    vNormal.fX = pTriangle->x;
-                    vNormal.fY = pTriangle->y;
-                    vNormal.fZ = pTriangle->z;
-                    lua_pushnumber(luaVM, i + 1); // start from 1 not 0
-                    lua_newtable(luaVM);
-                        lua_pushstring(luaVM, "position");
-                        lua_pushvector(luaVM, vPos);
-                        lua_settable(luaVM, -3);
-                        lua_pushstring(luaVM, "normal");
-                        lua_pushvector(luaVM, vNormal);
-                        lua_settable(luaVM, -3);
-                    lua_settable(luaVM, -3);
+                    if (pTriangle != nullptr && vVert!=nullptr && pTriangle!=NULL)
+                    {
+                        CVector vPos;
+                        vPos.fX = vVert->x;
+                        vPos.fY = vVert->y;
+                        vPos.fZ = vVert->z;
+                        CVector vNormal;
+                        int pp = (int)&pTriangle;
+                        if (pTriangle->x!=NULL) {
+                            vNormal.fX = pTriangle->x;  //crash
+                            vNormal.fY = pTriangle->y;
+                            vNormal.fZ = pTriangle->z;
+                            lua_pushnumber(luaVM, i + 1); // start from 1 not 0
+                            lua_newtable(luaVM);
+                            lua_pushstring(luaVM, "position");
+                            lua_pushvector(luaVM, vPos);
+                            lua_settable(luaVM, -3);
+                            lua_pushstring(luaVM, "normal");
+                            lua_pushvector(luaVM, vNormal);
+                            lua_settable(luaVM, -3);
+                            lua_settable(luaVM, -3);
+                        }
+                    }
                 }
                 return 1;
             }
@@ -1745,7 +1751,7 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
                 newPolygons2[lastPolygon].v[0] = vertex1;
                 newPolygons2[lastPolygon].v[1] = vertex2;
                 newPolygons2[lastPolygon].v[2] = vertex3;
-                free(myMesh->indices);
+                free(myMesh->indices);  //crash
                 free(pGeometry->triangles);
                 myMesh->indices = newPolygons1;
                 pGeometry->triangles = newPolygons2;
@@ -1851,9 +1857,9 @@ int CLuaEngineDefs::EngineDFFGetPolygonsConnectedToVertex(lua_State* luaVM)
                 for (uint i = 0; i < pGeometry->triangles_size; i++)
                 {
                     RpTriangle* pTriangle = &pGeometry->triangles[i];
-                    if (pTriangle->v[0] == uiVertex ||
+                    if (pTriangle!=nullptr && (pTriangle->v[0] == uiVertex ||
                         pTriangle->v[1] == uiVertex ||
-                        pTriangle->v[2] == uiVertex)
+                        pTriangle->v[2] == uiVertex))
                     {
                         lua_pushnumber(luaVM, ++ii);
                         lua_pushnumber(luaVM, i+1);
