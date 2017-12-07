@@ -65,6 +65,7 @@ public:
     LUA_DECLARE(EngineDFFCreatePolygon);
     LUA_DECLARE(EngineDFFSelectVertices);
     LUA_DECLARE(EngineDFFCreateVertex);
+    LUA_DECLARE(EngineDFFGetPolygonPosition);
 
 private: 
     static void AddEngineColClass ( lua_State* luaVM );

@@ -28,6 +28,7 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFGetPolygonInfo", EngineDFFGetPolygonInfo);
     CLuaCFunctions::AddFunction("engineDFFGetVertices", EngineDFFGetVertices);
     CLuaCFunctions::AddFunction("engineDFFSetVertexPosition", EngineDFFSetVertexPosition);
+    CLuaCFunctions::AddFunction("engineDFFGetPolygonPosition", EngineDFFGetPolygonPosition);
     CLuaCFunctions::AddFunction("engineDFFGetMaterialInfo", EngineDFFGetMaterialInfo);
     CLuaCFunctions::AddFunction("engineDFFDestroyVertex", EngineDFFDestroyVertex);
     CLuaCFunctions::AddFunction("engineDFFSetPolygonVertices", EngineDFFSetPolygonVertices);
@@ -1254,7 +1255,6 @@ int CLuaEngineDefs::EngineDFFGetPolygons(lua_State* luaVM)
     uint uiPolygonId = NULL;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
-    argStream.ReadNumber(uiPolygonId);
     if (!argStream.HasErrors())
     {
         ushort usModelID = pDFF->uimodel;
@@ -1272,13 +1272,13 @@ int CLuaEngineDefs::EngineDFFGetPolygons(lua_State* luaVM)
                     lua_pushnumber(luaVM, i+1); // start from 1 not 0
                     lua_newtable(luaVM);
                         lua_pushnumber(luaVM, 1);
-                        lua_pushnumber(luaVM, pTriangle->v[0]);
+                        lua_pushnumber(luaVM, pTriangle->v[0] + 1);
                         lua_settable(luaVM, -3);
                         lua_pushnumber(luaVM, 2);
-                        lua_pushnumber(luaVM, pTriangle->v[1]);
+                        lua_pushnumber(luaVM, pTriangle->v[1] + 1);
                         lua_settable(luaVM, -3);
                         lua_pushnumber(luaVM, 3);
-                        lua_pushnumber(luaVM, pTriangle->v[2]);
+                        lua_pushnumber(luaVM, pTriangle->v[2] + 1);
                         lua_settable(luaVM, -3);
                     lua_settable(luaVM, -3);
                 }
@@ -1437,6 +1437,7 @@ int CLuaEngineDefs::EngineDFFSetVertexPosition(lua_State* luaVM)
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
+                uiVertex--;
                 RwV3d* vVert = &pGeometry->morphTarget->verts[uiVertex];
                 vVert->x = pos.fX;
                 vVert->y = pos.fY;
@@ -1452,6 +1453,54 @@ int CLuaEngineDefs::EngineDFFSetVertexPosition(lua_State* luaVM)
     }
     if (argStream.HasErrors())
         m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineDFFGetPolygonPosition(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    uint uiPolygonId;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadNumber(uiPolygonId);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                if (uiPolygonId == NULL)
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                uiPolygonId--;
+                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpGeometry* pGeometry = pAtomic->geometry;
+                RpTriangle pTriangle = pGeometry->triangles[uiPolygonId];
+                RwV3d vert1 = pGeometry->morphTarget->verts[pTriangle.v[0]];
+                RwV3d vert2 = pGeometry->morphTarget->verts[pTriangle.v[1]];
+                RwV3d vert3 = pGeometry->morphTarget->verts[pTriangle.v[2]];
+                CVector avgPosition;
+                avgPosition.fX = (vert1.x + vert2.x + vert3.x)/3;
+                avgPosition.fY = (vert1.y + vert2.y + vert3.y)/3;
+                avgPosition.fZ = (vert1.z + vert2.z + vert3.z)/3;
+                lua_pushvector(luaVM, avgPosition);
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
+    }
+    if (argStream.HasErrors())
+    m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
 
     lua_pushboolean(luaVM, false);
     return 1;
@@ -1679,16 +1728,27 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
                 pGeometry->mesh->totalIndicesInMesh += 3;
                 uint numIndices = myMesh->numIndices;
                 unsigned short* polygons = myMesh->indices;
-                unsigned short* newPolygons = reinterpret_cast<unsigned short*>(malloc(numIndices * 4));    // unsigned short - size=4
+                unsigned short* newPolygons1 = reinterpret_cast<unsigned short*>(malloc(numIndices * 4));    // unsigned short - size=4
+                RpTriangle* newPolygons2 = reinterpret_cast<RpTriangle*>(malloc(sizeof(RpTriangle) * pGeometry->triangles_size));
                 for (int i = 0; i < numIndices-3; i++)
                 {
-                    newPolygons[i] = polygons[i];
+                    newPolygons1[i] = polygons[i];
                 }
-                newPolygons[numIndices - 1] = vertex1;
-                newPolygons[numIndices - 2] = vertex2;
-                newPolygons[numIndices - 3] = vertex3;
+                for (int i = 0; i < lastPolygon; i++)
+                {
+                    newPolygons2[i] = pGeometry->triangles[i];
+                }
+                newPolygons1[numIndices - 1] = vertex1;
+                newPolygons1[numIndices - 2] = vertex2;
+                newPolygons1[numIndices - 3] = vertex3;
+                newPolygons2[lastPolygon].matId = 0;
+                newPolygons2[lastPolygon].v[0] = vertex1;
+                newPolygons2[lastPolygon].v[1] = vertex2;
+                newPolygons2[lastPolygon].v[2] = vertex3;
                 free(myMesh->indices);
-                myMesh->indices = newPolygons;
+                free(pGeometry->triangles);
+                myMesh->indices = newPolygons1;
+                pGeometry->triangles = newPolygons2;
                 lua_pushnumber(luaVM, pGeometry->triangles_size);
                 return 1;
             }
