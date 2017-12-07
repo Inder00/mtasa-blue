@@ -1364,30 +1364,6 @@ int CLuaEngineDefs::EngineDFFGetPolygonsByMaterialId(lua_State* luaVM)
     return 1;
 }
 
-#define NUM_ELEM(x) (sizeof (x) / sizeof (*(x)))
-
-bool add_to_obj_array(RwV3d* new_obj, RwV3d** array)
-{
-    int number_of_elements = 0;
-    if (array != NULL)
-    {
-        number_of_elements = NUM_ELEM(array);
-    }
-
-    // expand array with one more item
-    array = (RwV3d**)realloc(array, (number_of_elements + 1) * sizeof(new_obj));
-
-    if (array == NULL)
-    {
-        /* memory request refused :( */
-        return false;
-    }
-
-    // Put new item at the last place on the array
-    array[number_of_elements] = new_obj;
-    return true;
-}
-
 int CLuaEngineDefs::EngineDFFCreateVertex(lua_State* luaVM)
 {
     CClientDFF* pDFF;
@@ -1419,8 +1395,8 @@ int CLuaEngineDefs::EngineDFFCreateVertex(lua_State* luaVM)
                 vVert.y = pos.fY;
                 vVert.z = pos.fZ;
                 newVerts[lastVertex] = vVert;
+                free(pGeometry->morphTarget->verts);
                 pGeometry->morphTarget->verts = (RwV3d *)newVerts;
-                free(newVerts);
                 lua_pushnumber(luaVM, pGeometry->vertices_size);
                 return 1;
             }
@@ -1703,7 +1679,7 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
                 pGeometry->mesh->totalIndicesInMesh += 3;
                 uint numIndices = myMesh->numIndices;
                 unsigned short* polygons = myMesh->indices;
-                unsigned short* newPolygons = reinterpret_cast<unsigned short*>(malloc(numIndices * 4));    // unsigned short - size=2
+                unsigned short* newPolygons = reinterpret_cast<unsigned short*>(malloc(numIndices * 4));    // unsigned short - size=4
                 for (int i = 0; i < numIndices-3; i++)
                 {
                     newPolygons[i] = polygons[i];
@@ -1711,50 +1687,10 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
                 newPolygons[numIndices - 1] = vertex1;
                 newPolygons[numIndices - 2] = vertex2;
                 newPolygons[numIndices - 3] = vertex3;
+                free(myMesh->indices);
                 myMesh->indices = newPolygons;
-                free(newPolygons);
                 lua_pushnumber(luaVM, pGeometry->triangles_size);
                 return 1;
-                /*
-                int iNewIndicesSize = myMesh->numIndices+3;
-                myMesh->numIndices = iNewIndicesSize;
-                RpMesh* newMesh = reinterpret_cast<RpMesh *>(malloc(sizeof(RpMesh) * iNewIndicesSize));
-                myMesh = newMesh;
-                myMesh->indices[mesh->numIndices-1] = vertex1;
-                myMesh->indices[mesh->numIndices-2] = vertex2;
-                myMesh->indices[mesh->numIndices-3] = vertex3;
-                pGeometry->triangles_size++;
-                int iNewTrianglesSize = pGeometry->triangles_size;
-
-                //RpTriangle* newTriangles = reinterpret_cast<RpTriangle *>(realloc(reinterpret_cast<void *>(pGeometry->triangles), sizeof(RpTriangle) * iNewTrianglesSize));
-                RpTriangle* newTriangles = reinterpret_cast<RpTriangle *>(malloc(sizeof(RpTriangle) * iNewTrianglesSize));
-                if (newTriangles == nullptr)
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                pGeometry->triangles = newTriangles;
-                RpTriangle& triangle = pGeometry->triangles[iNewTrianglesSize];
-                triangle.v[0] = vertex1;
-                triangle.v[1] = vertex2;
-                triangle.v[2] = vertex3;
-                triangle.matId = 0;
-                pGeometry->triangles[iNewTrianglesSize] = triangle;
-                /*
-                RpTriangle& triangle = pGeometry->triangles[iNewTrianglesSize];
-                triangle.v[0] = vertex1;
-                triangle.v[1] = vertex2;
-                triangle.v[2] = vertex3;
-                pGeometry->triangles = pMemory;
-                pGeometry->triangles_size = iNewTrianglesSize;
-                myMesh->numIndices += 3;
-                RpTriangle& triangle = pGeometry->triangles[pGeometry->triangles_size - 1];
-                triangle.v[0] = vertex1;
-                triangle.v[1] = vertex2;
-                triangle.v[2] = vertex3;
-                pGeometry->mesh->totalIndicesInMesh += 3;
-                lua_pushnumber(luaVM, myMesh->numIndices/3);
-                return 1;*/
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
