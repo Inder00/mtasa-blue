@@ -53,7 +53,7 @@ public:
     LUA_DECLARE(EngineDFFSetPolygonMaterial);
     LUA_DECLARE(EngineDFFSetGeometry);
     LUA_DECLARE(EngineDFFToString);
-    LUA_DECLARE(EngineDFFGetPolygonsConnectedToVertex);
+    LUA_DECLARE(EngineDFFGetPolygonConnectedToVertex);
     LUA_DECLARE(EngineDFFDestroyPolygon);
     LUA_DECLARE(EngineDFFGetMeshInfo);
     LUA_DECLARE(EngineDFFGetPolygonsByMaterialId);
@@ -66,6 +66,7 @@ public:
     LUA_DECLARE(EngineDFFSelectVertices);
     LUA_DECLARE(EngineDFFCreateVertex);
     LUA_DECLARE(EngineDFFGetPolygonPosition);
+    LUA_DECLARE(EngineDFFSetPolygonPosition);
 
 private: 
     static void AddEngineColClass ( lua_State* luaVM );

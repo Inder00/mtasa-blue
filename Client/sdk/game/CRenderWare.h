@@ -104,7 +104,6 @@ class CRenderWare {
     virtual RpAtomic * AtomicSetGeometry(RpAtomic * atomic, RpGeometry * geometry, unsigned int flags) = 0;
     virtual int ClumpGetNumAtomics(RpClump * clump)=0;
     virtual RwTexture* RwCreateTexture(int width, int height, int depth, int flags)=0;
-    virtual RwTexture* RwTexDictionaryAddTexture  (RwTexDictionary * dict, RwTexture * texture)=0;
 };
 
 

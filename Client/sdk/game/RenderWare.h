@@ -172,6 +172,47 @@ enum RpMeshHeaderFlags
                                     *   order, ergo the mesh contains no indices */
 };
 
+enum {
+    FLAGS_TRISTRIP = 0x01,
+    FLAGS_POSITIONS = 0x02,
+    FLAGS_TEXTURED = 0x04,
+    FLAGS_PRELIT = 0x08,
+    FLAGS_NORMALS = 0x10,
+    FLAGS_LIGHT = 0x20,
+    FLAGS_MODULATEMATERIALCOLOR = 0x40,
+    FLAGS_TEXTURED2 = 0x80
+};
+
+enum {
+    MATFX_BUMPMAP = 0x1,
+    MATFX_ENVMAP = 0x2,
+    MATFX_BUMPENVMAP = 0x3,
+    MATFX_DUAL = 0x4,
+    MATFX_UVTRANSFORM = 0x5,
+    MATFX_DUALUVTRANSFORM = 0x6,
+};
+
+enum {
+    FACETYPE_STRIP = 0x1,
+    FACETYPE_LIST = 0x0
+};
+
+/* gta3 ps2: 302, 304, 310
+* gta3 pc: 304, 310, 401ffff, 800ffff, c02ffff
+* gtavc ps2: c02ffff
+* gtavc pc: c02ffff, 800ffff, 1003ffff
+* gtasa: 1803ffff */
+
+enum {
+    GTA3_1 = 0x00000302,
+    GTA3_2 = 0x00000304,
+    GTA3_3 = 0x00000310,
+    GTA3_4 = 0x0800FFFF,
+    VCPS2 = 0x0C02FFFF,
+    VCPC = 0x1003FFFF,
+    SA = 0x1803FFFF
+};
+
 /*
 * Typedef for RpMeshHeaderFlags enumeration
 * representing the different types of mesh
@@ -503,14 +544,6 @@ struct RpGeometry
     RpMeshHeader       *mesh;
     RwResEntry         *repEntry;
     RpMorphTarget      *morphTarget;
-    // RenderWare plugins
-    unsigned int        usageFlags;
-    RpSkin             *skin;
-    // GTA plugins
-    CNightVertexColors  nightVertexColors;
-    CBreakableGeometry *breakableGeometry;
-    C2dfxStore         *_2dfxStore;
-
 };
 
 /*****************************************************************************/

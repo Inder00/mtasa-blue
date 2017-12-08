@@ -874,9 +874,3 @@ RwTexture* CRenderWareSA::RwCreateTexture(int width, int height, int depth, int 
 {
     return RwTextureCreate(RwRasterCreate(width, height, depth, flags));
 }
-
-RwTexture* CRenderWareSA::RwTexDictionaryAddTexture(RwTexDictionary * dict, RwTexture * texture)
-{
-    if(dict)
-    return RwTexDictionaryAddTexture(dict, texture);
-}

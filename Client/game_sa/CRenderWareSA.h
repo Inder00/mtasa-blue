@@ -121,7 +121,6 @@ public:
     RpAtomic * AtomicSetGeometry(RpAtomic * atomic, RpGeometry * geometry, unsigned int flags);
     int ClumpGetNumAtomics(RpClump * clump);
     RwTexture* RwCreateTexture(int width, int height, int depth, int flags);
-    RwTexture *RwTexDictionaryAddTexture(RwTexDictionary * dict, RwTexture * texture);
     static void         StaticSetHooks              ( void );
     static void         StaticSetClothesReplacingHooks ( void );
     static void         RwTexDictionaryRemoveTexture( RwTexDictionary* pTXD, RwTexture* pTex );
