@@ -571,10 +571,10 @@ struct RpGeometry
     unsigned short       unknown1;
     short                refs;
 
-    int                  triangles_size;
-    int                  vertices_size;
-    int                  morphTarget_size;
-    int                  texcoords_size;
+    unsigned int         triangles_size;
+    unsigned int         vertices_size;
+    unsigned int         morphTarget_size;
+    unsigned int         texcoords_size;
 
     RpMaterials          materials;
     RpTriangle           *triangles;
@@ -583,6 +583,10 @@ struct RpGeometry
     RpMeshHeader       *mesh;
     RwResEntry         *repEntry;
     RpMorphTarget      *morphTarget;
+    bool isValidTriangleId(int triangleId)
+    {
+        return (triangleId != NULL && triangles_size >= triangleId);
+    }
 };
 
 /*****************************************************************************/

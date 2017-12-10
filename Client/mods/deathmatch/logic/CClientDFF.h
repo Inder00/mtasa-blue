@@ -56,7 +56,14 @@ public:
     RpAtomic * AtomicSetGeometry(RpAtomic * atomic, RpGeometry * geometry, unsigned int flags);
     static int ClumpGetNumAtomics(RpClump * clump);
     static RwTexture* CreateTexture(int width, int height, int depth, int flags);
+    static int GetMeshIdFromPolygonId(RpGeometry* pGeometry, uint uiTriangleId);
+    static int GetPolygonIdInMesh(RpGeometry* pGeometry, RpMesh* pMesh, uint uiTriangleId);
+    static RpMesh* GetMeshFromPolygonId(RpGeometry* pGeometry, uint uiTriangleId);
+    static bool GeometryDestroyPolygon(RpGeometry* pGeometry, uint uiTriangleId);
+
+
     RpClump*                        GetLoadedClump(ushort usModelId);
+
     ushort                            uimodel = NULL;
     ushort                            uiGeometry = 0;
 

@@ -375,6 +375,134 @@ bool CClientDFF::IsDFFData ( const SString& strData )
     return strData.length() > 32 && memcmp( strData, "\x10\x00\x00\x00", 4 ) == 0;
 }
 
+int CClientDFF::GetPolygonIdInMesh(RpGeometry* pGeometry, RpMesh* pMesh, uint uiTriangleId)
+{
+    for (uint i = 0; i < pMesh->numIndices / 3; i++)
+    {
+        unsigned short indices1 = pMesh->indices[(i * 3) + 0];
+        unsigned short indices2 = pMesh->indices[(i * 3) + 1];
+        unsigned short indices3 = pMesh->indices[(i * 3) + 2];
+
+        for (uint i2 = 0; i2 < pGeometry->triangles_size; i2++)
+        {
+            RpTriangle pTriangle = pGeometry->triangles[i2];
+            if (i2 == uiTriangleId &&
+                pTriangle.v[0] == indices1 &&
+                pTriangle.v[1] == indices2 &&
+                pTriangle.v[2] == indices3)
+                return i;
+        }
+    }
+    return -1;
+}
+
+RpMesh* CClientDFF::GetMeshFromPolygonId(RpGeometry* pGeometry, uint uiTriangleId)
+{
+    RpMesh* mesh = pGeometry->mesh->getMeshes();
+    short meshCount = pGeometry->mesh->numMeshes;
+    while (meshCount>0)
+    {
+        meshCount--;
+        RpMesh* myMesh = &mesh[meshCount];
+        for (uint i = 0; i < myMesh->numIndices / 3; i++)
+        {
+            unsigned short indices1 = myMesh->indices[(i * 3) + 0];
+            unsigned short indices2 = myMesh->indices[(i * 3) + 1];
+            unsigned short indices3 = myMesh->indices[(i * 3) + 2];
+
+            for (uint i2 = 0; i2 < pGeometry->triangles_size; i2++)
+            {
+                RpTriangle pTriangle = pGeometry->triangles[i2];
+                if (i2 == uiTriangleId &&
+                    pTriangle.v[0] == indices1 &&
+                    pTriangle.v[1] == indices2 &&
+                    pTriangle.v[2] == indices3)
+                    return myMesh;
+            }
+        }
+    }
+    return NULL;
+}
+
+int CClientDFF::GetMeshIdFromPolygonId(RpGeometry* pGeometry, uint uiTriangleId)
+{
+    RpMesh* mesh = pGeometry->mesh->getMeshes();
+    short meshCount = pGeometry->mesh->numMeshes;
+    while (meshCount>0)
+    {
+        meshCount--;
+        RpMesh* myMesh = &mesh[meshCount];
+        for (uint i = 0; i < myMesh->numIndices / 3; i++)
+        {
+            unsigned short indices1 = myMesh->indices[(i * 3) + 0];
+            unsigned short indices2 = myMesh->indices[(i * 3) + 1];
+            unsigned short indices3 = myMesh->indices[(i * 3) + 2];
+
+            for (uint i2 = 0; i2 < pGeometry->triangles_size; i2++)
+            {
+                RpTriangle pTriangle = pGeometry->triangles[i2];
+                if (i2 == uiTriangleId &&
+                    pTriangle.v[0] == indices1 &&
+                    pTriangle.v[1] == indices2 &&
+                    pTriangle.v[2] == indices3)
+                    return meshCount;
+            }
+        }
+    }
+    return -1;
+}
+
+bool CClientDFF::GeometryDestroyPolygon(RpGeometry* pGeometry, uint uiTriangleId)
+{
+
+    unsigned short meshId = CClientDFF::GetMeshIdFromPolygonId(pGeometry, uiTriangleId);
+    if (meshId == -1)
+    {
+        return false;
+    }
+    RpMesh* mesh = pGeometry->mesh->getMeshes();
+    RpMesh* myMesh = &mesh[meshId];
+    unsigned short numIndices = myMesh->numIndices;
+    if (numIndices <= 0)
+    {
+        return false;
+    }
+    pGeometry->triangles_size--;
+    myMesh->numIndices -= 3;
+    pGeometry->mesh->totalIndicesInMesh -= 3;
+    unsigned short* polygons = myMesh->indices;
+    unsigned short* newPolygons1 = reinterpret_cast<unsigned short*>(malloc(numIndices * 4));    // unsigned short - size=4
+    RpTriangle* newPolygons2 = reinterpret_cast<RpTriangle*>(malloc(sizeof(RpTriangle) * pGeometry->triangles_size));
+
+    uint id = GetPolygonIdInMesh(pGeometry, myMesh, uiTriangleId);
+    unsigned int next = 0;
+    for (int i = 0; i < numIndices/3; i++)
+    {
+        if (id != i)
+        {
+            newPolygons1[(next * 3) + 0] = polygons[(i * 3) + 0];
+            newPolygons1[(next * 3) + 1] = polygons[(i * 3) + 1];
+            newPolygons1[(next * 3) + 2] = polygons[(i * 3) + 2];
+            next++;
+        }
+    }
+    next = 0;
+    for (int i = 0; i < pGeometry->triangles_size + 1; i++)
+    {
+
+        if (i != uiTriangleId)
+        {
+            newPolygons2[next] = pGeometry->triangles[i];
+            next++;
+        }
+    }
+    free(myMesh->indices);  //crash
+    free(pGeometry->triangles);
+    myMesh->indices = newPolygons1;
+    pGeometry->triangles = newPolygons2;
+    return true;
+}
+
 const RpGeometry * CClientDFF::GeometryTriangleSetVertexIndices(const RpGeometry * geo, RpTriangle * tri, unsigned short v1, unsigned short v2, unsigned short v3)
 {
     return g_pGame->GetRenderWare()->GeometryTriangleSetVertexIndices(geo, tri, v1, v2, v3);
