@@ -46,6 +46,8 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFCreateVertex", EngineDFFCreateVertex);
     CLuaCFunctions::AddFunction("engineDFFGetMeshInfo", EngineDFFGetMeshInfo);
     CLuaCFunctions::AddFunction("engineDFFSelectVertices", EngineDFFSelectVertices);
+    //CLuaCFunctions::AddFunction("engineDFFGetFrameInfo", EngineDFFGetFrameInfo);
+    //CLuaCFunctions::AddFunction("engineDFFSetInterpolation", EngineDFFSetInterpolation);
 
     CLuaCFunctions::AddFunction("engineReplaceModel", EngineReplaceModel);
     CLuaCFunctions::AddFunction ( "engineRestoreModel", EngineRestoreModel );
@@ -438,6 +440,80 @@ int CLuaEngineDefs::EngineReplaceModel(lua_State* luaVM)
     return 1;
 }
 
+int CLuaEngineDefs::EngineDFFGetFrameInfo(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    unsigned short usFrameId;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadNumber(usFrameId);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RwFrame* pFrame = reinterpret_cast<RwFrame *>(pAtomic->object.object.parent);
+                RpGeometry* pGeometry = pAtomic->geometry;
+                unsigned short framesCount = 1;
+                while (pFrame->child != NULL)
+                {
+                    framesCount++;
+                    pFrame = pFrame->child;
+                }
+                if (usFrameId > framesCount)
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                lua_newtable(luaVM);
+
+                lua_pushstring(luaVM, "name");
+                lua_pushstring(luaVM, pFrame->szName);
+                lua_settable(luaVM, -3);
+                if (pFrame->child != NULL)
+                {
+                    lua_pushstring(luaVM, "child");
+                    lua_pushnumber(luaVM, (unsigned short)pFrame->child);
+                    lua_settable(luaVM, -3);
+                }
+                if (pFrame->next != NULL)
+                {
+                    lua_pushstring(luaVM, "next");
+                    lua_pushnumber(luaVM, (unsigned short)pFrame->next);
+                    lua_settable(luaVM, -3);
+                }
+                lua_pushstring(luaVM, "rotationMatrixAt");
+                lua_pushvector(luaVM, pFrame->modelling.at.getVector());
+                lua_settable(luaVM, -3);
+                lua_pushstring(luaVM, "rotationMatrixRight");
+                lua_pushvector(luaVM, pFrame->modelling.right.getVector());
+                lua_settable(luaVM, -3);
+                lua_pushstring(luaVM, "rotationMatrixUp");
+                lua_pushvector(luaVM, pFrame->modelling.up.getVector());
+                lua_settable(luaVM, -3);
+                lua_pushstring(luaVM, "position");
+                lua_pushvector(luaVM, pFrame->modelling.pos.getVector());
+                lua_settable(luaVM, -3);
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
 int CLuaEngineDefs::EngineDFFGetInfo(lua_State* luaVM)
 {
     CClientDFF* pDFF;
@@ -452,7 +528,8 @@ int CLuaEngineDefs::EngineDFFGetInfo(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RwFrame* pFrame = pAtomic->getFrame();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 lua_newtable(luaVM);
 
@@ -492,9 +569,23 @@ int CLuaEngineDefs::EngineDFFGetInfo(lua_State* luaVM)
                 lua_pushnumber(luaVM, pGeometry->mesh->numMeshes);
                 lua_settable(luaVM, -3);
 
-
                 lua_pushstring(luaVM, "texCoordSetsCount");
                 lua_pushnumber(luaVM, pGeometry->texcoords_size);
+                lua_settable(luaVM, -3);
+
+                lua_pushstring(luaVM, "framesCount");
+                unsigned short framesCount = 1;
+                while (pFrame->child != NULL)
+                {
+                    framesCount++;
+                    pFrame = pFrame->child;
+                }
+                lua_pushnumber(luaVM, framesCount);
+                lua_settable(luaVM, -3);
+
+
+                lua_pushstring(luaVM, "geometryCount");
+                lua_pushnumber(luaVM, 1);
                 lua_settable(luaVM, -3);
                 return 1;
             }
@@ -537,7 +628,7 @@ int CLuaEngineDefs::EngineDFFSetMaterialColor(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
                 if (uiMaterialId > pGeometry->mesh->numMeshes-1) {
@@ -586,7 +677,7 @@ int CLuaEngineDefs::EngineDFFAddTexture(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
                 if (uiMaterialId > pGeometry->mesh->numMeshes - 1) {
@@ -623,6 +714,48 @@ int CLuaEngineDefs::EngineDFFAddTexture(lua_State* luaVM)
     return 1;
 }
 
+int CLuaEngineDefs::EngineDFFSetInterpolation(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    unsigned int i1,i2,i3,i4,i5;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadNumber(i1);
+    argStream.ReadNumber(i2);
+    argStream.ReadNumber(i3);
+    argStream.ReadNumber(i4);
+    argStream.ReadNumber(i5);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                pAtomic->interpolation.unknown1 = i1;
+                pAtomic->interpolation.unknown2 = i2;
+                pAtomic->interpolation.unknown3 = i3;
+                pAtomic->interpolation.unknown4 = i4;
+                pAtomic->interpolation.unknown5 = i5;
+                lua_pushboolean(luaVM, true);
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
 int CLuaEngineDefs::EngineDFFGetMaterialInfo(lua_State* luaVM)
 {
     CClientDFF* pDFF;
@@ -640,7 +773,7 @@ int CLuaEngineDefs::EngineDFFGetMaterialInfo(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
                 if (uiMaterialId > pGeometry->mesh->numMeshes - 1) {
@@ -748,7 +881,7 @@ int CLuaEngineDefs::EngineDFFSetMaterialLighting(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
                 if (uiMaterialId > pGeometry->mesh->numMeshes - 1) {
@@ -793,7 +926,7 @@ int CLuaEngineDefs::EngineDFFSetTextureName(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
                 if (uiMaterialId > pGeometry->mesh->numMeshes - 1) {
@@ -873,7 +1006,7 @@ int CLuaEngineDefs::EngineDFFSetCenter(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 //RpGeometry* pGeometry = pAtomic->geometry;
                 pAtomic->bsphereWorld.position.x = vNewCenter.fX;
                 pAtomic->bsphereWorld.position.y = vNewCenter.fY;
@@ -915,7 +1048,7 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 if (sSelectType == "byMaterial") {
 
@@ -1062,7 +1195,7 @@ int CLuaEngineDefs::EngineDFFGetVertices(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 lua_newtable(luaVM);
                 lua_newtable(luaVM);
@@ -1119,30 +1252,44 @@ int CLuaEngineDefs::EngineDFFGetMeshInfo(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 if (uMeshId != NULL && uMeshId <= pGeometry->mesh->numMeshes)
                 {
-                    /*pGeometry->mesh
-                    RpTriangle* pTriangle = pGeometry->triangles + uTriangleId;
+                    RpMesh* mesh = pGeometry->mesh->getMeshes();
+                    uint meshCount = pGeometry->mesh->numMeshes;
+                    if (uMeshId > meshCount)
+                    {
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                    uMeshId--;
+                    RpMesh* myMesh = &mesh[uMeshId];
                     lua_newtable(luaVM);
-                    lua_pushstring(luaVM, "vertices");
-                    lua_newtable(luaVM);
-                    lua_pushnumber(luaVM, 1);
-                    lua_pushnumber(luaVM, pTriangle->v[0]);
-                    lua_settable(luaVM, -3);
-                    lua_pushnumber(luaVM, 2);
-                    lua_pushnumber(luaVM, pTriangle->v[1]);
-                    lua_settable(luaVM, -3);
-                    lua_pushnumber(luaVM, 3);
-                    lua_pushnumber(luaVM, pTriangle->v[2]);
-                    lua_settable(luaVM, -3);
-                    lua_settable(luaVM, -3);
                     lua_pushstring(luaVM, "materialId");
-                    lua_pushnumber(luaVM, pTriangle->matId);
+                    lua_pushnumber(luaVM, myMesh->material->id);
+                    lua_settable(luaVM, -3);
+                    lua_pushstring(luaVM, "materialId2");
+                    lua_pushnumber(luaVM, (int)myMesh->material);
+                    lua_settable(luaVM, -3);
 
-                    lua_settable(luaVM, -3);*/
+                    lua_pushstring(luaVM, "polygonsCounts");
+                    lua_pushnumber(luaVM, myMesh->numIndices/3);
+                    lua_settable(luaVM, -3);
 
+                    if (myMesh->material->texture != nullptr)
+                    {
+                        lua_pushstring(luaVM, "texture");
+                        lua_pushstring(luaVM, myMesh->material->texture->name);
+                        lua_settable(luaVM, -3);
+                    }
+                    else
+                    {
+                        lua_pushstring(luaVM, "texture");
+                        lua_pushboolean(luaVM, false);
+                        lua_settable(luaVM, -3);
+                    }
+                    
                     return 1;
                 }
                 else
@@ -1176,7 +1323,7 @@ int CLuaEngineDefs::EngineDFFGetPolygonInfo(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 if (uTriangleId != NULL && uTriangleId <= pGeometry->triangles_size)
                 {
@@ -1256,7 +1403,7 @@ int CLuaEngineDefs::EngineDFFFlipPolygon(lua_State* luaVM)
                     return 1;
                 }
                 uTriangleId--;
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 RpMesh* mesh = pGeometry->mesh->getMeshes();
                 uint meshCount = pGeometry->mesh->numMeshes;
@@ -1313,7 +1460,7 @@ int CLuaEngineDefs::EngineDFFGetPolygons(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 lua_newtable(luaVM);
                 for (uint i = 0; i < pGeometry->triangles_size; i++)
@@ -1367,7 +1514,7 @@ int CLuaEngineDefs::EngineDFFGetPolygonsByMaterialId(lua_State* luaVM)
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 RpMesh* mesh = pGeometry->mesh->getMeshes();
                 if (materialId > mesh->numIndices)
@@ -1430,7 +1577,7 @@ int CLuaEngineDefs::EngineDFFCreateVertex(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 pGeometry->vertices_size++;
                 int lastVertex = pGeometry->vertices_size - 1;
@@ -1481,7 +1628,7 @@ int CLuaEngineDefs::EngineDFFSetVertexPosition(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 if (uiVertex > pGeometry->vertices_size) {
                     lua_pushboolean(luaVM, false);
@@ -1528,7 +1675,7 @@ int CLuaEngineDefs::EngineDFFSetPolygonPosition(lua_State* luaVM)
             if (pClump)
             {
 
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 if (uiPolygonId == NULL || uiPolygonId > pGeometry->triangles_size)
                 {
@@ -1586,7 +1733,7 @@ int CLuaEngineDefs::EngineDFFGetPolygonPosition(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 if (uiPolygonId == NULL || uiPolygonId > pGeometry->triangles_size)
                 {
@@ -1646,7 +1793,7 @@ int CLuaEngineDefs::EngineDFFSetPolygonVertices(lua_State* luaVM)
                 vertex1--;
                 vertex2--;
                 vertex3--;
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 RpMesh* mesh = pGeometry->mesh->getMeshes();
                 uint meshCount = pGeometry->mesh->numMeshes;
@@ -1710,7 +1857,7 @@ int CLuaEngineDefs::EngineDFFSetPolygonMaterial(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry + pDFF->uiGeometry;
                 if (uiPolygon > pGeometry->triangles_size)
                 {
@@ -1765,7 +1912,7 @@ int CLuaEngineDefs::EngineDFFDestroyPolygon(lua_State* luaVM)
                     return 1;
                 }
                 uTriangleId--;
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 RpMesh* mesh = pGeometry->mesh->getMeshes();
                 uint meshCount = pGeometry->mesh->numMeshes;
@@ -1830,7 +1977,7 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
                 vertex1--;
                 vertex2--;
                 vertex3--;
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 RpMesh* mesh = pGeometry->mesh->getMeshes();
                 RpMesh* myMesh = &mesh[0];
@@ -1893,7 +2040,7 @@ int CLuaEngineDefs::EngineDFFDestroyVertex(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 if (uiVertex > pGeometry->vertices_size) {
                     lua_pushboolean(luaVM, false);
@@ -1955,7 +2102,7 @@ int CLuaEngineDefs::EngineDFFGetPolygonConnectedToVertex(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = (RpAtomic*)((pClump->atomics.root.next) - 0x8);
+                RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 lua_newtable(luaVM);
                 uiVertex--;

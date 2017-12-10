@@ -45,6 +45,9 @@ typedef struct RpAtomic RpAtomic;
 typedef struct RwCamera RwCamera;
 typedef struct RpLight RpLight;
 typedef class CNightVertexColors CNightVertexColors;
+typedef struct RwFrameList RwFrameList;
+typedef struct RwLLLink  RwLLLink;
+typedef struct RwLinkList RwLinkList;
 
 
 typedef struct RpMeshHeader RpMeshHeader;
@@ -63,6 +66,13 @@ struct RwV2d
 struct RwV3d
 {   // 12-byte
     float x,y,z;
+    CVector getVector() {
+        CVector RwV3dVector;
+        RwV3dVector.fX = x;
+        RwV3dVector.fY = y;
+        RwV3dVector.fZ = z;
+        return RwV3dVector;
+    }
 };
 struct RwPlane
 {
@@ -258,6 +268,24 @@ struct RwFrame
     unsigned char    pluginData[8];                       // padding
     char             szName[RW_FRAME_NAME_LENGTH+1];        // name (as stored in the frame extension)
 };
+
+struct RwFrameList
+{
+    RwFrame *frames;
+    unsigned short numFrames;
+};
+
+struct RwLLLink
+{
+    RwLLLink *next;
+    RwLLLink *prev;
+};
+
+struct RwLinkList
+{
+    RwLLLink link;
+};
+
 struct CNightVertexColors
 {
     RwColor *night;
@@ -385,6 +413,10 @@ struct RpAtomic
     unsigned short   unknown7;
     RwList           sectors;
     void             *render;
+    RwFrame * getFrame()
+    {
+        return reinterpret_cast<RwFrame *>(this->object.object.parent);
+    }
 };
 
 struct RwMatrixWeights
@@ -432,11 +464,18 @@ struct RpLight
 struct RpClump
 {   // RenderWare (plugin) Clump (used by GTA)
     RwObject        object;
+    /* Information about all the Atomics */
     RwList          atomics;
     RwList          lights;
+    /* Lists of lights and cameras */
     RwList          cameras;
+    /* The clump in a world */
     RwListEntry     globalClumps;
     RpClumpCallback callback;
+    RpAtomic* getAtomic()
+    {
+        return (RpAtomic*)((this->atomics.root.next) - 0x8);
+    }
 };
 struct RpMaterialLighting
 {
