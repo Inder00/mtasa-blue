@@ -870,7 +870,11 @@ int CRenderWareSA::ClumpGetNumAtomics(RpClump * clump)
     return RpClumpGetNumAtomics(clump);
 }
 
-RwTexture* CRenderWareSA::RwCreateTexture(int width, int height, int depth, int flags)
+RwTexture* CRenderWareSA::RwCreateTexture(RwRaster* pRaster)
 {
-    return RwTextureCreate(RwRasterCreate(width, height, depth, flags));
+    return RwTextureCreate(pRaster);
+}
+RwRaster* CRenderWareSA::RasterCreate(int width, int height, int depth, int flags)
+{
+    return RwRasterCreate(width, height, depth, flags);
 }

@@ -11,7 +11,6 @@
 *
 *****************************************************************************/
 
-
 #ifndef __RENDERWARE_COMPAT
 #define __RENDERWARE_COMPAT
 
@@ -24,6 +23,7 @@
 #define RW_TEXTURE_NAME_LENGTH    32
 #define RW_FRAME_NAME_LENGTH      23
 #define RW_MAX_TEXTURE_COORDS     8
+
 
 typedef struct RwV2d RwV2d;
 typedef struct RwV3d RwV3d;
@@ -158,6 +158,43 @@ enum RpLightFlags
     LIGHT_ILLUMINATES_GEOMETRY = 2,
     LIGHT_FLAGS_LAST = RW_STRUCT_ALIGN
 };
+
+
+enum RpGeometryFlag
+{
+    rpGEOMETRYTRISTRIP = 0x00000001, /**<This geometry's meshes can be
+                                     rendered as strips.
+                                     \ref RpMeshSetTriStripMethod is
+                                     used to change this method.*/
+    rpGEOMETRYPOSITIONS = 0x00000002, /**<This geometry has positions */
+    rpGEOMETRYTEXTURED = 0x00000004, /**<This geometry has only one set of
+                                     texture coordinates. Texture
+                                     coordinates are specified on a per
+                                     vertex basis */
+    rpGEOMETRYPRELIT = 0x00000008, /**<This geometry has pre-light colors */
+    rpGEOMETRYNORMALS = 0x00000010, /**<This geometry has vertex normals */
+    rpGEOMETRYLIGHT = 0x00000020, /**<This geometry will be lit */
+    rpGEOMETRYMODULATEMATERIALCOLOR = 0x00000040, /**<Modulate material color
+                                                  with vertex colors
+                                                  (pre-lit + lit) */
+
+    rpGEOMETRYTEXTURED2 = 0x00000080, /**<This geometry has at least 2 sets of
+                                      texture coordinates. */
+
+                                      /*
+                                      * These above flags were stored in the flags field in an RwObject, they
+                                      * are now stored in the flags file of the RpGeometry.
+                                      */
+
+    rpGEOMETRYNATIVE = 0x01000000,
+    rpGEOMETRYNATIVEINSTANCE = 0x02000000,
+
+    rpGEOMETRYFLAGSMASK = 0x000000FF,
+    rpGEOMETRYNATIVEFLAGSMASK = 0x0F000000,
+
+    rpGEOMETRYFLAGFORCEENUMSIZEINT = RW_STRUCT_ALIGN
+};
+
 
 enum RpMeshHeaderFlags
 {
@@ -307,6 +344,10 @@ struct RpMeshHeader
     unsigned int   totalIndicesInMesh;
     unsigned int   firstMeshOffset;
     RpMesh *getMeshes(void) { return (RpMesh*)(this + 1); }
+    bool isValidMeshId(int meshId)
+    {
+        return (meshId != NULL && numMeshes >= meshId);
+    }
 };
 struct RwTexDictionary
 {
@@ -559,11 +600,29 @@ struct RpMorphTarget
 };
 struct RpTriangle
 {
-    //unsigned short v1, v2, v3;
-    //unsigned short materialId;
     unsigned short v[3];
     unsigned short matId;
 };
+
+struct RwMeshCache
+{
+    int    lengthOfMeshesArray; /**< Number of meshes in the object */
+    RwResEntry *meshes[1]; /**< The RwMeshCache structure will be
+                           * allocated sufficiently big that this tail
+                           * array can hold lengthOfMeshesArray pointers to
+                           * \ref RwResEntry's */
+};
+
+struct RwResEntry
+{
+    RwLLLink       link;
+    int        size;     /* RwResEntry + pad + data(+junk) */
+    void          *owner;    /* RpGeometry */
+    RwResEntry   **ownerRef; /* points back into RwMeshCache */
+    void* destroyNotify;
+};
+
+
 struct RpGeometry
 {
     RwObject             object;
@@ -586,6 +645,14 @@ struct RpGeometry
     bool isValidTriangleId(int triangleId)
     {
         return (triangleId != NULL && triangles_size >= triangleId);
+    }
+    bool isValidVertexId(int vertexId)
+    {
+        return (vertexId != NULL && vertices_size >= vertexId);
+    }
+    bool isValidTexCoordsId(int textCoordId)
+    {
+        return (textCoordId != NULL && texcoords_size >= textCoordId);
     }
 };
 

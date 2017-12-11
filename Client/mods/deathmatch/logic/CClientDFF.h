@@ -55,12 +55,13 @@ public:
     RpGeometry * GeometryTriangleSetMaterialId(RpGeometry * geo, RpTriangle * tri, RpMaterial * mat);
     RpAtomic * AtomicSetGeometry(RpAtomic * atomic, RpGeometry * geometry, unsigned int flags);
     static int ClumpGetNumAtomics(RpClump * clump);
-    static RwTexture* CreateTexture(int width, int height, int depth, int flags);
+    static RwTexture* CreateTexture(RwRaster* pRaster);
+    static RwRaster*  CreateRaster(int width, int height, int depth, int flags);
     static int GetMeshIdFromPolygonId(RpGeometry* pGeometry, uint uiTriangleId);
     static int GetPolygonIdInMesh(RpGeometry* pGeometry, RpMesh* pMesh, uint uiTriangleId);
     static RpMesh* GetMeshFromPolygonId(RpGeometry* pGeometry, uint uiTriangleId);
     static bool GeometryDestroyPolygon(RpGeometry* pGeometry, uint uiTriangleId);
-
+    static char* GetometryFlags(RpGeometry* pGeometry);
 
     RpClump*                        GetLoadedClump(ushort usModelId);
 

@@ -503,6 +503,15 @@ bool CClientDFF::GeometryDestroyPolygon(RpGeometry* pGeometry, uint uiTriangleId
     return true;
 }
 
+char* CClientDFF::GetometryFlags(RpGeometry* pGeometry)
+{
+    int n =pGeometry->flags;
+    char flags[8];
+    for (short i = 0; i <= 7; i++)
+        flags[i] = (char)((n >> 32-i*4) & 0xF);
+    return flags;
+}
+
 const RpGeometry * CClientDFF::GeometryTriangleSetVertexIndices(const RpGeometry * geo, RpTriangle * tri, unsigned short v1, unsigned short v2, unsigned short v3)
 {
     return g_pGame->GetRenderWare()->GeometryTriangleSetVertexIndices(geo, tri, v1, v2, v3);
@@ -522,7 +531,25 @@ int CClientDFF::ClumpGetNumAtomics(RpClump * clump)
 {
     return g_pGame->GetRenderWare()->ClumpGetNumAtomics(clump);
 }
-RwTexture* CClientDFF::CreateTexture(int width, int height, int depth, int flags)
+RwTexture* CClientDFF::CreateTexture(RwRaster* pRaster)
 {
-    return g_pGame->GetRenderWare()->RwCreateTexture(width, height,depth,flags);
+    return g_pGame->GetRenderWare()->RwCreateTexture(pRaster);
+}
+RwRaster* CClientDFF::CreateRaster(int width, int height, int depth, int flags)
+{
+    /*RwRaster* newRaster;
+    newRaster->renderResource = ((void(*)(void)) 0x261fae90); //(void *)0x261fae90;
+    newRaster->parent = newRaster;
+    newRaster->width = width;
+    newRaster->height = height;
+    newRaster->depth = depth;
+    newRaster->type = '\x4';
+    newRaster->flags = '\0';
+    newRaster->privateFlags = '\0';
+    newRaster->format = '\x2';
+    newRaster->origWidth = 512;
+    newRaster->origHeight = 512;
+    newRaster->origDepth = -1;
+    return newRaster;*/
+    return g_pGame->GetRenderWare()->RasterCreate(width, height, depth, flags);
 }

@@ -11,7 +11,6 @@
 
 #include "StdInc.h"
 
-
 void CLuaEngineDefs::LoadFunctions ( void )
 {
     CLuaCFunctions::AddFunction ( "engineLoadTXD", EngineLoadTXD );
@@ -32,12 +31,14 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFSetPolygonPosition", EngineDFFSetPolygonPosition);
     CLuaCFunctions::AddFunction("engineDFFGetMaterialInfo", EngineDFFGetMaterialInfo);
     CLuaCFunctions::AddFunction("engineDFFSetVertexPosition", EngineDFFSetVertexPosition);
+    CLuaCFunctions::AddFunction("engineDFFSetVertexUV", EngineDFFSetVertexUV);
     CLuaCFunctions::AddFunction("engineDFFDestroyVertex", EngineDFFDestroyVertex);
     CLuaCFunctions::AddFunction("engineDFFSetPolygonVertices", EngineDFFSetPolygonVertices);
     CLuaCFunctions::AddFunction("engineDFFSetPolygonMaterial", EngineDFFSetPolygonMaterial);
     CLuaCFunctions::AddFunction("engineDFFSetMaterialColor", EngineDFFSetMaterialColor);
     CLuaCFunctions::AddFunction("engineDFFSetMaterialLighting", EngineDFFSetMaterialLighting);
     CLuaCFunctions::AddFunction("engineDFFSetTextureName", EngineDFFSetTextureName);
+    CLuaCFunctions::AddFunction("engineDFFSetTextureProperties", EngineDFFSetTextureProperties);
     CLuaCFunctions::AddFunction("engineDFFAddTexture", EngineDFFAddTexture);
     CLuaCFunctions::AddFunction("engineDFFFlipPolygon", EngineDFFFlipPolygon);
     CLuaCFunctions::AddFunction("engineDFFToString", EngineDFFToString);
@@ -46,6 +47,7 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFCreateVertex", EngineDFFCreateVertex);
     CLuaCFunctions::AddFunction("engineDFFGetMeshInfo", EngineDFFGetMeshInfo);
     CLuaCFunctions::AddFunction("engineDFFSelectVertices", EngineDFFSelectVertices);
+    //CLuaCFunctions::AddFunction("engineDFFCreateLight", EngineDFFCreateLight);
     //CLuaCFunctions::AddFunction("engineDFFGetFrameInfo", EngineDFFGetFrameInfo);
     //CLuaCFunctions::AddFunction("engineDFFSetInterpolation", EngineDFFSetInterpolation);
 
@@ -514,6 +516,12 @@ int CLuaEngineDefs::EngineDFFGetFrameInfo(lua_State* luaVM)
     return 1;
 }
 
+int CLuaEngineDefs::EngineDFFCreateLight(lua_State* luaVM)
+{
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
 int CLuaEngineDefs::EngineDFFGetInfo(lua_State* luaVM)
 {
     CClientDFF* pDFF;
@@ -585,7 +593,12 @@ int CLuaEngineDefs::EngineDFFGetInfo(lua_State* luaVM)
 
 
                 lua_pushstring(luaVM, "geometryCount");
-                lua_pushnumber(luaVM, 1);
+                lua_pushnumber(luaVM, 2);
+                lua_settable(luaVM, -3);
+
+                lua_pushstring(luaVM, "flags");
+                lua_pushnumber(luaVM, pGeometry->flags);
+                //lua_pushstring(luaVM, CClientDFF::GetometryFlags(pGeometry));
                 lua_settable(luaVM, -3);
                 return 1;
             }
@@ -658,6 +671,71 @@ int CLuaEngineDefs::EngineDFFSetMaterialColor(lua_State* luaVM)
     return 1;
 }
 
+int CLuaEngineDefs::EngineDFFSetTextureProperties(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    uint uiTextureId = NULL;
+    float uiValue;
+    SString sPropertiesName;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadNumber(uiTextureId);
+    argStream.ReadString(sPropertiesName);
+    argStream.ReadNumber(uiValue);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RpGeometry* pGeometry = pAtomic->geometry;
+                uiTextureId--;
+                if (!pGeometry->mesh->isValidMeshId(uiTextureId)) {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                RpMaterial* material = pGeometry->materials.materials[uiTextureId];
+                if (material->texture == NULL)
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                if (sPropertiesName == "u")
+                {
+                    material->texture->raster->u = uiValue;
+                }
+                else if (sPropertiesName == "v")
+                {
+                    material->texture->raster->v = uiValue;
+                }
+                else if (sPropertiesName == "width")
+                {
+                    material->texture->raster->width = uiValue;
+                }
+                else if (sPropertiesName == "height")
+                {
+                    material->texture->raster->height = uiValue;
+                }
+                lua_pushboolean(luaVM, true);
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
 int CLuaEngineDefs::EngineDFFAddTexture(lua_State* luaVM)
 {
     CClientDFF* pDFF;
@@ -680,24 +758,22 @@ int CLuaEngineDefs::EngineDFFAddTexture(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
-                if (uiMaterialId > pGeometry->mesh->numMeshes - 1) {
+                if ( !pGeometry->mesh->isValidMeshId(uiMaterialId)) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-
-                //RpMesh m = pGeometry->mesh->getMeshes()[uiMaterialId];
-                RpMaterial* material = pGeometry->materials.materials[0];
-                if (material->texture != nullptr)
+                RpMaterial* material = pGeometry->materials.materials[uiMaterialId];
+                RpMaterial* material2 = pGeometry->mesh->getMeshes()[uiMaterialId].material;
+                if (material->texture != NULL)
                 {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                material->texture = CClientDFF::CreateTexture(1, 1, 1, 1);
-                //CModelTexturesInfo* pInfo = CClientDFF::GetModelTexturesInfo(pDFF->uimodel);
-                if(material->texture!=nullptr)
-                    //CClientDFF::DictionaryAddTexture(material->texture->txd + 1, material->texture);
-                strcpy(material->texture->name, sName);
-                strcpy(material->texture->mask, sName);
+                RwRaster* newRaster = CClientDFF::CreateRaster(512, 512, 16, 0);
+                RwTexture* newTexture = CClientDFF::CreateTexture(newRaster);
+                strcpy(newTexture->name, sName);
+                material->texture = newTexture;
+                material2->texture = newTexture;
                 lua_pushboolean(luaVM, true);
                 return 1;
             }
@@ -776,7 +852,7 @@ int CLuaEngineDefs::EngineDFFGetMaterialInfo(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
-                if (uiMaterialId > pGeometry->mesh->numMeshes - 1) {
+                if (!pGeometry->mesh->isValidMeshId(uiMaterialId)) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
@@ -795,8 +871,8 @@ int CLuaEngineDefs::EngineDFFGetMaterialInfo(lua_State* luaVM)
                 {
                     lua_pushstring(luaVM, asdf->texture->name);
                     lua_settable(luaVM, -3);
-                    lua_pushstring(luaVM, "mat2");
-                    lua_pushnumber(luaVM, asdf->id);
+                    lua_pushstring(luaVM, "raster");
+                    lua_pushboolean(luaVM, asdf->texture->raster!=NULL);
                     lua_settable(luaVM, -3);
                 }
                 else {
@@ -843,6 +919,11 @@ int CLuaEngineDefs::EngineDFFGetMaterialInfo(lua_State* luaVM)
                     lua_pushnumber(luaVM, material->color.a);
                     lua_settable(luaVM, -3);
                 lua_settable(luaVM, -3);
+                lua_pushstring(luaVM, "asdf");
+                RwResEntry* fff = pGeometry->repEntry;
+                lua_pushnumber(luaVM, pGeometry->repEntry->size);
+                lua_settable(luaVM, -3);
+                abort();
                 return 1;
             }
             else
@@ -1201,26 +1282,29 @@ int CLuaEngineDefs::EngineDFFGetVertices(lua_State* luaVM)
                 lua_newtable(luaVM);
                 for (uint i = 0; i < pGeometry->vertices_size; i++)
                 {
-                RwV3d* vVert = &pGeometry->morphTarget->verts[i];
-                RwV3d* pTriangle = &pGeometry->morphTarget->normals[i];
-                    CVector vPos;
-                    vPos.fX = vVert->x;
-                    vPos.fY = vVert->y;
-                    vPos.fZ = vVert->z;
-                    CVector vNormal;
-                    int pp = (int)&pTriangle;
-                    vNormal.fX = pTriangle->x;  //crash
-                    vNormal.fY = pTriangle->y;
-                    vNormal.fZ = pTriangle->z;
-                    lua_pushnumber(luaVM, i + 1); // start from 1 not 0
-                    lua_newtable(luaVM);
-                    lua_pushstring(luaVM, "position");
-                    lua_pushvector(luaVM, vPos);
-                    lua_settable(luaVM, -3);
-                    lua_pushstring(luaVM, "normal");
-                    lua_pushvector(luaVM, vNormal);
-                    lua_settable(luaVM, -3);
-                    lua_settable(luaVM, -3);
+                    if (pGeometry->morphTarget->normals != NULL)
+                    {
+                        RwV3d* vVert = &pGeometry->morphTarget->verts[i];
+                        RwV3d* pTriangle = &pGeometry->morphTarget->normals[i];
+                        CVector vPos;
+                        vPos.fX = vVert->x;
+                        vPos.fY = vVert->y;
+                        vPos.fZ = vVert->z;
+                        CVector vNormal;
+                        int pp = (int)&pTriangle;
+                        vNormal.fX = pTriangle->x;  //crash
+                        vNormal.fY = pTriangle->y;
+                        vNormal.fZ = pTriangle->z;
+                        lua_pushnumber(luaVM, i + 1); // start from 1 not 0
+                        lua_newtable(luaVM);
+                        lua_pushstring(luaVM, "position");
+                        lua_pushvector(luaVM, vPos);
+                        lua_settable(luaVM, -3);
+                        lua_pushstring(luaVM, "normal");
+                        lua_pushvector(luaVM, vNormal);
+                        lua_settable(luaVM, -3);
+                        lua_settable(luaVM, -3);
+                    }
                 }
                 return 1;
             }
@@ -1528,6 +1612,58 @@ int CLuaEngineDefs::EngineDFFCreateVertex(lua_State* luaVM)
                 free(pGeometry->morphTarget->verts);
                 pGeometry->morphTarget->verts = (RwV3d *)newVerts;
                 lua_pushnumber(luaVM, pGeometry->vertices_size);
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+
+int CLuaEngineDefs::EngineDFFSetVertexUV(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    uint uiVertexId;
+    float u,v;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadNumber(uiVertexId);
+    argStream.ReadNumber(u);
+    argStream.ReadNumber(v);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RpGeometry* pGeometry = pAtomic->geometry;
+                if (!pGeometry->isValidVertexId(uiVertexId)) {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                uiVertexId--;
+                RwTextureCoordinates* vVert = pGeometry->texcoords[0];
+                if (vVert == NULL)
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                RwTextureCoordinates asdf = vVert[uiVertexId];
+                asdf.u = u;
+                asdf.v = v;
+                lua_pushboolean(luaVM, true);
                 return 1;
             }
             else

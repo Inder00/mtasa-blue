@@ -191,7 +191,7 @@ public:
         SSavedClumpInfo info;
         info.pClump = pClumpCopy;
 #ifdef CLOTHES_REF_TEST
-        RpGeometry* pGeometry = ( ( RpAtomic* ) ( ( info.pClump->atomics.root.next ) - 0x8 ) )->geometry;
+        RpGeometry* pGeometry = info.pClump->getAtomic()->geometry;
         pGeometry->refs += 20;
 #endif
 

@@ -41,6 +41,7 @@ public:
     LUA_DECLARE ( EngineGetModelIDFromName );
     LUA_DECLARE ( EngineGetModelTextureNames );
     LUA_DECLARE ( EngineGetVisibleTextureNames );
+    LUA_DECLARE(EngineDFFTEST);
     LUA_DECLARE(EngineDFFGetInfo);
     LUA_DECLARE(EngineDFFGetFrameInfo);
     LUA_DECLARE(EngineDFFGetPolygons);
@@ -69,6 +70,9 @@ public:
     LUA_DECLARE(EngineDFFSetPolygonPosition);
     LUA_DECLARE(EngineDFFSetInterpolation);
     LUA_DECLARE(EngineDFFGetPolygonMesh);
+    LUA_DECLARE(EngineDFFCreateLight);
+    LUA_DECLARE(EngineDFFSetVertexUV);
+    LUA_DECLARE(EngineDFFSetTextureProperties);
 
 private: 
     static void AddEngineColClass ( lua_State* luaVM );
