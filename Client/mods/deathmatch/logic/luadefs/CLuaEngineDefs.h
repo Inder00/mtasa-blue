@@ -74,6 +74,10 @@ public:
     LUA_DECLARE(EngineDFFSetVertexUV);
     LUA_DECLARE(EngineDFFSetTextureProperties);
 
+    LUA_DECLARE(EngineCOLGetInfo);
+    LUA_DECLARE(EngineCOLSetPolygonSurface);
+    LUA_DECLARE(EngineCOLGetVertexPosition);
+
 private: 
     static void AddEngineColClass ( lua_State* luaVM );
     static void AddEngineTxdClass ( lua_State* luaVM );

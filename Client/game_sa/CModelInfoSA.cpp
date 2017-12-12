@@ -1466,3 +1466,66 @@ bool CModelInfoSA::ForceUnload( void )
 
     return true;
 }
+
+WORD CModelInfoSA::GetModelPolygonCount(CColModel* pColModel)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    if (pColData)
+    {
+        return pColData->numColTriangles;
+    }
+}
+
+float CModelInfoSA::GetModelBoundingBoxRadius(CColModel* pColModel)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CBoundingBoxSA pBoundingBox = pColModelInterface->boundingBox;
+    return pBoundingBox.fRadius;
+}
+
+CVector CModelInfoSA::GetModelBoundingBoxOffset(CColModel* pColModel)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CBoundingBoxSA pBoundingBox = pColModelInterface->boundingBox;
+    return pBoundingBox.vecOffset;
+}
+
+CVector CModelInfoSA::GetModelBoundingBoxVecMin(CColModel* pColModel)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CBoundingBoxSA pBoundingBox = pColModelInterface->boundingBox;
+    return pBoundingBox.vecMin;
+}
+
+CVector CModelInfoSA::GetModelBoundingBoxVecMax(CColModel* pColModel)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CBoundingBoxSA pBoundingBox = pColModelInterface->boundingBox;
+    return pBoundingBox.vecMax;
+}
+
+bool CModelInfoSA::SetModelPolygonSurface(CColModel* pColModel, unsigned short usPolygonId, unsigned short usSurfaceId)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    EColSurfaceValue surface = EColSurfaceValue(usSurfaceId);
+    if (surface)
+    {
+        pColData->pColTriangles[usPolygonId].material = surface;
+        return true;
+    }
+    return false;
+}
+
+CVector CModelInfoSA::GetVertexPosition(CColModel* pColModel, unsigned short usPolygonId)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    CompressedVector pos = pColData->m_pVertices[usPolygonId];
+    CVector position;
+    position.fX = pos.x;
+    position.fY = pos.y;
+    position.fZ = pos.z;
+    return position;
+}

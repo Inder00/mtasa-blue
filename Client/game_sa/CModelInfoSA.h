@@ -368,7 +368,13 @@ public:
 
     void                            InitialiseSupportedUpgrades ( RpClump * pClump );
     void                            ResetSupportedUpgrades      ( void );
-
+    WORD GetModelPolygonCount(CColModel* pColModel);
+    float GetModelBoundingBoxRadius(CColModel* pColModel);
+    CVector GetModelBoundingBoxOffset(CColModel* pColModel);
+    CVector GetModelBoundingBoxVecMin(CColModel* pColModel);
+    CVector GetModelBoundingBoxVecMax(CColModel* pColModel);
+    CVector GetVertexPosition(CColModel* pColModel, unsigned short usPolygonId);
+    bool SetModelPolygonSurface(CColModel* pColModel, unsigned short usPolygonId, unsigned short usSurfaceId);
 private:
     void                            RwSetSupportedUpgrades      ( RwFrame * parent, DWORD dwModel );
 };

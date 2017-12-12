@@ -39,13 +39,20 @@ public:
     void                            Unlink                  ( void ) {};
     void                            GetPosition             ( CVector& vecPosition ) const {};
     void                            SetPosition             ( const CVector& vecPosition ) {};
-
+    unsigned short GetModelPolygonCount();
+    float GetModelBoundingBoxRadius();
+    CVector GetModelBoundingBoxOffset();
+    CVector GetModelBoundingBoxVecMin();
+    CVector GetModelBoundingBoxVecMax();
+    CVector GetVertexPosition(unsigned short usPolygonId);
+    bool SetModelPolygonSurface(unsigned short usPolygonId, unsigned short usSurfaceId);
+    CColModel*                      m_pColModel;
+    unsigned short usModel=NULL;
 private:
     void                            InternalRestore         ( unsigned short usModel );
 
     class CClientColModelManager*   m_pColModelManager;
     
-    CColModel*                      m_pColModel;
     std::list < unsigned short >    m_Replaced;
 };
 

@@ -153,7 +153,56 @@ void CClientColModel::InternalRestore ( unsigned short usModel )
 
 
 // Return true if data looks like COL file contents
-bool CClientColModel::IsCOLData ( const SString& strData )
+bool CClientColModel::IsCOLData(const SString& strData)
 {
-    return strData.length() > 32 && memcmp( strData, "COL", 3 ) == 0 && strData[7] == 0;
+    return strData.length() > 32 && memcmp(strData, "COL", 3) == 0 && strData[7] == 0;
+}
+
+unsigned short CClientColModel::GetModelPolygonCount()
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return (unsigned short)pModelInfo->GetModelPolygonCount(m_pColModel);
+}
+
+float CClientColModel::GetModelBoundingBoxRadius()
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->GetModelBoundingBoxRadius(m_pColModel);
+}
+
+CVector CClientColModel::GetModelBoundingBoxOffset()
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->GetModelBoundingBoxOffset(m_pColModel);
+}
+
+CVector CClientColModel::GetModelBoundingBoxVecMin()
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->GetModelBoundingBoxVecMin(m_pColModel);
+}
+
+CVector CClientColModel::GetModelBoundingBoxVecMax()
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->GetModelBoundingBoxVecMax(m_pColModel);
+}
+
+bool CClientColModel::SetModelPolygonSurface(unsigned short usPolygonId, unsigned short usSurfaceId)
+{
+    if (GetModelPolygonCount() >= usPolygonId && usPolygonId != NULL)
+    {
+        CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+        return pModelInfo->SetModelPolygonSurface(m_pColModel, usPolygonId-1, usSurfaceId);
+    }
+    else
+    {
+        return false;
+    }
+}
+
+CVector CClientColModel::GetVertexPosition(unsigned short usPolygonId)
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->GetVertexPosition(m_pColModel, usPolygonId);
 }

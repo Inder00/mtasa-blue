@@ -66,6 +66,17 @@ typedef struct
     char name[0x18];
 } ColModelFileHeader;
 
+class CColVertex {
+    float x;
+    float y;
+    float z;
+};
+class CompressedVector {
+public:
+    short x;
+    short y;
+    short z;
+};
 typedef struct
 {
     WORD                            numColSpheres;
@@ -76,9 +87,11 @@ typedef struct
     CColSphereSA*                   pColSpheres;
     CColBoxSA*                      pColBoxes;
     void*                           pSuspensionLines;
-    void*                           pUnknown;
+    CompressedVector*               m_pVertices;
     CColTriangleSA*                 pColTriangles;
     CColTrianglePlaneSA*            pColTrianglePlanes;
+    BYTE                            numColVerticesa;
+    BYTE                            numColVerticesb;
 } CColDataSA;
 
 class CColModelSAInterface

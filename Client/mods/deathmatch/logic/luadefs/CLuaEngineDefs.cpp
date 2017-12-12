@@ -51,6 +51,10 @@ void CLuaEngineDefs::LoadFunctions ( void )
     //CLuaCFunctions::AddFunction("engineDFFGetFrameInfo", EngineDFFGetFrameInfo);
     //CLuaCFunctions::AddFunction("engineDFFSetInterpolation", EngineDFFSetInterpolation);
 
+
+    CLuaCFunctions::AddFunction("engineCOLGetInfo", EngineCOLGetInfo);
+    CLuaCFunctions::AddFunction("engineCOLSetPolygonSurface", EngineCOLSetPolygonSurface);
+    CLuaCFunctions::AddFunction("engineCOLGetVertexPosition", EngineCOLGetVertexPosition);
     CLuaCFunctions::AddFunction("engineReplaceModel", EngineReplaceModel);
     CLuaCFunctions::AddFunction ( "engineRestoreModel", EngineRestoreModel );
     CLuaCFunctions::AddFunction ( "engineGetModelLODDistance", EngineGetModelLODDistance );
@@ -132,9 +136,11 @@ void CLuaEngineDefs::AddEngineDffClass ( lua_State* luaVM )
 int CLuaEngineDefs::EngineLoadCOL ( lua_State* luaVM )
 {
     SString strFile = "";
+    unsigned short usModel;
     CScriptArgReader argStream ( luaVM );
     // Grab the COL filename or data
     argStream.ReadString ( strFile );
+    argStream.ReadNumber(usModel, false);
 
     if ( !argStream.HasErrors ( ) )
     {
@@ -162,7 +168,7 @@ int CLuaEngineDefs::EngineLoadCOL ( lua_State* luaVM )
                     {
                         // Success. Make it a child of the resource collision root
                         pCol->SetParent ( pRoot );
-
+                        pCol->usModel = usModel;
                         // Return the created col model
                         lua_pushelement ( luaVM, pCol );
                         return 1;
@@ -2637,5 +2643,95 @@ int CLuaEngineDefs::EngineGetVisibleTextureNames ( lua_State* luaVM )
 
     // We failed
     lua_pushboolean ( luaVM, false );
+    return 1;
+}
+
+
+// COL Function
+
+int CLuaEngineDefs::EngineCOLGetInfo(lua_State* luaVM)
+{
+    CClientColModel* pCOL;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pCOL);
+
+    if (!argStream.HasErrors())
+    {
+        //lua_newtable(luaVM);
+        lua_newtable(luaVM);
+        lua_pushstring(luaVM, "polygonCount");
+        lua_pushnumber(luaVM, pCOL->GetModelPolygonCount());
+        lua_settable(luaVM, -3);
+        lua_pushstring(luaVM, "boundingBox");
+        lua_newtable(luaVM);
+        lua_pushstring(luaVM, "radius");
+        lua_pushnumber(luaVM, pCOL->GetModelBoundingBoxRadius());
+        lua_settable(luaVM, -3);
+        lua_pushstring(luaVM, "offset");
+        lua_pushvector(luaVM, pCOL->GetModelBoundingBoxOffset());
+        lua_settable(luaVM, -3);
+        lua_pushstring(luaVM, "vecMin");
+        lua_pushvector(luaVM, pCOL->GetModelBoundingBoxVecMin());
+        lua_settable(luaVM, -3);
+        lua_pushstring(luaVM, "vecMax");
+        lua_pushvector(luaVM, pCOL->GetModelBoundingBoxVecMax());
+        lua_settable(luaVM, -3);
+
+        lua_settable(luaVM, -3);
+
+        return 1;
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineCOLSetPolygonSurface(lua_State* luaVM)
+{
+    CClientColModel* pCOL;
+    unsigned short usSurfaceId, usPolygonId;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pCOL);
+    argStream.ReadNumber(usSurfaceId);
+    argStream.ReadNumber(usPolygonId);
+
+    if (!argStream.HasErrors())
+    {
+        pCOL->SetModelPolygonSurface(usPolygonId, usSurfaceId);
+        lua_pushboolean(luaVM, true);
+        return 1;
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineCOLGetVertexPosition(lua_State* luaVM)
+{
+    CClientColModel* pCOL;
+    unsigned short usPolygonId;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pCOL);
+    argStream.ReadNumber(usPolygonId);
+
+    if (!argStream.HasErrors())
+    {
+        if (usPolygonId == NULL)
+        {
+            lua_pushboolean(luaVM, false);
+            return 1;
+        }
+        usPolygonId--;
+        lua_pushvector(luaVM, pCOL->GetVertexPosition(usPolygonId)/128);    // this is compressed vertex position, 128 = 1
+        return 1;
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
     return 1;
 }
