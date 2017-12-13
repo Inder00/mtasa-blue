@@ -373,8 +373,18 @@ public:
     CVector GetModelBoundingBoxOffset(CColModel* pColModel);
     CVector GetModelBoundingBoxVecMin(CColModel* pColModel);
     CVector GetModelBoundingBoxVecMax(CColModel* pColModel);
-    CVector GetVertexPosition(CColModel* pColModel, unsigned short usPolygonId);
+    CVector GetVertexPosition(CColModel* pColModel, unsigned short usVertex);
+    unsigned short GetVerticesCount(CColModel* pColModel);
+    unsigned short GetTrianglesCount(CColModel* pColModel);
+    void GetTriangleConnetedVertices(CColModel* pColModel, unsigned short usPolygon, unsigned short &vertex1, unsigned short &vertex2, unsigned short &vertex3);
+    void GetTriangleMaterial(CColModel* pColModel, unsigned short usPolygon, unsigned short &material);
+    void GetTriangleLighting(CColModel* pColModel, unsigned short usPolygon, short &day, short &night);
+
     bool SetModelPolygonSurface(CColModel* pColModel, unsigned short usPolygonId, unsigned short usSurfaceId);
+    bool SetTriangleConnectedVertices(CColModel* pColModel, unsigned short usPolygon, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3);
+    bool SetTriangleSetLighting(CColModel* pColModel, unsigned short usPolygon, short day, short night);
+    bool SetVertexPosition(CColModel* pColModel, unsigned short usVertex, CVector position);
+
 private:
     void                            RwSetSupportedUpgrades      ( RwFrame * parent, DWORD dwModel );
 };

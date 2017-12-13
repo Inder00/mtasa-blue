@@ -183,6 +183,7 @@ public:
     virtual CVector GetModelBoundingBoxVecMax(CColModel* pColModel)=0;
     virtual CVector GetVertexPosition(CColModel* pColModel, unsigned short usPolygonId)=0;
     virtual bool SetModelPolygonSurface(CColModel* pColModel, unsigned short usPolygonId, unsigned short usSurfaceId)=0;
+    virtual bool SetVertexPosition(CColModel* pColModel, unsigned short usVertex, CVector position) = 0;
 };
 
 #endif

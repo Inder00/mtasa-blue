@@ -46,6 +46,9 @@ public:
     CVector GetModelBoundingBoxVecMax();
     CVector GetVertexPosition(unsigned short usPolygonId);
     bool SetModelPolygonSurface(unsigned short usPolygonId, unsigned short usSurfaceId);
+    bool SetVertexPosition(unsigned short usVertex, CVector position);
+    void GetTriangleConnetedVertices(CColModel* pColModel, unsigned short usPolygon, unsigned short &vertex1, unsigned short &vertex2, unsigned short &vertex3);
+
     CColModel*                      m_pColModel;
     unsigned short usModel=NULL;
 private:

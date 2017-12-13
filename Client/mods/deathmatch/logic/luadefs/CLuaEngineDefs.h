@@ -77,6 +77,8 @@ public:
     LUA_DECLARE(EngineCOLGetInfo);
     LUA_DECLARE(EngineCOLSetPolygonSurface);
     LUA_DECLARE(EngineCOLGetVertexPosition);
+    LUA_DECLARE(EngineCOLSetVertexPosition);
+    LUA_DECLARE(EngineCOLGetPolygonConnectedVertices);
 
 private: 
     static void AddEngineColClass ( lua_State* luaVM );

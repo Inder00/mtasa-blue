@@ -1518,14 +1518,113 @@ bool CModelInfoSA::SetModelPolygonSurface(CColModel* pColModel, unsigned short u
     return false;
 }
 
-CVector CModelInfoSA::GetVertexPosition(CColModel* pColModel, unsigned short usPolygonId)
+CVector CModelInfoSA::GetVertexPosition(CColModel* pColModel, unsigned short usVertex)
 {
     CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
     CColDataSA* pColData = pColModelInterface->pColData;
-    CompressedVector pos = pColData->m_pVertices[usPolygonId];
+    CompressedVector pos = pColData->m_pVertices[usVertex];
     CVector position;
     position.fX = pos.x;
     position.fY = pos.y;
     position.fZ = pos.z;
     return position;
+}
+
+unsigned short CModelInfoSA::GetVerticesCount(CColModel* pColModel)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    return pColData->numColVertices;
+}
+
+unsigned short CModelInfoSA::GetTrianglesCount(CColModel* pColModel)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    return pColData->numColTriangles;
+}
+
+void CModelInfoSA::GetTriangleConnetedVertices(CColModel* pColModel, unsigned short usPolygon, unsigned short &vertex1, unsigned short &vertex2, unsigned short &vertex3)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    if (usPolygon >= 0 && pColData->numColTriangles > usPolygon)
+    {
+        if (vertex1 >= 0 && pColData->numColVertices > vertex1 &&
+            vertex2 >= 0 && pColData->numColVertices > vertex2 &&
+            vertex3 >= 0 && pColData->numColVertices > vertex3)
+        {
+            CColTriangleSA triangle = pColData->pColTriangles[usPolygon];
+            vertex1 = triangle.v1 + 1;  // Start From 1 to n insted of 0 to n-1
+            vertex2 = triangle.v2 + 1;
+            vertex3 = triangle.v3 + 1;
+        }
+    }
+}
+
+void CModelInfoSA::GetTriangleMaterial(CColModel* pColModel, unsigned short usPolygon, unsigned short &material)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    if (usPolygon >= 0 && pColData->numColTriangles > usPolygon)
+    {
+        CColTriangleSA triangle = pColData->pColTriangles[usPolygon];
+        material = triangle.material;
+    }
+}
+
+void CModelInfoSA::GetTriangleLighting(CColModel* pColModel, unsigned short usPolygon, short &day, short &night)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    if (usPolygon >= 0 && pColData->numColTriangles > usPolygon)
+    {
+        CColTriangleSA triangle = pColData->pColTriangles[usPolygon];
+        day = triangle.lighting.day;
+        night = triangle.lighting.night;
+    }
+}
+
+bool CModelInfoSA::SetTriangleConnectedVertices(CColModel* pColModel, unsigned short usPolygon, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    if (usPolygon >= 0 && pColData->numColTriangles > usPolygon)
+    {
+        CColTriangleSA triangle = pColData->pColTriangles[usPolygon];
+        triangle.v1 = vertex1 - 1;
+        triangle.v2 = vertex2 - 1;
+        triangle.v3 = vertex3 - 1;
+        return true;
+    }
+    return false;
+}
+
+bool CModelInfoSA::SetTriangleSetLighting(CColModel* pColModel, unsigned short usPolygon, short day, short night)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    if (usPolygon >= 0 && pColData->numColTriangles > usPolygon)
+    {
+        CColTriangleSA triangle = pColData->pColTriangles[usPolygon];
+        triangle.lighting.day = day;
+        triangle.lighting.night = night;
+        return true;
+    }
+    return false;
+}
+
+bool CModelInfoSA::SetVertexPosition(CColModel* pColModel, unsigned short usVertex, CVector position)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    if (usVertex >= 0 && pColData->numColVertices > usVertex)
+    {
+        CompressedVector* vertex = &pColData->m_pVertices[usVertex];
+        vertex->x = position.fX * 128;
+        vertex->y = position.fY * 128;
+        vertex->z = position.fZ * 128;
+        return true;
+    }
+    return false;
 }

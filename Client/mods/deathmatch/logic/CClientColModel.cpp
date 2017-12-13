@@ -206,3 +206,15 @@ CVector CClientColModel::GetVertexPosition(unsigned short usPolygonId)
     CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
     return pModelInfo->GetVertexPosition(m_pColModel, usPolygonId);
 }
+
+bool CClientColModel::SetVertexPosition(unsigned short usVertex, CVector position)
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->SetVertexPosition(m_pColModel, usVertex, position);
+}
+
+void CClientColModel::GetTriangleConnetedVertices(CColModel* pColModel, unsigned short usPolygon, unsigned short &vertex1, unsigned short &vertex2, unsigned short &vertex3);
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->SetVertexPosition(m_pColModel, usVertex, position);
+}

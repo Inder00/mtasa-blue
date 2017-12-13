@@ -54,7 +54,13 @@ void CLuaEngineDefs::LoadFunctions ( void )
 
     CLuaCFunctions::AddFunction("engineCOLGetInfo", EngineCOLGetInfo);
     CLuaCFunctions::AddFunction("engineCOLSetPolygonSurface", EngineCOLSetPolygonSurface);
+    CLuaCFunctions::AddFunction("engineCOLGetPolygonConnectedVertices", EngineCOLGetPolygonConnectedVertices);
     CLuaCFunctions::AddFunction("engineCOLGetVertexPosition", EngineCOLGetVertexPosition);
+    CLuaCFunctions::AddFunction("engineCOLSetVertexPosition", EngineCOLSetVertexPosition);
+    CLuaCFunctions::AddFunction("engineCOLSetVertexPosition", EngineCOLSetVertexPosition);
+
+
+
     CLuaCFunctions::AddFunction("engineReplaceModel", EngineReplaceModel);
     CLuaCFunctions::AddFunction ( "engineRestoreModel", EngineRestoreModel );
     CLuaCFunctions::AddFunction ( "engineGetModelLODDistance", EngineGetModelLODDistance );
@@ -2691,15 +2697,15 @@ int CLuaEngineDefs::EngineCOLGetInfo(lua_State* luaVM)
 int CLuaEngineDefs::EngineCOLSetPolygonSurface(lua_State* luaVM)
 {
     CClientColModel* pCOL;
-    unsigned short usSurfaceId, usPolygonId;
+    unsigned short usSurfaceId, usVertex;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pCOL);
     argStream.ReadNumber(usSurfaceId);
-    argStream.ReadNumber(usPolygonId);
+    argStream.ReadNumber(usVertex);
 
     if (!argStream.HasErrors())
     {
-        pCOL->SetModelPolygonSurface(usPolygonId, usSurfaceId);
+        pCOL->SetModelPolygonSurface(usVertex, usSurfaceId);
         lua_pushboolean(luaVM, true);
         return 1;
     }
@@ -2713,21 +2719,88 @@ int CLuaEngineDefs::EngineCOLSetPolygonSurface(lua_State* luaVM)
 int CLuaEngineDefs::EngineCOLGetVertexPosition(lua_State* luaVM)
 {
     CClientColModel* pCOL;
-    unsigned short usPolygonId;
+    unsigned short usVertex;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pCOL);
-    argStream.ReadNumber(usPolygonId);
+    argStream.ReadNumber(usVertex);
 
     if (!argStream.HasErrors())
     {
-        if (usPolygonId == NULL)
+        if (usVertex == NULL)
         {
             lua_pushboolean(luaVM, false);
             return 1;
         }
-        usPolygonId--;
-        lua_pushvector(luaVM, pCOL->GetVertexPosition(usPolygonId)/128);    // this is compressed vertex position, 128 = 1
+        usVertex--;
+        lua_pushvector(luaVM, pCOL->GetVertexPosition(usVertex) / 128);    // this is compressed vertex position, 128 = 1
         return 1;
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineCOLSetVertexPosition(lua_State* luaVM)
+{
+    CClientColModel* pCOL;
+    unsigned short usVertex;
+    CVector position;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pCOL);
+    argStream.ReadNumber(usVertex);
+    argStream.ReadVector3D(position);
+
+    if (!argStream.HasErrors())
+    {
+        if (usVertex == NULL)
+        {
+            lua_pushboolean(luaVM, false);
+            return 1;
+        }
+        usVertex--;
+        pCOL->SetVertexPosition(usVertex, position);
+        lua_pushboolean(luaVM, true);
+        return 1;
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineCOLGetPolygonConnectedVertices(lua_State* luaVM)
+{
+    CClientColModel* pCOL;
+    unsigned short usPolygon;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pCOL);
+    argStream.ReadNumber(usPolygon);
+
+    if (!argStream.HasErrors())
+    {
+        if (usPolygon == NULL)
+        {
+            lua_pushboolean(luaVM, false);
+            return 1;
+        }
+        usPolygon--;
+        unsigned short vertex1, vertex2, vertex3=NULL;
+        pCOL->GetTriangleConnectedVertices(usPolygon, &vertex1, &vertex2, &vertex3);
+        if (vertex1 == NULL)
+        {
+            lua_pushboolean(luaVM, false);
+            return 1;
+        }
+        else
+        {
+            lua_pushnumber(luaVM, vertex1);
+            lua_pushnumber(luaVM, vertex2);
+            lua_pushnumber(luaVM, vertex3);
+            return 1;
+        }
     }
     if (argStream.HasErrors())
         m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());

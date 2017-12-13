@@ -90,8 +90,9 @@ typedef struct
     CompressedVector*               m_pVertices;
     CColTriangleSA*                 pColTriangles;
     CColTrianglePlaneSA*            pColTrianglePlanes;
-    BYTE                            numColVerticesa;
-    BYTE                            numColVerticesb;
+    BYTE                            pad4;
+    WORD                            pad5;
+    BYTE                            numColVertices;
 } CColDataSA;
 
 class CColModelSAInterface
