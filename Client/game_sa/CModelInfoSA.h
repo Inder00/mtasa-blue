@@ -369,6 +369,7 @@ public:
     void                            InitialiseSupportedUpgrades ( RpClump * pClump );
     void                            ResetSupportedUpgrades      ( void );
     WORD GetModelPolygonCount(CColModel* pColModel);
+    WORD GetModelVerticesCount(CColModel* pColModel);
     float GetModelBoundingBoxRadius(CColModel* pColModel);
     CVector GetModelBoundingBoxOffset(CColModel* pColModel);
     CVector GetModelBoundingBoxVecMin(CColModel* pColModel);

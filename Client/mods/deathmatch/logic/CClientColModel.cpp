@@ -164,6 +164,12 @@ unsigned short CClientColModel::GetModelPolygonCount()
     return (unsigned short)pModelInfo->GetModelPolygonCount(m_pColModel);
 }
 
+unsigned short CClientColModel::GetModelVerticesCount()
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return (unsigned short)pModelInfo->GetModelVerticesCount(m_pColModel);
+}
+
 float CClientColModel::GetModelBoundingBoxRadius()
 {
     CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);

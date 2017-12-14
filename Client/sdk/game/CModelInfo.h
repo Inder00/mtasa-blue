@@ -177,6 +177,7 @@ public:
     virtual void                                    ResetSupportedUpgrades              ( void ) = 0;
 
     virtual unsigned short GetModelPolygonCount(CColModel* pColModel)=0;
+    virtual unsigned short GetModelVerticesCount(CColModel* pColModel) = 0;
     virtual float GetModelBoundingBoxRadius(CColModel* pColModel) = 0;
     virtual CVector GetModelBoundingBoxOffset(CColModel* pColModel)=0;
     virtual CVector GetModelBoundingBoxVecMin(CColModel* pColModel)=0;

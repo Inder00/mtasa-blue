@@ -86,6 +86,8 @@ public:
     LUA_DECLARE(EngineCOLCreatePolygon);
     LUA_DECLARE(EngineCOLDestroyVertex);
     LUA_DECLARE(EngineCOLDestroyPolygon);
+    LUA_DECLARE(EngineCOLSelectVertices);
+    LUA_DECLARE(EngineCOLSelectPolygons);
 
     LUA_DECLARE(EngineTXDGetTexturesCount);
     LUA_DECLARE(EngineTXDGetTextureInfo);

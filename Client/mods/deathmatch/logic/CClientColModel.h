@@ -40,6 +40,7 @@ public:
     void                            GetPosition             ( CVector& vecPosition ) const {};
     void                            SetPosition             ( const CVector& vecPosition ) {};
     unsigned short GetModelPolygonCount();
+    unsigned short GetModelVerticesCount();
     float GetModelBoundingBoxRadius();
     CVector GetModelBoundingBoxOffset();
     CVector GetModelBoundingBoxVecMin();

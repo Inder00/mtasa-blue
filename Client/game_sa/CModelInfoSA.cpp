@@ -1477,6 +1477,18 @@ WORD CModelInfoSA::GetModelPolygonCount(CColModel* pColModel)
     }
 }
 
+
+WORD CModelInfoSA::GetModelVerticesCount(CColModel* pColModel)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    if (pColData)
+    {
+        return pColData->numColVertices;
+    }
+}
+
+
 float CModelInfoSA::GetModelBoundingBoxRadius(CColModel* pColModel)
 {
     CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
@@ -1656,17 +1668,39 @@ bool CModelInfoSA::DestroyVertex(CColModel* pColModel, unsigned short usVertex)
     CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
     CColDataSA* pColData = pColModelInterface->pColData;
     unsigned short lastVertex = pColData->numColVertices;
-    if (lastVertex >= usVertex || usVertex < 0)
+    if (lastVertex < usVertex || usVertex < 0)
     {
         return false;
     }
     pColData->numColVertices--;
+
+    for (int i = pColData->numColTriangles; i > 0; i--) // remove all triangles connected to this vertex, reversed.
+    {
+        CColTriangleSA triangle = pColData->pColTriangles[i];
+
+        if (triangle.v1 == usVertex || triangle.v2 == usVertex || triangle.v3 == usVertex)
+        {
+            DestroyPolygon(pColModel, i);
+        }
+    }
     CompressedVector* newVerts = reinterpret_cast<CompressedVector *>(malloc(pColData->numColVertices * sizeof(CompressedVector)));
     int next = 0;
-    for (int i = 0; i < lastVertex; i++)
+    for (int i = 0; i < lastVertex; i++)    // remove vertex
     {
-        if(i != usVertex)
+        if (i != usVertex)
             newVerts[next++] = pColData->m_pVertices[i];
+    }
+
+    for (int i = 0; i < pColData->numColTriangles; i++) // fix vertices gap
+    {
+        CColTriangleSA* triangle = &pColData->pColTriangles[i];
+
+        if (triangle->v1 > usVertex)
+            triangle->v1--;
+        if (triangle->v2 > usVertex)
+            triangle->v2--;
+        if (triangle->v3 > usVertex)
+            triangle->v3--;
     }
     pColData->m_pVertices = newVerts;
     return true;
