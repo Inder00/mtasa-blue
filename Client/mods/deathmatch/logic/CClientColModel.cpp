@@ -213,8 +213,32 @@ bool CClientColModel::SetVertexPosition(unsigned short usVertex, CVector positio
     return pModelInfo->SetVertexPosition(m_pColModel, usVertex, position);
 }
 
-void CClientColModel::GetTriangleConnetedVertices(CColModel* pColModel, unsigned short usPolygon, unsigned short &vertex1, unsigned short &vertex2, unsigned short &vertex3);
+void CClientColModel::GetTriangleConnectedVertices(unsigned short usPolygon, unsigned short &vertex1, unsigned short &vertex2, unsigned short &vertex3)
 {
     CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
-    return pModelInfo->SetVertexPosition(m_pColModel, usVertex, position);
+    return pModelInfo->GetTriangleConnetedVertices(m_pColModel, usPolygon, vertex1, vertex2, vertex3);
+}
+
+bool CClientColModel::SetTriangleSetLighting(unsigned short usPolygon, unsigned short day, unsigned short night)
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->SetTriangleSetLighting(m_pColModel, usPolygon, day, night);
+}
+
+bool CClientColModel::SetTriangleConnectedVertices(unsigned short usPolygon, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3)
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->SetTriangleConnectedVertices(m_pColModel, usPolygon, vertex1,vertex2,vertex3);
+}
+
+unsigned short CClientColModel::CreateVertex(CVector vecPosition)
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->CreateVertex(m_pColModel, vecPosition);
+}
+
+unsigned short CClientColModel::CreatePolygon(unsigned short vertex1, unsigned short vertex2, unsigned short vertex3)
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->CreatePolygon(m_pColModel, vertex1, vertex2, vertex3);
 }

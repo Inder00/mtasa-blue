@@ -79,6 +79,15 @@ public:
     LUA_DECLARE(EngineCOLGetVertexPosition);
     LUA_DECLARE(EngineCOLSetVertexPosition);
     LUA_DECLARE(EngineCOLGetPolygonConnectedVertices);
+    LUA_DECLARE(EngineCOLSetPolygonLighting);
+    LUA_DECLARE(EngineCOLSetPolygonConnectedVertices);
+    LUA_DECLARE(EngineCOLGetPolygonPosition);
+    LUA_DECLARE(EngineCOLCreateVertex);
+    LUA_DECLARE(EngineCOLCreatePolygon);
+
+    LUA_DECLARE(EngineTXDGetTexturesCount);
+    LUA_DECLARE(EngineTXDGetTextureInfo);
+    LUA_DECLARE(EngineTXDGetTexturePixels);
 
 private: 
     static void AddEngineColClass ( lua_State* luaVM );

@@ -30,6 +30,7 @@ public:
     bool                            Import                  ( unsigned short usModelID );
     static bool                     IsImportableModel       ( unsigned short usModelID );
     static bool                     IsTXDData               ( const SString& strData );
+    SReplacementTextures            m_ReplacementTextures;
 
 protected:
     void                            Restream                ( unsigned short usModel );
@@ -40,7 +41,6 @@ protected:
     bool                            m_bIsRawData;
     bool                            m_bUsingFileDataForClothes;
     CBuffer                         m_FileData;
-    SReplacementTextures            m_ReplacementTextures;
 };
 
 #endif

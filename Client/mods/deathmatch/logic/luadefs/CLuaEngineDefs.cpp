@@ -54,12 +54,19 @@ void CLuaEngineDefs::LoadFunctions ( void )
 
     CLuaCFunctions::AddFunction("engineCOLGetInfo", EngineCOLGetInfo);
     CLuaCFunctions::AddFunction("engineCOLSetPolygonSurface", EngineCOLSetPolygonSurface);
+    CLuaCFunctions::AddFunction("engineCOLSetPolygonLighting", EngineCOLSetPolygonLighting);
+
+    CLuaCFunctions::AddFunction("engineCOLGetPolygonPosition", EngineCOLGetPolygonPosition);
     CLuaCFunctions::AddFunction("engineCOLGetPolygonConnectedVertices", EngineCOLGetPolygonConnectedVertices);
+    CLuaCFunctions::AddFunction("engineCOLSetPolygonConnectedVertices", EngineCOLSetPolygonConnectedVertices);
     CLuaCFunctions::AddFunction("engineCOLGetVertexPosition", EngineCOLGetVertexPosition);
     CLuaCFunctions::AddFunction("engineCOLSetVertexPosition", EngineCOLSetVertexPosition);
-    CLuaCFunctions::AddFunction("engineCOLSetVertexPosition", EngineCOLSetVertexPosition);
+    CLuaCFunctions::AddFunction("engineCOLCreateVertex", EngineCOLCreateVertex);
+    CLuaCFunctions::AddFunction("engineCOLCreatePolygon", EngineCOLCreatePolygon);
 
-
+    CLuaCFunctions::AddFunction("engineTXDGetTexturesCount", EngineTXDGetTexturesCount);
+    CLuaCFunctions::AddFunction("engineTXDGetTextureInfo", EngineTXDGetTextureInfo);
+    CLuaCFunctions::AddFunction("engineTXDGetTexturePixels", EngineTXDGetTexturePixels);
 
     CLuaCFunctions::AddFunction("engineReplaceModel", EngineReplaceModel);
     CLuaCFunctions::AddFunction ( "engineRestoreModel", EngineRestoreModel );
@@ -2653,7 +2660,7 @@ int CLuaEngineDefs::EngineGetVisibleTextureNames ( lua_State* luaVM )
 }
 
 
-// COL Function
+// COL Functions
 
 int CLuaEngineDefs::EngineCOLGetInfo(lua_State* luaVM)
 {
@@ -2742,6 +2749,40 @@ int CLuaEngineDefs::EngineCOLGetVertexPosition(lua_State* luaVM)
     return 1;
 }
 
+int CLuaEngineDefs::EngineCOLGetPolygonPosition(lua_State* luaVM)
+{
+    CClientColModel* pCOL;
+    unsigned short usPolygon;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pCOL);
+    argStream.ReadNumber(usPolygon);
+
+    if (!argStream.HasErrors())
+    {
+        if (usPolygon == NULL)
+        {
+            lua_pushboolean(luaVM, false);
+            return 1;
+        }
+        usPolygon--;
+        unsigned short vertex1 = NULL;
+        unsigned short vertex2 = NULL;
+        unsigned short vertex3 = NULL;
+        pCOL->GetTriangleConnectedVertices(usPolygon, vertex1, vertex2, vertex3);
+        CVector position;
+        position += pCOL->GetVertexPosition(vertex1) / 128;
+        position += pCOL->GetVertexPosition(vertex2) / 128;
+        position += pCOL->GetVertexPosition(vertex3) / 128;
+        lua_pushvector(luaVM, position / 3);
+        return 1;
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
 int CLuaEngineDefs::EngineCOLSetVertexPosition(lua_State* luaVM)
 {
     CClientColModel* pCOL;
@@ -2787,8 +2828,10 @@ int CLuaEngineDefs::EngineCOLGetPolygonConnectedVertices(lua_State* luaVM)
             return 1;
         }
         usPolygon--;
-        unsigned short vertex1, vertex2, vertex3=NULL;
-        pCOL->GetTriangleConnectedVertices(usPolygon, &vertex1, &vertex2, &vertex3);
+        unsigned short vertex1 = NULL;
+        unsigned short vertex2 = NULL;
+        unsigned short vertex3 = NULL;
+        pCOL->GetTriangleConnectedVertices(usPolygon, vertex1, vertex2, vertex3);
         if (vertex1 == NULL)
         {
             lua_pushboolean(luaVM, false);
@@ -2796,15 +2839,238 @@ int CLuaEngineDefs::EngineCOLGetPolygonConnectedVertices(lua_State* luaVM)
         }
         else
         {
-            lua_pushnumber(luaVM, vertex1);
-            lua_pushnumber(luaVM, vertex2);
-            lua_pushnumber(luaVM, vertex3);
-            return 1;
+            lua_pushnumber(luaVM, vertex1+1);
+            lua_pushnumber(luaVM, vertex2+1);
+            lua_pushnumber(luaVM, vertex3+1);
+            return 3;
         }
     }
     if (argStream.HasErrors())
         m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
 
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineCOLSetPolygonConnectedVertices(lua_State* luaVM)
+{
+    CClientColModel* pCOL;
+    unsigned short usPolygon, usVertex1, usVertex2, usVertex3;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pCOL);
+    argStream.ReadNumber(usPolygon);
+    argStream.ReadNumber(usVertex1);
+    argStream.ReadNumber(usVertex2);
+    argStream.ReadNumber(usVertex3);
+
+    if (!argStream.HasErrors())
+    {
+        if (usPolygon == NULL)
+        {
+            lua_pushboolean(luaVM, false);
+            return 1;
+        }
+        usPolygon--;
+        usVertex1--;
+        usVertex2--;
+        usVertex3--;
+        pCOL->SetTriangleConnectedVertices(usPolygon, usVertex1, usVertex2, usVertex3);
+        lua_pushboolean(luaVM, true);
+        return 1;
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineCOLSetPolygonLighting(lua_State* luaVM)
+{
+    CClientColModel* pCOL;
+    unsigned short usPolygon;
+    CVector position;
+    unsigned short day, night=NULL;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pCOL);
+    argStream.ReadNumber(usPolygon);
+    argStream.ReadNumber(day);
+    argStream.ReadNumber(night);
+
+    if (!argStream.HasErrors())
+    {
+        if (usPolygon == NULL)
+        {
+            lua_pushboolean(luaVM, false);
+            return 1;
+        }
+        usPolygon--;
+        pCOL->SetTriangleSetLighting(usPolygon, day, night);
+        lua_pushboolean(luaVM, true);
+        return 1;
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineCOLCreatePolygon(lua_State* luaVM)
+{
+    CClientColModel* pCOL;
+    unsigned short vertex1, vertex2, vertex3;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pCOL);
+    argStream.ReadNumber(vertex1);
+    argStream.ReadNumber(vertex2);
+    argStream.ReadNumber(vertex3);
+
+    if (!argStream.HasErrors())
+    {
+        unsigned short usPolygon = pCOL->CreatePolygon(vertex1, vertex2, vertex3);
+        if (usPolygon == NULL)
+        {
+            lua_pushboolean(luaVM, false);
+            return 1;
+        }
+        else
+        {
+            lua_pushnumber(luaVM, usPolygon + 1);
+            return 1;
+        }
+        return 1;
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineCOLCreateVertex(lua_State* luaVM)
+{
+    CClientColModel* pCOL;
+    CVector vecPosition;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pCOL);
+    argStream.ReadVector3D(vecPosition);
+
+    if (!argStream.HasErrors())
+    {
+        unsigned short usVertex = pCOL->CreateVertex(vecPosition);
+        if (usVertex == NULL)
+        {
+            lua_pushboolean(luaVM, false);
+            return 1;
+        }
+        else
+        {
+            lua_pushnumber(luaVM, usVertex + 1);
+            return 1;
+        }
+        return 1;
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+// TXD Functions
+
+int CLuaEngineDefs::EngineTXDGetTexturesCount(lua_State* luaVM)
+{
+    CClientTXD* pTXD = NULL;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pTXD);
+
+    if (!argStream.HasErrors())
+    {
+        std::vector< RwTexture* > textures = pTXD->m_ReplacementTextures.textures;
+        lua_pushnumber(luaVM, textures.size());
+        return 1;
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineTXDGetTextureInfo(lua_State* luaVM)
+{
+    CClientTXD* pTXD = NULL;
+    unsigned short textureId=NULL;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pTXD);
+    argStream.ReadNumber(textureId);
+
+    if (!argStream.HasErrors())
+    {
+        std::vector< RwTexture* > textures = pTXD->m_ReplacementTextures.textures;
+        if (textureId > NULL && textureId <= textures.size() || 1==1)
+        {
+            RwTexture* texture = textures.at(textureId);
+
+            lua_newtable(luaVM);
+            lua_pushstring(luaVM, "name");
+            lua_pushstring(luaVM, texture->name);
+            lua_settable(luaVM, -3);
+
+            lua_pushstring(luaVM, "mask");
+            lua_pushstring(luaVM, texture->mask);
+            lua_settable(luaVM, -3);
+
+            lua_pushstring(luaVM, "width");
+            lua_pushnumber(luaVM, texture->raster->width);
+            lua_settable(luaVM, -3);
+
+            lua_pushstring(luaVM, "height");
+            lua_pushnumber(luaVM, texture->raster->height);
+            lua_settable(luaVM, -3);
+
+            lua_pushstring(luaVM, "depth");
+            lua_pushnumber(luaVM, texture->raster->depth);
+            lua_settable(luaVM, -3);
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineTXDGetTexturePixels(lua_State* luaVM)
+{
+    /*
+    CClientTXD* pTXD = NULL;
+    unsigned short textureId = NULL;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pTXD);
+    argStream.ReadNumber(textureId);
+
+    if (!argStream.HasErrors())
+    {
+        std::vector< RwTexture* > textures = pTXD->m_ReplacementTextures.textures;
+        if (textureId > NULL && textureId <= textures.size())
+        {
+            RwTexture* texture = textures.at(textureId);
+            unsigned char* pixels = texture->raster->pixels;    // NULL
+            unsigned char* pixels2 = pixels + 1;
+            unsigned char* pixels3 = pixels + 2;
+            unsigned char* pixels4 = pixels + 3;
+            //abort();
+            lua_pushstring(luaVM, (const char*)texture->raster->pixels);
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+        */
     lua_pushboolean(luaVM, false);
     return 1;
 }

@@ -184,6 +184,12 @@ public:
     virtual CVector GetVertexPosition(CColModel* pColModel, unsigned short usPolygonId)=0;
     virtual bool SetModelPolygonSurface(CColModel* pColModel, unsigned short usPolygonId, unsigned short usSurfaceId)=0;
     virtual bool SetVertexPosition(CColModel* pColModel, unsigned short usVertex, CVector position) = 0;
+    virtual void GetTriangleConnetedVertices(CColModel* pColModel, unsigned short usPolygon, unsigned short &vertex1, unsigned short &vertex2, unsigned short &vertex3)=0;
+    virtual bool SetTriangleSetLighting(CColModel* m_pColModel, unsigned short usPolygon, unsigned short day, unsigned short  night) = 0;
+    virtual bool SetTriangleConnectedVertices(CColModel* m_pColModel, unsigned short usPolygon, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3) = 0;
+    virtual unsigned short CreateVertex(CColModel* pColModel, CVector vecPosition) = 0;
+    virtual unsigned short CreatePolygon(CColModel* pColModel, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3) = 0;
+
 };
 
 #endif

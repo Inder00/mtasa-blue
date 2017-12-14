@@ -382,11 +382,15 @@ public:
 
     bool SetModelPolygonSurface(CColModel* pColModel, unsigned short usPolygonId, unsigned short usSurfaceId);
     bool SetTriangleConnectedVertices(CColModel* pColModel, unsigned short usPolygon, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3);
-    bool SetTriangleSetLighting(CColModel* pColModel, unsigned short usPolygon, short day, short night);
+    bool SetTriangleSetLighting(CColModel* pColModel, unsigned short usPolygon, unsigned short day, unsigned short night);
     bool SetVertexPosition(CColModel* pColModel, unsigned short usVertex, CVector position);
+    unsigned short CreateVertex(CColModel* pColModel, CVector vecPosition);
+    unsigned short CreatePolygon(CColModel* pColModel, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3);
+
 
 private:
     void                            RwSetSupportedUpgrades      ( RwFrame * parent, DWORD dwModel );
+    void                            UpdateBoundingBox           ( CColModel* pColModel );
 };
 
 #endif

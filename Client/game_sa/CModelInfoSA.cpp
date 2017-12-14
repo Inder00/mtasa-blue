@@ -1555,9 +1555,9 @@ void CModelInfoSA::GetTriangleConnetedVertices(CColModel* pColModel, unsigned sh
             vertex3 >= 0 && pColData->numColVertices > vertex3)
         {
             CColTriangleSA triangle = pColData->pColTriangles[usPolygon];
-            vertex1 = triangle.v1 + 1;  // Start From 1 to n insted of 0 to n-1
-            vertex2 = triangle.v2 + 1;
-            vertex3 = triangle.v3 + 1;
+            vertex1 = triangle.v1;  // Start From 1 to n insted of 0 to n-1
+            vertex2 = triangle.v2;
+            vertex3 = triangle.v3;
         }
     }
 }
@@ -1591,16 +1591,16 @@ bool CModelInfoSA::SetTriangleConnectedVertices(CColModel* pColModel, unsigned s
     CColDataSA* pColData = pColModelInterface->pColData;
     if (usPolygon >= 0 && pColData->numColTriangles > usPolygon)
     {
-        CColTriangleSA triangle = pColData->pColTriangles[usPolygon];
-        triangle.v1 = vertex1 - 1;
-        triangle.v2 = vertex2 - 1;
-        triangle.v3 = vertex3 - 1;
+        CColTriangleSA* triangle = &pColData->pColTriangles[usPolygon];
+        triangle->v1 = vertex1 - 1;
+        triangle->v2 = vertex2 - 1;
+        triangle->v3 = vertex3 - 1;
         return true;
     }
     return false;
 }
 
-bool CModelInfoSA::SetTriangleSetLighting(CColModel* pColModel, unsigned short usPolygon, short day, short night)
+bool CModelInfoSA::SetTriangleSetLighting(CColModel* pColModel, unsigned short usPolygon, unsigned short day, unsigned short night)
 {
     CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
     CColDataSA* pColData = pColModelInterface->pColData;
@@ -1624,7 +1624,120 @@ bool CModelInfoSA::SetVertexPosition(CColModel* pColModel, unsigned short usVert
         vertex->x = position.fX * 128;
         vertex->y = position.fY * 128;
         vertex->z = position.fZ * 128;
+        UpdateBoundingBox(pColModel);
         return true;
     }
     return false;
+}
+
+
+unsigned short CModelInfoSA::CreateVertex(CColModel* pColModel, CVector vecPosition)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    unsigned short lastVertex = pColData->numColVertices;
+    pColData->numColVertices++;
+    CompressedVector* newVerts = reinterpret_cast<CompressedVector *>(malloc(pColData->numColVertices * sizeof(CompressedVector)));
+    for (int i = 0; i < lastVertex; i++)
+    {
+        newVerts[i] = pColData->m_pVertices[i];
+    }
+    CompressedVector newVertex;
+    newVertex.x = vecPosition.fX * 128;
+    newVertex.y = vecPosition.fY * 128;
+    newVertex.z = vecPosition.fZ * 128;
+    newVerts[lastVertex] = newVertex;
+    //free(pColData->m_pVertices); // Nieobs³u¿ony wyj¹tek w lokalizacji 0x77E61769 (ntdll.dll) w gta_sa.exe: 0xC0000005: Naruszenie zasad dostêpu podczas odczytywania w lokalizacji 0x00000000.
+    pColData->m_pVertices = newVerts;
+    UpdateBoundingBox(pColModel);
+    return lastVertex;
+}
+
+unsigned short CModelInfoSA::CreatePolygon(CColModel* pColModel, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    unsigned short lastPolygon = pColData->numColTriangles;
+    pColData->numColTriangles++;
+    CColTriangleSA* newPolygons = reinterpret_cast<CColTriangleSA *>(malloc(pColData->numColTriangles * sizeof(CColTriangleSA)));
+    for (int i = 0; i < lastPolygon; i++)
+    {
+        newPolygons[i] = pColData->pColTriangles[i];
+    }
+    CColTriangleSA newTriangle;
+    newTriangle.v1 = vertex1;
+    newTriangle.v2 = vertex2;
+    newTriangle.v3 = vertex3;
+    newTriangle.lighting.day = 12;
+    newTriangle.lighting.night = 1;
+    newTriangle.material = EColSurfaceValue::DEFAULT;
+    newPolygons[lastPolygon] = newTriangle;
+    pColData->pColTriangles = newPolygons;
+    UpdateBoundingBox(pColModel);
+    return lastPolygon;
+}
+
+inline float DistanceBetweenPoints3D(const CVector& vecPosition1, const CVector& vecPosition2)
+{
+    float fDistanceX = vecPosition2.fX - vecPosition1.fX;
+    float fDistanceY = vecPosition2.fY - vecPosition1.fY;
+    float fDistanceZ = vecPosition2.fZ - vecPosition1.fZ;
+
+    return sqrt(fDistanceX * fDistanceX + fDistanceY * fDistanceY + fDistanceZ * fDistanceZ);
+}
+
+void CModelInfoSA::UpdateBoundingBox(CColModel* pColModel)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    float maxRadius = 0;
+    CVector vecMin;
+    CVector vecMax;
+    CVector offset;
+    for (int i = 0; i < pColData->numColVertices; i++)
+    {
+        CompressedVector vert = pColData->m_pVertices[i];
+        CVector newOffset;
+        newOffset.fX = vert.x / 128;
+        newOffset.fY = vert.y / 128;
+        newOffset.fZ = vert.z / 128;
+        offset += newOffset;
+    }
+    offset /= pColData->numColVertices;
+
+    for (int i = 0; i < pColData->numColVertices; i++)
+    {
+        CompressedVector vert = pColData->m_pVertices[i];
+        float x = vert.x / 128;
+        float y = vert.y / 128;
+        float z = vert.z / 128;
+
+        CVector point;
+        point.fX = vert.x / 128;
+        point.fY = vert.y / 128;
+        point.fX = vert.z / 128;
+        float r = DistanceBetweenPoints3D(point, offset);
+
+        if (r > maxRadius)
+            maxRadius = r;
+
+        if (x < vecMin.fX)
+            vecMin.fX = x;
+        if (y < vecMin.fY)
+            vecMin.fY = y;
+        if (z < vecMin.fZ)
+            vecMin.fZ = z;
+
+        if (x > vecMax.fX)
+            vecMax.fX = x;
+        if (y > vecMax.fY)
+            vecMax.fY = y;
+        if (z > vecMax.fZ)
+            vecMax.fZ = z;
+    }
+    pColModelInterface->boundingBox.fRadius = maxRadius;
+    pColModelInterface->boundingBox.vecMax = vecMax;
+    pColModelInterface->boundingBox.vecMin = vecMin;
+    pColModelInterface->boundingBox.vecOffset = offset;
+
 }

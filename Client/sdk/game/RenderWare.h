@@ -362,7 +362,7 @@ struct RwTexture
     RwListEntry        TXDList;
     char               name[RW_TEXTURE_NAME_LENGTH];
     char               mask[RW_TEXTURE_NAME_LENGTH];
-    unsigned int       flags;
+    unsigned int       flags;   // alpha_flags mayby
     int                refs;
 };
 struct RwTextureCoordinates
