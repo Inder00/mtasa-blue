@@ -386,6 +386,8 @@ public:
     bool SetVertexPosition(CColModel* pColModel, unsigned short usVertex, CVector position);
     unsigned short CreateVertex(CColModel* pColModel, CVector vecPosition);
     unsigned short CreatePolygon(CColModel* pColModel, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3);
+    bool DestroyVertex(CColModel* pColModel, unsigned short usVertex);
+    bool DestroyPolygon(CColModel* pColModel, unsigned short usPolygon);
 
 
 private:

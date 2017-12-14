@@ -242,3 +242,21 @@ unsigned short CClientColModel::CreatePolygon(unsigned short vertex1, unsigned s
     CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
     return pModelInfo->CreatePolygon(m_pColModel, vertex1, vertex2, vertex3);
 }
+
+bool CClientColModel::DestroyVertex(unsigned short usVertex)
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->DestroyVertex(m_pColModel, usVertex);
+}
+
+bool CClientColModel::DestroyPolygon(unsigned short usPolygon)
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->DestroyPolygon(m_pColModel, usPolygon);
+}
+
+void CClientColModel::UpdateBoundingBox()
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->UpdateBoundingBox(m_pColModel);
+}

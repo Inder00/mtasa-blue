@@ -63,6 +63,9 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineCOLSetVertexPosition", EngineCOLSetVertexPosition);
     CLuaCFunctions::AddFunction("engineCOLCreateVertex", EngineCOLCreateVertex);
     CLuaCFunctions::AddFunction("engineCOLCreatePolygon", EngineCOLCreatePolygon);
+    CLuaCFunctions::AddFunction("engineCOLDestroyVertex", EngineCOLDestroyVertex);
+    CLuaCFunctions::AddFunction("engineCOLDestroyPolygon", EngineCOLDestroyPolygon);
+
 
     CLuaCFunctions::AddFunction("engineTXDGetTexturesCount", EngineTXDGetTexturesCount);
     CLuaCFunctions::AddFunction("engineTXDGetTextureInfo", EngineTXDGetTextureInfo);
@@ -2802,6 +2805,7 @@ int CLuaEngineDefs::EngineCOLSetVertexPosition(lua_State* luaVM)
         }
         usVertex--;
         pCOL->SetVertexPosition(usVertex, position);
+        pCOL->UpdateBoundingBox();
         lua_pushboolean(luaVM, true);
         return 1;
     }
@@ -2928,6 +2932,9 @@ int CLuaEngineDefs::EngineCOLCreatePolygon(lua_State* luaVM)
 
     if (!argStream.HasErrors())
     {
+        vertex1--;
+        vertex2--;
+        vertex3--;
         unsigned short usPolygon = pCOL->CreatePolygon(vertex1, vertex2, vertex3);
         if (usPolygon == NULL)
         {
@@ -2940,6 +2947,37 @@ int CLuaEngineDefs::EngineCOLCreatePolygon(lua_State* luaVM)
             return 1;
         }
         return 1;
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineCOLDestroyPolygon(lua_State* luaVM)
+{
+    CClientColModel* pCOL;
+    unsigned short usPolygon;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pCOL);
+    argStream.ReadNumber(usPolygon);
+
+    if (!argStream.HasErrors())
+    {
+        usPolygon--;
+        bool result = pCOL->DestroyPolygon(usPolygon);
+        if (result)
+        {
+            pCOL->UpdateBoundingBox();
+            lua_pushboolean(luaVM, true);
+            return 1;
+        }
+        else
+        {
+            lua_pushboolean(luaVM, false);
+            return 1;
+        }
     }
     if (argStream.HasErrors())
         m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
@@ -2967,8 +3005,31 @@ int CLuaEngineDefs::EngineCOLCreateVertex(lua_State* luaVM)
         else
         {
             lua_pushnumber(luaVM, usVertex + 1);
+            pCOL->UpdateBoundingBox();
             return 1;
         }
+        return 1;
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineCOLDestroyVertex(lua_State* luaVM)
+{
+    CClientColModel* pCOL;
+    unsigned short usVertex;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pCOL);
+    argStream.ReadNumber(usVertex);
+
+    if (!argStream.HasErrors())
+    {
+        usVertex--;
+        lua_pushboolean(luaVM, pCOL->DestroyVertex(usVertex));
+        pCOL->UpdateBoundingBox();
         return 1;
     }
     if (argStream.HasErrors())

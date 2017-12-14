@@ -189,6 +189,11 @@ public:
     virtual bool SetTriangleConnectedVertices(CColModel* m_pColModel, unsigned short usPolygon, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3) = 0;
     virtual unsigned short CreateVertex(CColModel* pColModel, CVector vecPosition) = 0;
     virtual unsigned short CreatePolygon(CColModel* pColModel, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3) = 0;
+    virtual bool DestroyVertex(CColModel* pColModel, unsigned short usVertex) = 0;
+    virtual bool DestroyPolygon(CColModel* pColModel, unsigned short usPolygon) = 0;
+
+    virtual void UpdateBoundingBox(CColModel* pColModel)=0;
+
 
 };
 

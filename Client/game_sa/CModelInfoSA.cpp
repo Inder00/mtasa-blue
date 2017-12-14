@@ -1624,7 +1624,6 @@ bool CModelInfoSA::SetVertexPosition(CColModel* pColModel, unsigned short usVert
         vertex->x = position.fX * 128;
         vertex->y = position.fY * 128;
         vertex->z = position.fZ * 128;
-        UpdateBoundingBox(pColModel);
         return true;
     }
     return false;
@@ -1649,8 +1648,28 @@ unsigned short CModelInfoSA::CreateVertex(CColModel* pColModel, CVector vecPosit
     newVerts[lastVertex] = newVertex;
     //free(pColData->m_pVertices); // Nieobs³u¿ony wyj¹tek w lokalizacji 0x77E61769 (ntdll.dll) w gta_sa.exe: 0xC0000005: Naruszenie zasad dostêpu podczas odczytywania w lokalizacji 0x00000000.
     pColData->m_pVertices = newVerts;
-    UpdateBoundingBox(pColModel);
     return lastVertex;
+}
+
+bool CModelInfoSA::DestroyVertex(CColModel* pColModel, unsigned short usVertex)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    unsigned short lastVertex = pColData->numColVertices;
+    if (lastVertex >= usVertex || usVertex < 0)
+    {
+        return false;
+    }
+    pColData->numColVertices--;
+    CompressedVector* newVerts = reinterpret_cast<CompressedVector *>(malloc(pColData->numColVertices * sizeof(CompressedVector)));
+    int next = 0;
+    for (int i = 0; i < lastVertex; i++)
+    {
+        if(i != usVertex)
+            newVerts[next++] = pColData->m_pVertices[i];
+    }
+    pColData->m_pVertices = newVerts;
+    return true;
 }
 
 unsigned short CModelInfoSA::CreatePolygon(CColModel* pColModel, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3)
@@ -1673,8 +1692,30 @@ unsigned short CModelInfoSA::CreatePolygon(CColModel* pColModel, unsigned short 
     newTriangle.material = EColSurfaceValue::DEFAULT;
     newPolygons[lastPolygon] = newTriangle;
     pColData->pColTriangles = newPolygons;
-    UpdateBoundingBox(pColModel);
     return lastPolygon;
+}
+
+
+bool CModelInfoSA::DestroyPolygon(CColModel* pColModel, unsigned short usPolygon)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    unsigned short lastPolygon = pColData->numColTriangles;
+    if (usPolygon < 0 || usPolygon >= lastPolygon)
+    {
+        return false;
+    }
+    pColData->numColTriangles--;
+    CColTriangleSA* newPolygons = reinterpret_cast<CColTriangleSA *>(malloc(pColData->numColTriangles * sizeof(CColTriangleSA)));
+    int next = 0;
+    for (int i = 0; i < lastPolygon; i++)
+    {
+        if(i!= usPolygon)
+            newPolygons[next++] = pColData->pColTriangles[i];
+    }
+
+    pColData->pColTriangles = newPolygons;
+    return true;
 }
 
 inline float DistanceBetweenPoints3D(const CVector& vecPosition1, const CVector& vecPosition2)

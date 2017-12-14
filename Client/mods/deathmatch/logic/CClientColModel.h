@@ -51,7 +51,11 @@ public:
     void GetTriangleConnectedVertices(unsigned short usPolygon, unsigned short &vertex1, unsigned short &vertex2, unsigned short &vertex3);
     bool SetTriangleConnectedVertices(unsigned short usPolygon, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3);
     unsigned short CreateVertex(CVector vecPosition);
+    bool DestroyVertex(unsigned short usVertex);
+    bool DestroyPolygon(unsigned short usPolygon);
     unsigned short CreatePolygon(unsigned short vertex1, unsigned short vertex2, unsigned short vertex3);
+
+    void UpdateBoundingBox();
     CColModel*                      m_pColModel;
     unsigned short usModel=NULL;
 private:
