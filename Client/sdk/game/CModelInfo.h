@@ -18,6 +18,9 @@
 
 #include <windows.h>
 #include "CColModel.h"
+
+#include "../Client/game_sa/CColModelSA.h"
+
 class CPedModelInfo;
 
 class CBoundingBox
@@ -194,6 +197,7 @@ public:
     virtual bool DestroyPolygon(CColModel* pColModel, unsigned short usPolygon) = 0;
 
     virtual void UpdateBoundingBox(CColModel* pColModel)=0;
+    virtual std::vector < CColTriangleSA > GetAllPolygons(CColModel* pColModel) = 0;
 
 
 };

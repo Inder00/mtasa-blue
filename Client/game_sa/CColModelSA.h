@@ -52,6 +52,16 @@ typedef struct
     CColLighting    lighting;
 } CColTriangleSA;
 
+inline bool operator==(const CColTriangleSA& lhs, const CColTriangleSA& rhs)
+{
+    return lhs.v1 == rhs.v1 && lhs.v2 == rhs.v2 && lhs.v3 == rhs.v3;
+}
+
+inline bool operator!=(const CColTriangleSA& lhs, const CColTriangleSA& rhs)
+{
+    return !(lhs.v1 == rhs.v1 && lhs.v2 == rhs.v2 && lhs.v3 == rhs.v3);
+}
+
 
 typedef struct
 {

@@ -368,6 +368,7 @@ public:
 
     void                            InitialiseSupportedUpgrades ( RpClump * pClump );
     void                            ResetSupportedUpgrades      ( void );
+
     WORD GetModelPolygonCount(CColModel* pColModel);
     WORD GetModelVerticesCount(CColModel* pColModel);
     float GetModelBoundingBoxRadius(CColModel* pColModel);
@@ -389,6 +390,7 @@ public:
     unsigned short CreatePolygon(CColModel* pColModel, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3);
     bool DestroyVertex(CColModel* pColModel, unsigned short usVertex);
     bool DestroyPolygon(CColModel* pColModel, unsigned short usPolygon);
+    std::vector < CColTriangleSA > GetAllPolygons(CColModel* pColModel);
 
 
 private:

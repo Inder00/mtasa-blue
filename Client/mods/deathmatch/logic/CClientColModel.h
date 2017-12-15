@@ -55,8 +55,14 @@ public:
     bool DestroyVertex(unsigned short usVertex);
     bool DestroyPolygon(unsigned short usPolygon);
     unsigned short CreatePolygon(unsigned short vertex1, unsigned short vertex2, unsigned short vertex3);
+    CVector GetTrianglePosition(unsigned short usPolygon);
+    bool IsValidPolygonId(unsigned short usPolygon);
+    bool SelectElement(lua_State* luaVM, unsigned short usPolygon);
+    void GetNeighbors(CColTriangleSA polygon, std::vector < CColTriangleSA > &polygons, std::vector < int > &neighbors, bool recursion);
+
 
     void UpdateBoundingBox();
+    std::vector < CColTriangleSA > GetAllPolygons();
     CColModel*                      m_pColModel;
     unsigned short usModel=NULL;
 private:

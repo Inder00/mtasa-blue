@@ -10,6 +10,7 @@
 *****************************************************************************/
 
 #include "StdInc.h"
+#include "../game_sa/CColModelSA.h"
 
 CClientColModel::CClientColModel ( CClientManager* pManager, ElementID ID ) : ClassInit ( this ), CClientEntity ( ID )
 {
@@ -264,5 +265,66 @@ bool CClientColModel::DestroyPolygon(unsigned short usPolygon)
 void CClientColModel::UpdateBoundingBox()
 {
     CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
-    return pModelInfo->UpdateBoundingBox(m_pColModel);
+    pModelInfo->UpdateBoundingBox(m_pColModel);
+}
+
+std::vector < CColTriangleSA > CClientColModel::GetAllPolygons()
+{
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    return pModelInfo->GetAllPolygons(m_pColModel);
+}
+
+CVector CClientColModel::GetTrianglePosition(unsigned short usPolygon)
+{
+    unsigned short vertex1 = NULL;
+    unsigned short vertex2 = NULL;
+    unsigned short vertex3 = NULL;
+    GetTriangleConnectedVertices(usPolygon, vertex1, vertex2, vertex3);
+    CVector position;
+    position += GetVertexPosition(vertex1) / 128;
+    position += GetVertexPosition(vertex2) / 128;
+    position += GetVertexPosition(vertex3) / 128;
+    return position / 3;
+}
+
+bool CClientColModel::IsValidPolygonId(unsigned short usPolygon)
+{
+    return usPolygon >= 0 && usPolygon < GetModelPolygonCount();
+}
+
+// due performance reason, i pass there vector with all polygons to prevent use "GetAllPolygons" eg. 500 times every function use
+void CClientColModel::GetNeighbors(CColTriangleSA polygon, std::vector < CColTriangleSA > &polygons, std::vector < int > &neighbors, bool recursion)
+{
+    for (int i = 0; i < polygons.size(); i++)
+    {
+        CColTriangleSA triangle = polygons.at(i);
+        if (polygon.v1 == triangle.v1 || polygon.v1 == triangle.v2 || polygon.v1 == triangle.v3 ||
+            polygon.v2 == triangle.v1 || polygon.v2 == triangle.v2 || polygon.v2 == triangle.v3 ||
+            polygon.v3 == triangle.v1 || polygon.v3 == triangle.v2 || polygon.v3 == triangle.v3
+            )
+        {
+            if (std::find(neighbors.begin(), neighbors.end(), i) == neighbors.end())
+            {
+                neighbors.push_back(i);
+                if(recursion)
+                    GetNeighbors(triangle, polygons, neighbors, true);
+            }
+        }
+    }
+}
+
+bool CClientColModel::SelectElement(lua_State* luaVM, unsigned short usPolygon)
+{
+    std::vector < CColTriangleSA > polygons = GetAllPolygons();
+    lua_newtable(luaVM);
+    CColTriangleSA polygon = polygons.at(usPolygon);
+    std::vector < int > neighbors;
+    GetNeighbors(polygon, polygons, neighbors, true);
+    for (int i = 0; i < neighbors.size(); i++)
+    {
+        lua_pushnumber(luaVM, i + 1);
+        lua_pushnumber(luaVM, neighbors.at(i) + 1);
+        lua_settable(luaVM, -3);
+    }
+    return true;
 }

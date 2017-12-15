@@ -1814,5 +1814,17 @@ void CModelInfoSA::UpdateBoundingBox(CColModel* pColModel)
     pColModelInterface->boundingBox.vecMax = vecMax;
     pColModelInterface->boundingBox.vecMin = vecMin;
     pColModelInterface->boundingBox.vecOffset = offset;
+}
 
+std::vector < CColTriangleSA > CModelInfoSA::GetAllPolygons(CColModel* pColModel)
+{
+    CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
+    CColDataSA* pColData = pColModelInterface->pColData;
+    std::vector < CColTriangleSA > triangles;
+    for (int i = 0; i < pColData->numColTriangles; i++)
+    {
+        CColTriangleSA triangle = pColData->pColTriangles[i];
+        triangles.push_back(triangle);
+    }
+    return triangles;
 }

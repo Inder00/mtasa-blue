@@ -10,6 +10,7 @@
 *****************************************************************************/
 
 #include "StdInc.h"
+#include "../game_sa/CColModelSA.h"
 
 void CLuaEngineDefs::LoadFunctions ( void )
 {
@@ -65,7 +66,7 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineCOLCreatePolygon", EngineCOLCreatePolygon);
     CLuaCFunctions::AddFunction("engineCOLDestroyVertex", EngineCOLDestroyVertex);
     CLuaCFunctions::AddFunction("engineCOLDestroyPolygon", EngineCOLDestroyPolygon);
-
+    CLuaCFunctions::AddFunction("engineCOLSelectPolygons", EngineCOLSelectPolygons);
 
     CLuaCFunctions::AddFunction("engineTXDGetTexturesCount", EngineTXDGetTexturesCount);
     CLuaCFunctions::AddFunction("engineTXDGetTextureInfo", EngineTXDGetTextureInfo);
@@ -2770,15 +2771,8 @@ int CLuaEngineDefs::EngineCOLGetPolygonPosition(lua_State* luaVM)
             return 1;
         }
         usPolygon--;
-        unsigned short vertex1 = NULL;
-        unsigned short vertex2 = NULL;
-        unsigned short vertex3 = NULL;
-        pCOL->GetTriangleConnectedVertices(usPolygon, vertex1, vertex2, vertex3);
-        CVector position;
-        position += pCOL->GetVertexPosition(vertex1) / 128;
-        position += pCOL->GetVertexPosition(vertex2) / 128;
-        position += pCOL->GetVertexPosition(vertex3) / 128;
-        lua_pushvector(luaVM, position / 3);
+        CVector position = pCOL->GetTrianglePosition(usPolygon);
+        lua_pushvector(luaVM, position);
         return 1;
     }
     if (argStream.HasErrors())
@@ -3092,36 +3086,260 @@ int CLuaEngineDefs::EngineCOLSelectVertices(lua_State* luaVM)
 
 int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
 {
-    /*
     CClientColModel* pCOL;
-    unsigned short usPolygon;
+    SString select;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pCOL);
-    argStream.ReadNumber(usPolygon);
+    argStream.ReadString(select);
 
     if (!argStream.HasErrors())
     {
-    if (usPolygon == NULL)
-    {
-    lua_pushboolean(luaVM, false);
-    return 1;
-    }
-    usPolygon--;
-    unsigned short vertex1 = NULL;
-    unsigned short vertex2 = NULL;
-    unsigned short vertex3 = NULL;
-    pCOL->GetTriangleConnectedVertices(usPolygon, vertex1, vertex2, vertex3);
-    CVector position;
-    position += pCOL->GetVertexPosition(vertex1) / 128;
-    position += pCOL->GetVertexPosition(vertex2) / 128;
-    position += pCOL->GetVertexPosition(vertex3) / 128;
-    lua_pushvector(luaVM, position / 3);
-    return 1;
+        if (select == "byMaterial")
+        {
+            unsigned short usMaterial;
+            argStream.ReadNumber(usMaterial);
+            if (argStream.HasErrors())
+            {
+                m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            std::vector < CColTriangleSA > polygons = pCOL->GetAllPolygons();
+
+            lua_newtable(luaVM);
+            unsigned short next = 1;
+            for (int i = 0; i < polygons.size(); i++)
+            {
+                if (polygons.at(i).material == usMaterial)
+                {
+                    lua_pushnumber(luaVM, next++);
+                    lua_pushnumber(luaVM, i + 1);
+                    lua_settable(luaVM, -3);
+                }
+            }
+            return 1;
+        }
+        else if (select == "nearest3d")
+        {
+            unsigned short usMaterial;
+            CVector vecPosition;
+            bool findByPolygonPosition = false;
+            if (argStream.NextIsVector3D())
+            {
+                argStream.ReadVector3D(vecPosition);
+            }
+            else
+            {
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            if (argStream.HasErrors())
+            {
+                m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            std::vector < CColTriangleSA > polygons = pCOL->GetAllPolygons();
+
+            lua_newtable(luaVM);
+            float distance = 256; // bigger couse collision bugs
+            unsigned short nearest = 0;
+            unsigned short next = 1;
+            for (int i = 0; i < polygons.size(); i++)
+            {
+                float dis = DistanceBetweenPoints3D(vecPosition, pCOL->GetTrianglePosition(i));
+                if (distance > dis)
+                {
+                    nearest = i + 1;
+                    distance = dis;
+                }
+            }
+            lua_pushnumber(luaVM, nearest);
+            return 1;
+        }
+        else if (select == "nearest2d")
+        {
+            unsigned short usMaterial;
+            CVector2D vecPosition;
+            bool findByPolygonPosition = false;
+            if (argStream.NextIsVector2D())
+            {
+                argStream.ReadVector2D(vecPosition);
+            }
+            else
+            {
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            if (argStream.HasErrors())
+            {
+                m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            std::vector < CColTriangleSA > polygons = pCOL->GetAllPolygons();
+
+            lua_newtable(luaVM);
+            float distance = 256; // bigger couse collision bugs
+            unsigned short nearest = 0;
+            unsigned short next = 1;
+            for (int i = 0; i < polygons.size(); i++)
+            {
+                float dis = DistanceBetweenPoints2D(vecPosition, pCOL->GetTrianglePosition(i));
+                if (distance > dis)
+                {
+                    nearest = i + 1;
+                    distance = dis;
+                }
+            }
+            lua_pushnumber(luaVM, nearest);
+            return 1;
+        }
+        else if (select == "inRange")
+        {
+            unsigned short usMaterial;
+            CVector vecPosition;
+            float fRange;
+            bool findByPolygonPosition = false;
+            if (argStream.NextIsVector3D())
+            {
+                argStream.ReadVector3D(vecPosition);
+            }
+            else if (argStream.NextIsNumber())
+            {
+                unsigned short usPolygon;
+                argStream.ReadNumber(usPolygon);
+                if (pCOL->IsValidPolygonId(--usPolygon))
+                {
+                    vecPosition = pCOL->GetTrianglePosition(usPolygon);
+                }
+                else
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+            }
+            else
+            {
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            if (argStream.HasErrors())
+            {
+                m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            argStream.ReadNumber(fRange);
+            if (fRange < 0)
+            {
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+
+            std::vector < CColTriangleSA > polygons = pCOL->GetAllPolygons();
+
+            lua_newtable(luaVM);
+            unsigned short next = 1;
+            for (int i = 0; i < polygons.size(); i++)
+            {
+                float dis = DistanceBetweenPoints2D(vecPosition, pCOL->GetTrianglePosition(i));
+                if (fRange >= dis)
+                {
+                    lua_pushnumber(luaVM, next++);
+                    lua_pushnumber(luaVM, i + 1);
+                    lua_settable(luaVM, -3);
+                }
+            }
+            return 1;
+        }
+        else if (select == "outRange")
+        {
+            unsigned short usMaterial;
+            CVector vecPosition;
+            float fRange;
+            bool findByPolygonPosition = false;
+            if (argStream.NextIsVector3D())
+            {
+                argStream.ReadVector3D(vecPosition);
+            }
+            else if (argStream.NextIsNumber())
+            {
+                unsigned short usPolygon;
+                argStream.ReadNumber(usPolygon);
+                if (pCOL->IsValidPolygonId(--usPolygon))
+                {
+                    vecPosition = pCOL->GetTrianglePosition(usPolygon);
+                }
+                else
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+            }
+            else
+            {
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            if (argStream.HasErrors())
+            {
+                m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            argStream.ReadNumber(fRange);
+            if (fRange < 0)
+            {
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+
+            std::vector < CColTriangleSA > polygons = pCOL->GetAllPolygons();
+
+            lua_newtable(luaVM);
+            unsigned short next = 1;
+            for (int i = 0; i < polygons.size(); i++)
+            {
+                float dis = DistanceBetweenPoints2D(vecPosition, pCOL->GetTrianglePosition(i));
+                if (fRange <= dis)
+                {
+                    lua_pushnumber(luaVM, next++);
+                    lua_pushnumber(luaVM, i + 1);
+                    lua_settable(luaVM, -3);
+                }
+            }
+            return 1;
+        }
+        else if (select == "element")
+        {
+            unsigned short usPolygon;
+            argStream.ReadNumber(usPolygon);
+            usPolygon--;
+            if (!pCOL->IsValidPolygonId(usPolygon))
+            {
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            else
+            {
+                if (pCOL->SelectElement(luaVM, usPolygon))
+                    return 1;
+            }
+        }
+        else if (select == "grow")
+        {
+
+        }
+        else if (select == "shrink")
+        {
+
+        }
     }
     if (argStream.HasErrors())
-    m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
 
-    lua_pushboolean(luaVM, false);*/
+    lua_pushboolean(luaVM, false);
     return 1;
 }
 
