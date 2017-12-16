@@ -31,7 +31,6 @@ public:
     static bool                     IsImportableModel       ( unsigned short usModelID );
     static bool                     IsTXDData               ( const SString& strData );
     SReplacementTextures            m_ReplacementTextures;
-
 protected:
     void                            Restream                ( unsigned short usModel );
     bool                            GetFilenameToUse        ( SString& strOutFilename );

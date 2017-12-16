@@ -328,3 +328,18 @@ bool CClientColModel::SelectElement(lua_State* luaVM, unsigned short usPolygon)
     }
     return true;
 }
+
+bool CClientColModel::Grow(lua_State* luaVM, unsigned short usPolygon, unsigned short &usNext)
+{
+    std::vector < CColTriangleSA > polygons = GetAllPolygons();
+    CColTriangleSA polygon = polygons.at(usPolygon);
+    std::vector < int > neighbors;
+    GetNeighbors(polygon, polygons, neighbors, false);
+    for (int i = 0; i < neighbors.size(); i++)
+    {
+        lua_pushnumber(luaVM, ++usNext);
+        lua_pushnumber(luaVM, neighbors.at(i) + 1);
+        lua_settable(luaVM, -3);
+    }
+    return true;
+}

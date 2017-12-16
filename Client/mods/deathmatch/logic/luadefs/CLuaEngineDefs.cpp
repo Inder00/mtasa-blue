@@ -40,7 +40,7 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFSetMaterialLighting", EngineDFFSetMaterialLighting);
     CLuaCFunctions::AddFunction("engineDFFSetTextureName", EngineDFFSetTextureName);
     CLuaCFunctions::AddFunction("engineDFFSetTextureProperties", EngineDFFSetTextureProperties);
-    CLuaCFunctions::AddFunction("engineDFFAddTexture", EngineDFFAddTexture);
+    CLuaCFunctions::AddFunction("engineDFFSetTexture", EngineDFFSetTexture);
     CLuaCFunctions::AddFunction("engineDFFFlipPolygon", EngineDFFFlipPolygon);
     CLuaCFunctions::AddFunction("engineDFFToString", EngineDFFToString);
     CLuaCFunctions::AddFunction("engineDFFDestroyPolygon", EngineDFFDestroyPolygon);
@@ -759,16 +759,19 @@ int CLuaEngineDefs::EngineDFFSetTextureProperties(lua_State* luaVM)
     return 1;
 }
 
-int CLuaEngineDefs::EngineDFFAddTexture(lua_State* luaVM)
+int CLuaEngineDefs::EngineDFFSetTexture(lua_State* luaVM)
 {
     CClientDFF* pDFF;
     uint uiMaterialId = NULL;
     int width, height, depth, flags;
+    CClientTXD* pTXD = NULL;
+    unsigned short textureId = NULL;
     SString sName;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(uiMaterialId);
-    argStream.ReadString(sName);
+    argStream.ReadUserData(pTXD);
+    argStream.ReadNumber(textureId);
 
     if (!argStream.HasErrors())
     {
@@ -781,23 +784,24 @@ int CLuaEngineDefs::EngineDFFAddTexture(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
+                textureId--;
                 if ( !pGeometry->mesh->isValidMeshId(uiMaterialId)) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
                 RpMaterial* material = pGeometry->materials.materials[uiMaterialId];
                 RpMaterial* material2 = pGeometry->mesh->getMeshes()[uiMaterialId].material;
-                if (material->texture != NULL)
+                std::vector< RwTexture* > textures = pTXD->m_ReplacementTextures.textures;
+                if (textureId >= 0 && textureId <= textures.size())
                 {
-                    lua_pushboolean(luaVM, false);
+                    RwTexture* texture = textures.at(textureId);
+                    material->texture = texture;
+                    material2->texture = texture;
+                    //pTXD->Import(usModelID);
+                    lua_pushboolean(luaVM, true);
                     return 1;
                 }
-                RwRaster* newRaster = CClientDFF::CreateRaster(512, 512, 16, 0);
-                RwTexture* newTexture = CClientDFF::CreateTexture(newRaster);
-                strcpy(newTexture->name, sName);
-                material->texture = newTexture;
-                material2->texture = newTexture;
-                lua_pushboolean(luaVM, true);
+                lua_pushboolean(luaVM, false);
                 return 1;
             }
             else
@@ -1650,7 +1654,6 @@ int CLuaEngineDefs::EngineDFFCreateVertex(lua_State* luaVM)
     return 1;
 }
 
-
 int CLuaEngineDefs::EngineDFFSetVertexUV(lua_State* luaVM)
 {
     CClientDFF* pDFF;
@@ -2374,7 +2377,6 @@ int CLuaEngineDefs::EngineSetAsynchronousLoading ( lua_State* luaVM )
     return 1;
 }
 
-
 // TODO: int CLuaEngineDefs::EngineReplaceMatchingAtomics ( lua_State* luaVM )
 int CLuaEngineDefs::EngineReplaceMatchingAtomics ( lua_State* luaVM )
 {
@@ -2410,7 +2412,6 @@ int CLuaEngineDefs::EngineReplaceMatchingAtomics ( lua_State* luaVM )
     lua_pushboolean ( luaVM, false );
     return 1;
 }
-
 
 // TODO: int CLuaEngineDefs::EngineReplaceWheelAtomics ( lua_State* luaVM )
 int CLuaEngineDefs::EngineReplaceWheelAtomics ( lua_State* luaVM )
@@ -2453,14 +2454,12 @@ int CLuaEngineDefs::EngineReplaceWheelAtomics ( lua_State* luaVM )
     return 1;
 }
 
-
 // TODO: int CLuaEngineDefs::EnginePositionAtomic ( lua_State* luaVM )
 int CLuaEngineDefs::EnginePositionAtomic ( lua_State* luaVM )
 {
     lua_pushboolean ( luaVM, false );
     return 1;
 }
-
 
 // TODO: int CLuaEngineDefs::EnginePositionSeats ( lua_State* luaVM )
 int CLuaEngineDefs::EnginePositionSeats ( lua_State* luaVM )
@@ -2469,7 +2468,6 @@ int CLuaEngineDefs::EnginePositionSeats ( lua_State* luaVM )
     return 1;
 }
 
-
 // TODO: int CLuaEngineDefs::EngineAddAllAtomics ( lua_State* luaVM )
 int CLuaEngineDefs::EngineAddAllAtomics ( lua_State* luaVM )
 {
@@ -2477,14 +2475,12 @@ int CLuaEngineDefs::EngineAddAllAtomics ( lua_State* luaVM )
     return 1;
 }
 
-
 // TODO: int CLuaEngineDefs::EngineReplaceVehiclePart ( lua_State* luaVM )
 int CLuaEngineDefs::EngineReplaceVehiclePart ( lua_State* luaVM )
 {
     lua_pushboolean ( luaVM, false );
     return 1;
 }
-
 
 int CLuaEngineDefs::EngineApplyShaderToWorldTexture ( lua_State* luaVM )
 {
@@ -2511,7 +2507,6 @@ int CLuaEngineDefs::EngineApplyShaderToWorldTexture ( lua_State* luaVM )
     return 1;
 }
 
-
 int CLuaEngineDefs::EngineRemoveShaderFromWorldTexture ( lua_State* luaVM )
 {
 //  bool engineRemoveShaderFromWorldTexture ( element shader, string textureName, [ element targetElement ] )
@@ -2535,7 +2530,6 @@ int CLuaEngineDefs::EngineRemoveShaderFromWorldTexture ( lua_State* luaVM )
     lua_pushboolean ( luaVM, false );
     return 1;
 }
-
 
 int CLuaEngineDefs::EngineGetModelNameFromID ( lua_State* luaVM )
 {
@@ -2562,7 +2556,6 @@ int CLuaEngineDefs::EngineGetModelNameFromID ( lua_State* luaVM )
     lua_pushboolean ( luaVM, false );
     return 1;
 }
-
 
 int CLuaEngineDefs::EngineGetModelIDFromName ( lua_State* luaVM )
 {
@@ -2626,7 +2619,6 @@ int CLuaEngineDefs::EngineGetModelTextureNames ( lua_State* luaVM )
     return 1;
 }
 
-
 int CLuaEngineDefs::EngineGetVisibleTextureNames ( lua_State* luaVM )
 {
 //  table engineGetVisibleTextureNames ( string wildcardMatch = "*" [, string modelName )
@@ -2662,7 +2654,6 @@ int CLuaEngineDefs::EngineGetVisibleTextureNames ( lua_State* luaVM )
     lua_pushboolean ( luaVM, false );
     return 1;
 }
-
 
 // COL Functions
 
@@ -3329,7 +3320,21 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
         }
         else if (select == "grow")
         {
-
+            unsigned short usPolygon;
+            lua_newtable(luaVM);
+            unsigned short usNext = 0;
+            while (argStream.NextIsNumber())
+            {
+                argStream.ReadNumber(usPolygon);
+                usPolygon--;
+                if (!pCOL->IsValidPolygonId(usPolygon))
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                pCOL->Grow(luaVM, usPolygon, usNext);
+            }
+            return 1;
         }
         else if (select == "shrink")
         {

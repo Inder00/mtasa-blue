@@ -59,6 +59,7 @@ public:
     bool IsValidPolygonId(unsigned short usPolygon);
     bool SelectElement(lua_State* luaVM, unsigned short usPolygon);
     void GetNeighbors(CColTriangleSA polygon, std::vector < CColTriangleSA > &polygons, std::vector < int > &neighbors, bool recursion);
+    bool Grow(lua_State* luaVM, unsigned short usPolygon, unsigned short &usNext);
 
 
     void UpdateBoundingBox();

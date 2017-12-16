@@ -61,7 +61,7 @@ public:
     LUA_DECLARE(EngineDFFSetMaterialColor);
     LUA_DECLARE(EngineDFFSetMaterialLighting);
     LUA_DECLARE(EngineDFFSetTextureName);
-    LUA_DECLARE(EngineDFFAddTexture);
+    LUA_DECLARE(EngineDFFSetTexture);
     LUA_DECLARE(EngineDFFFlipPolygon);
     LUA_DECLARE(EngineDFFCreatePolygon);
     LUA_DECLARE(EngineDFFSelectVertices);
