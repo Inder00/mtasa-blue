@@ -334,6 +334,10 @@ struct RpMesh
     unsigned short *indices;
     unsigned int   numIndices;
     RpMaterial    *material;
+    bool isValidIndices(unsigned short usIndices)
+    {
+        return (numIndices > usIndices && usIndices >= 0);
+    }
 };
 
 struct RpMeshHeader
@@ -593,10 +597,10 @@ struct RpMaterials
 };
 struct RpMorphTarget
 {
-    RpGeometry *parentGeom;
-    RwSphere    boundingSphere;
-    RwV3d      *verts;
-    RwV3d      *normals;
+    RpGeometry   *parentGeom;
+    RwSphere      boundingSphere;
+    RwV3d        *verts;
+    RwV3d        *normals;
 };
 struct RpTriangle
 {
@@ -642,6 +646,7 @@ struct RpGeometry
     RpMeshHeader       *mesh;
     RwResEntry         *repEntry;
     RpMorphTarget      *morphTarget;
+
     bool isValidTriangleId(int triangleId)
     {
         return (triangleId != NULL && triangles_size >= triangleId);

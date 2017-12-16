@@ -157,6 +157,11 @@ void CClientTXD::Restream ( unsigned short usModelID )
     }
 }
 
+void CClientTXD::RestreamModel(unsigned short usModelID)
+{
+    Restream(usModelID);
+}
+
 // Return filename to use, or false if not valid
 bool CClientTXD::GetFilenameToUse( SString& strOutFilename )
 {

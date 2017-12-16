@@ -72,7 +72,9 @@ public:
     LUA_DECLARE(EngineDFFGetPolygonMesh);
     LUA_DECLARE(EngineDFFCreateLight);
     LUA_DECLARE(EngineDFFSetVertexUV);
+    LUA_DECLARE(EngineDFFGetVertexUV);
     LUA_DECLARE(EngineDFFSetTextureProperties);
+    LUA_DECLARE(EngineDFFGetTextureProperties);
 
     LUA_DECLARE(EngineCOLGetInfo);
     LUA_DECLARE(EngineCOLSetPolygonSurface);
