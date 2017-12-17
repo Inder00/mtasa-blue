@@ -11,6 +11,7 @@
 
 #include "StdInc.h"
 #include "../game_sa/CColModelSA.h"
+#include <SharedUtil.Crypto.h>
 
 void CLuaEngineDefs::LoadFunctions ( void )
 {
@@ -34,6 +35,7 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFSetVertexPosition", EngineDFFSetVertexPosition);
     CLuaCFunctions::AddFunction("engineDFFSetVertexUV", EngineDFFSetVertexUV);
     CLuaCFunctions::AddFunction("engineDFFGetVertexUV", EngineDFFGetVertexUV);
+    CLuaCFunctions::AddFunction("engineDFFGetVertexPosition", EngineDFFGetVertexPosition);
     CLuaCFunctions::AddFunction("engineDFFDestroyVertex", EngineDFFDestroyVertex);
     CLuaCFunctions::AddFunction("engineDFFSetPolygonVertices", EngineDFFSetPolygonVertices);
     CLuaCFunctions::AddFunction("engineDFFSetPolygonMaterial", EngineDFFSetPolygonMaterial);
@@ -43,13 +45,14 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFSetTextureProperties", EngineDFFSetTextureProperties);
     CLuaCFunctions::AddFunction("engineDFFSetTexture", EngineDFFSetTexture);
     CLuaCFunctions::AddFunction("engineDFFGetTextureProperties", EngineDFFGetTextureProperties);
-    CLuaCFunctions::AddFunction("engineDFFFlipPolygon", EngineDFFFlipPolygon);
     CLuaCFunctions::AddFunction("engineDFFToString", EngineDFFToString);
     CLuaCFunctions::AddFunction("engineDFFDestroyPolygon", EngineDFFDestroyPolygon);
     CLuaCFunctions::AddFunction("engineDFFCreatePolygon", EngineDFFCreatePolygon);
     CLuaCFunctions::AddFunction("engineDFFCreateVertex", EngineDFFCreateVertex);
     CLuaCFunctions::AddFunction("engineDFFGetMeshInfo", EngineDFFGetMeshInfo);
     CLuaCFunctions::AddFunction("engineDFFSelectVertices", EngineDFFSelectVertices);
+    CLuaCFunctions::AddFunction("engineDFFCreateEmptyModel", EngineDFFCreateEmptyModel);
+    CLuaCFunctions::AddFunction("engineDFFUseVerticesTool", EngineDFFUseVerticesTool);
     //CLuaCFunctions::AddFunction("engineDFFCreateLight", EngineDFFCreateLight);
     //CLuaCFunctions::AddFunction("engineDFFGetFrameInfo", EngineDFFGetFrameInfo);
     //CLuaCFunctions::AddFunction("engineDFFSetInterpolation", EngineDFFSetInterpolation);
@@ -277,6 +280,72 @@ int CLuaEngineDefs::EngineLoadDFF ( lua_State* luaVM )
 
     // We failed
     lua_pushboolean ( luaVM, false );
+    return 1;
+}
+
+int CLuaEngineDefs::EngineDFFCreateEmptyModel(lua_State* luaVM)
+{
+    SString strModelName = NULL;
+    CScriptArgReader argStream(luaVM);
+    SString strEmptyBase64 = "EAAAAIACAAD//wMYAQAAAAwAAAD//wMYAQAAAAAAAAAAAAAADgAAAGQAAAD//wMYAQAAADwAAAD//wMYAQAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP////8DAAIAAwAAABAAAAD//wMY/vJTAgQAAAD//wMYQmFzZRoAAAAoAQAA//8DGAEAAAAEAAAA//8DGAEAAAAPAAAADAEAAP//AxgBAAAAQAAAAP//AxhyAAAAAAAAAAEAAAABAAAAF7dROBe3UTgXt1E4Yp61OAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAHgAAAD//wMYAQAAAAgAAAD//wMYAQAAAP////8HAAAAWAAAAP//AxgBAAAAHAAAAP//AxgAAAAAlpaW/9yj/gAAAAAAAACAPwAAAAAAAIA/AwAAACQAAAD//wMY/PJTAhgAAAD//wMYZmZmP2ZmZj9mZmY/AACAP5mZIUEAAAAAAwAAADAAAAD//wMYDgUAABQAAAD//wMYAAAAAAEAAAAAAAAAAAAAAAAAAAD98lMCBAAAAP//AxgAAAAAFAAAACgAAAD//wMYAQAAABAAAAD//wMYAAAAAAAAAAAFAAAAAAAAAAMAAAAAAAAA//8DGAMAAACEAAAA//8DGPryUwJ4AAAA//8DGENPTDNwAAAAQmFzZQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAF7dRuBe3UbgXt1G4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
+    SString strFile = SharedUtil::Base64decode(strEmptyBase64);
+    argStream.ReadString(strModelName, NULL);
+    if (!argStream.HasErrors())
+    {
+        // Grab our virtual machine and grab our resource from that.
+        CLuaMain* pLuaMain = m_pLuaManager->GetVirtualMachine(luaVM);
+        if (pLuaMain)
+        {
+            // Get this resource
+            CResource* pResource = pLuaMain->GetResource();
+            if (pResource)
+            {
+                bool bIsRawData = CClientDFF::IsDFFData(strFile);
+                SString strPath;
+                // Is this a legal filepath?
+                if (bIsRawData || CResourceManager::ParseResourcePathInput(strFile, pResource, &strPath))
+                {
+                    // Grab the resource root entity
+                    CClientEntity* pRoot = pResource->GetResourceDFFRoot();
+
+                    // Create a DFF element
+                    CClientDFF* pDFF = new CClientDFF(m_pManager, INVALID_ELEMENT_ID);
+
+                    // Try to load the DFF file
+                    if (pDFF->LoadDFF(bIsRawData ? strFile : strPath, bIsRawData))
+                    {
+                        // Success loading the file. Set parent to DFF root
+                        pDFF->SetParent(pRoot);
+
+                        if (strModelName != NULL)
+                        {
+                            ushort usModelID = CModelNames::ResolveModelID(strModelName);
+                            if (usModelID != INVALID_MODEL_ID)
+                            {
+                                pDFF->uimodel = usModelID;
+                            }
+                        }
+                        // Return the DFF
+                        lua_pushelement(luaVM, pDFF);
+                        return 1;
+                    }
+                    else
+                    {
+                        // Delete it again
+                        delete pDFF;
+                        argStream.SetCustomError(bIsRawData ? "raw data" : strFile, "Error loading DFF");
+                    }
+                }
+                else
+                    argStream.SetCustomError(bIsRawData ? "raw data" : strFile, "Bad file path");
+            }
+        }
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    // We failed
+    lua_pushboolean(luaVM, false);
     return 1;
 }
 
@@ -1575,70 +1644,6 @@ int CLuaEngineDefs::EngineDFFGetPolygonInfo(lua_State* luaVM)
     return 1;
 }
 
-int CLuaEngineDefs::EngineDFFFlipPolygon(lua_State* luaVM)
-{
-    CClientDFF* pDFF;
-    uint uTriangleId = NULL;
-    CScriptArgReader argStream(luaVM);
-    argStream.ReadUserData(pDFF);
-    argStream.ReadNumber(uTriangleId);
-    if (!argStream.HasErrors())
-    {
-        ushort usModelID = pDFF->uimodel;
-        if (usModelID != INVALID_MODEL_ID)
-        {
-            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
-            if (pClump)
-            {
-                if (uTriangleId == NULL)
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                uTriangleId--;
-                RpAtomic* pAtomic = pClump->getAtomic();
-                RpGeometry* pGeometry = pAtomic->geometry;
-                RpMesh* mesh = pGeometry->mesh->getMeshes();
-                uint meshCount = pGeometry->mesh->numMeshes;
-                while(meshCount>0)
-                {
-                    meshCount--;
-                    RpMesh* myMesh = &mesh[meshCount];
-                    for (uint i = 0; i < myMesh->numIndices / 3; i++)
-                    {
-                        unsigned short indices1 = myMesh->indices[(i * 3) + 0];
-                        unsigned short indices2 = myMesh->indices[(i * 3) + 1];
-                        unsigned short indices3 = myMesh->indices[(i * 3) + 2];
-
-                        for (uint i2 = 0; i2 < pGeometry->triangles_size; i2++)
-                        {
-                            RpTriangle pTriangle = pGeometry->triangles[i2];
-                            if (i2 == uTriangleId &&
-                                pTriangle.v[0] == indices1 &&
-                                pTriangle.v[1] == indices2 &&
-                                pTriangle.v[2] == indices3)
-                            {
-                                std::swap(myMesh->indices[i* 3 + 2], myMesh->indices[i * 3 + 0]);
-                                lua_pushboolean(luaVM, true);
-                                return 1;
-                            }
-                        }
-                    }
-                }
-            }
-            else
-                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
-        }
-        else
-            argStream.SetCustomError("Dff model ID not set. Check 2 argument in engineLoadDFF");
-    }
-    if (argStream.HasErrors())
-        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
-
-    lua_pushboolean(luaVM, false);
-    return 1;
-}
-
 int CLuaEngineDefs::EngineDFFGetPolygons(lua_State* luaVM)
 {
     CClientDFF* pDFF;
@@ -1864,6 +1869,48 @@ int CLuaEngineDefs::EngineDFFSetVertexPosition(lua_State* luaVM)
                 vVert->z = pos.fZ;
                 lua_pushboolean(luaVM, true);
                 return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineDFFGetVertexPosition(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    unsigned short uiVertex;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadNumber(uiVertex);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RpGeometry* pGeometry = pAtomic->geometry;
+                if (!pGeometry->isValidVertexId(uiVertex)) {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                uiVertex--;
+                RwV3d* vVert = &pGeometry->morphTarget->verts[uiVertex];
+                lua_pushnumber(luaVM, vVert->x);
+                lua_pushnumber(luaVM, vVert->y);
+                lua_pushnumber(luaVM, vVert->z);
+                return 3;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2405,6 +2452,157 @@ int CLuaEngineDefs::EngineDFFToString(lua_State* luaVM)
     lua_pushboolean(luaVM, false);
     return 1;
 }
+
+int CLuaEngineDefs::EngineDFFUseVerticesTool(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    SString strTool;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadString(strTool);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RpGeometry* pGeometry = pAtomic->geometry;
+                if (strTool == "remove")
+                {
+                    unsigned short usVertexId;
+                    while (argStream.NextIsNumber())
+                    {
+                        //pDFF->
+                    }
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                else if (strTool == "makeplanear")
+                {
+                    SString axis;
+                    argStream.ReadString(axis);
+                    if (argStream.HasErrors())
+                    {
+                        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                    if (axis == "x" || axis == "y" || axis == "z")
+                    {
+                        std::vector < unsigned short > vertices;
+                        unsigned short usVertex;
+                        while (argStream.NextIsNumber())
+                        {
+                            argStream.ReadNumber(usVertex);
+                            if (std::find(vertices.begin(), vertices.end(), usVertex) == vertices.end())
+                                if (pGeometry->isValidVertexId(usVertex))
+                                    vertices.push_back(usVertex);
+                        }
+                        if (axis == "x")
+                        {
+                            float averageX = 0;
+                            for (unsigned short i = 0; i < vertices.size(); i++)
+                            {
+                                unsigned short uiVertex = vertices.at(i);
+                                if (pGeometry->isValidVertexId(uiVertex + 1)) {
+                                    RwV3d vVert = pGeometry->morphTarget->verts[uiVertex];
+                                    averageX += vVert.x;
+                                }
+                                else
+                                {
+                                    lua_pushboolean(luaVM, false);
+                                    return 1;
+                                }
+                            }
+                            averageX /= vertices.size();
+                            for (unsigned short i = 0; i < vertices.size(); i++)
+                            {
+                                unsigned short uiVertex = vertices.at(i);
+                                RwV3d* vVert = &pGeometry->morphTarget->verts[uiVertex];
+                                vVert->x = averageX;
+                            }
+                            lua_pushboolean(luaVM, true);
+                            return 1;
+                        }
+                        else if (axis == "y")
+                        {
+                            float averageY = 0;
+                            for (unsigned short i = 0; i < vertices.size(); i++)
+                            {
+                                unsigned short uiVertex = vertices.at(i);
+                                if (pGeometry->isValidVertexId(uiVertex + 1)) {
+                                    RwV3d vVert = pGeometry->morphTarget->verts[uiVertex];
+                                    averageY += vVert.y;
+                                }
+                                else
+                                {
+                                    lua_pushboolean(luaVM, false);
+                                    return 1;
+                                }
+                            }
+                            averageY /= vertices.size();
+                            for (unsigned short i = 0; i < vertices.size(); i++)
+                            {
+                                unsigned short uiVertex = vertices.at(i);
+                                RwV3d* vVert = &pGeometry->morphTarget->verts[uiVertex];
+                                vVert->y = averageY;
+                            }
+                            lua_pushboolean(luaVM, true);
+                            return 1;
+                        }
+                        else if (axis == "z")
+                        {
+                            float averageZ = 0;
+                            for (unsigned short i = 0; i < vertices.size(); i++)
+                            {
+                                unsigned short uiVertex = vertices.at(i);
+                                if (pGeometry->isValidVertexId(uiVertex + 1)) {
+                                    RwV3d vVert = pGeometry->morphTarget->verts[uiVertex];
+                                    averageZ += vVert.z;
+                                }
+                                else
+                                {
+                                    lua_pushboolean(luaVM, false);
+                                    return 1;
+                                }
+                            }
+                            averageZ /= vertices.size();
+                            for (unsigned short i = 0; i < vertices.size(); i++)
+                            {
+                                unsigned short uiVertex = vertices.at(i);
+                                RwV3d* vVert = &pGeometry->morphTarget->verts[uiVertex];
+                                vVert->z = averageZ;
+                            }
+                            lua_pushboolean(luaVM, true);
+                            return 1;
+                        }
+                    }
+                    else
+                    {
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                }
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Dff model ID not set. Check 2 argument in engineLoadDFF");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
 
 int CLuaEngineDefs::EngineRestoreModel ( lua_State* luaVM )
 {

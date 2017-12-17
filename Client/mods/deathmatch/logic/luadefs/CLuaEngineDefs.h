@@ -62,7 +62,6 @@ public:
     LUA_DECLARE(EngineDFFSetMaterialLighting);
     LUA_DECLARE(EngineDFFSetTextureName);
     LUA_DECLARE(EngineDFFSetTexture);
-    LUA_DECLARE(EngineDFFFlipPolygon);
     LUA_DECLARE(EngineDFFCreatePolygon);
     LUA_DECLARE(EngineDFFSelectVertices);
     LUA_DECLARE(EngineDFFCreateVertex);
@@ -75,6 +74,9 @@ public:
     LUA_DECLARE(EngineDFFGetVertexUV);
     LUA_DECLARE(EngineDFFSetTextureProperties);
     LUA_DECLARE(EngineDFFGetTextureProperties);
+    LUA_DECLARE(EngineDFFCreateEmptyModel);
+    LUA_DECLARE(EngineDFFUseVerticesTool);
+    LUA_DECLARE(EngineDFFGetVertexPosition);
 
     LUA_DECLARE(EngineCOLGetInfo);
     LUA_DECLARE(EngineCOLSetPolygonSurface);
