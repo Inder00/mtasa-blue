@@ -42,7 +42,8 @@ public:
     LUA_DECLARE ( EngineGetModelTextureNames );
     LUA_DECLARE ( EngineGetVisibleTextureNames );
     LUA_DECLARE(EngineDFFTEST);
-    LUA_DECLARE(EngineDFFGetInfo);
+    LUA_DECLARE(EngineDFFGetProperties);
+    LUA_DECLARE(EngineDFFGetBoundingBox);
     LUA_DECLARE(EngineDFFGetFrameInfo);
     LUA_DECLARE(EngineDFFGetPolygons);
     LUA_DECLARE(EngineDFFGetPolygonInfo);
@@ -53,9 +54,11 @@ public:
     LUA_DECLARE(EngineDFFSetPolygonVertices);
     LUA_DECLARE(EngineDFFSetCenter);
     LUA_DECLARE(EngineDFFSetPolygonMaterial);
+    LUA_DECLARE(EngineDFFSetPolygonMesh);
     LUA_DECLARE(EngineDFFSetGeometry);
     LUA_DECLARE(EngineDFFToString);
     LUA_DECLARE(EngineDFFGetPolygonConnectedToVertex);
+    LUA_DECLARE(EngineDFFGetPolygonVertices);
     LUA_DECLARE(EngineDFFDestroyPolygon);
     LUA_DECLARE(EngineDFFGetMeshInfo);
     LUA_DECLARE(EngineDFFSetMaterialColor);

@@ -553,3 +553,43 @@ RwRaster* CClientDFF::CreateRaster(int width, int height, int depth, int flags)
     return newRaster;*/
     return g_pGame->GetRenderWare()->RasterCreate(width, height, depth, flags);
 }
+
+bool CClientDFF::CreatePolygon(RpGeometry* pGeometry, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3, unsigned short usMesh)
+{
+    if (!pGeometry->mesh->isValidMeshId(usMesh))
+        return false;
+
+    if (!pGeometry->isValidTriangleId(vertex1) || !pGeometry->isValidTriangleId(vertex2) || !pGeometry->isValidTriangleId(vertex3))
+        return false;
+
+    RpMesh* mesh = pGeometry->mesh->getMeshes();
+    RpMesh* myMesh = &mesh[usMesh];
+    pGeometry->triangles_size++;
+    uint lastPolygon = pGeometry->triangles_size - 1;
+    myMesh->numIndices += 3;
+    pGeometry->mesh->totalIndicesInMesh += 3;
+    uint numIndices = myMesh->numIndices;
+    unsigned short* polygons = myMesh->indices;
+    unsigned short* newPolygons1 = reinterpret_cast<unsigned short*>(malloc(numIndices * 4));    // unsigned short - size=4
+    RpTriangle* newPolygons2 = reinterpret_cast<RpTriangle*>(malloc(sizeof(RpTriangle) * pGeometry->triangles_size));
+    for (int i = 0; i < numIndices - 3; i++)
+    {
+        newPolygons1[i] = polygons[i];
+    }
+    for (int i = 0; i < lastPolygon; i++)
+    {
+        newPolygons2[i] = pGeometry->triangles[i];
+    }
+    newPolygons1[numIndices - 1] = vertex1;
+    newPolygons1[numIndices - 2] = vertex2;
+    newPolygons1[numIndices - 3] = vertex3;
+    newPolygons2[lastPolygon].matId = 0;
+    newPolygons2[lastPolygon].v[0] = vertex1;
+    newPolygons2[lastPolygon].v[1] = vertex2;
+    newPolygons2[lastPolygon].v[2] = vertex3;
+    free(myMesh->indices);  //crash
+    free(pGeometry->triangles);
+    myMesh->indices = newPolygons1;
+    pGeometry->triangles = newPolygons2;
+    return true;
+}

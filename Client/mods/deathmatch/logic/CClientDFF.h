@@ -62,6 +62,7 @@ public:
     static RpMesh* GetMeshFromPolygonId(RpGeometry* pGeometry, uint uiTriangleId);
     static bool GeometryDestroyPolygon(RpGeometry* pGeometry, uint uiTriangleId);
     static char* GetometryFlags(RpGeometry* pGeometry);
+    static bool CreatePolygon(RpGeometry* pGeometry, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3, unsigned short usMesh);
 
     RpClump*                        GetLoadedClump(ushort usModelId);
 
