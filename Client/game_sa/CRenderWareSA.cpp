@@ -878,3 +878,18 @@ RwRaster* CRenderWareSA::RasterCreate(int width, int height, int depth, int flag
 {
     return RwRasterCreate(width, height, depth, flags);
 }
+
+RpMaterial* CRenderWareSA::MaterialCreate( void )
+{
+    return RpMaterialCreate( );
+}
+
+RpLight* CRenderWareSA::LightCreate(int type)
+{
+    return RpLightCreate( type);
+}
+
+RpClump* CRenderWareSA::ClumpAddLight(RpClump* clump, RpLight* light)
+{
+    return RpClumpAddLight(clump, light);
+}

@@ -122,6 +122,11 @@ public:
     int ClumpGetNumAtomics(RpClump * clump);
     RwTexture* RwCreateTexture(RwRaster* pRaster);
     RwRaster*  RasterCreate (int width, int height, int depth, int flags);
+    RpMaterial* MaterialCreate(void);
+    RpLight*  LightCreate(int type);
+    RpClump* ClumpAddLight(RpClump* clump, RpLight* light);
+
+
     static void         StaticSetHooks              ( void );
     static void         StaticSetClothesReplacingHooks ( void );
     static void         RwTexDictionaryRemoveTexture( RwTexDictionary* pTXD, RwTexture* pTex );

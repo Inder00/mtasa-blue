@@ -37,7 +37,9 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFGetMaterialInfo", EngineDFFGetMaterialInfo);
     CLuaCFunctions::AddFunction("engineDFFSetVertexPosition", EngineDFFSetVertexPosition);
     CLuaCFunctions::AddFunction("engineDFFSetVertexUV", EngineDFFSetVertexUV);
+    CLuaCFunctions::AddFunction("engineDFFSetVertexLight", EngineDFFSetVertexLight);
     CLuaCFunctions::AddFunction("engineDFFGetVertexUV", EngineDFFGetVertexUV);
+    CLuaCFunctions::AddFunction("engineDFFGetVertexLight", EngineDFFGetVertexLight);
     CLuaCFunctions::AddFunction("engineDFFGetVertexPosition", EngineDFFGetVertexPosition);
     CLuaCFunctions::AddFunction("engineDFFDestroyVertex", EngineDFFDestroyVertex);
     CLuaCFunctions::AddFunction("engineDFFSetPolygonVertices", EngineDFFSetPolygonVertices);
@@ -52,11 +54,12 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFDestroyPolygon", EngineDFFDestroyPolygon);
     CLuaCFunctions::AddFunction("engineDFFCreatePolygon", EngineDFFCreatePolygon);
     CLuaCFunctions::AddFunction("engineDFFCreateVertex", EngineDFFCreateVertex);
+    CLuaCFunctions::AddFunction("engineDFFCreateMesh", EngineDFFCreateMesh);
     CLuaCFunctions::AddFunction("engineDFFGetMeshInfo", EngineDFFGetMeshInfo);
     CLuaCFunctions::AddFunction("engineDFFSelectVertices", EngineDFFSelectVertices);
     CLuaCFunctions::AddFunction("engineDFFCreateEmptyModel", EngineDFFCreateEmptyModel);
     CLuaCFunctions::AddFunction("engineDFFUseVerticesTool", EngineDFFUseVerticesTool);
-    //CLuaCFunctions::AddFunction("engineDFFCreateLight", EngineDFFCreateLight);
+    CLuaCFunctions::AddFunction("engineDFFCreateLight", EngineDFFCreateLight);
     //CLuaCFunctions::AddFunction("engineDFFGetFrameInfo", EngineDFFGetFrameInfo);
     //CLuaCFunctions::AddFunction("engineDFFSetInterpolation", EngineDFFSetInterpolation);
 
@@ -615,6 +618,40 @@ int CLuaEngineDefs::EngineDFFGetFrameInfo(lua_State* luaVM)
 
 int CLuaEngineDefs::EngineDFFCreateLight(lua_State* luaVM)
 {
+    CClientDFF* pDFF;
+    int iType;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadNumber(iType);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpLight* newLight = CClientDFF::CreateLight(iType);
+                newLight->color.r = 255;
+                newLight->color.g = 0;
+                newLight->color.b = 0;
+                newLight->color.a = 255;
+                newLight->frame = 0;
+                newLight->radius = 5;
+                CClientDFF::ClumpAddLight(pClump, newLight);
+                lua_pushboolean(luaVM, true);
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
     lua_pushboolean(luaVM, false);
     return 1;
 }
@@ -1852,6 +1889,132 @@ int CLuaEngineDefs::EngineDFFSetVertexUV(lua_State* luaVM)
     return 1;
 }
 
+int CLuaEngineDefs::EngineDFFSetVertexLight(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    unsigned short uiVertexId;
+    unsigned short r, g, b, a;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadNumber(uiVertexId);
+    argStream.ReadNumber(r);
+    argStream.ReadNumber(g);
+    argStream.ReadNumber(b);
+    argStream.ReadNumber(a, 255);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RpGeometry* pGeometry = pAtomic->geometry;
+                if ((pGeometry->flags & RpGeometryFlag::rpGEOMETRYPRELIT) != RpGeometryFlag::rpGEOMETRYPRELIT)
+                {
+                    pGeometry->flags += RpGeometryFlag::rpGEOMETRYPRELIT;   // lets enable light;
+                    RwColor* colors = reinterpret_cast<RwColor*>(malloc(pGeometry->vertices_size * sizeof(RwColor)));
+                    for (unsigned short i = 0; i < pGeometry->vertices_size; i++)
+                    {
+                        RwColor col;
+                        col.a = 0;
+                        col.r = 32;
+                        col.g = 32;
+                        col.b = 32;
+                        colors[i] = col;
+                    }
+                    pGeometry->colors = colors;
+
+                }
+                uiVertexId--;
+                if (!pGeometry->isValidVertexId(uiVertexId)) {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                RwColor* vertColor = &pGeometry->colors[uiVertexId];
+
+                if (vertColor == NULL)
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                vertColor->r = r;
+                vertColor->g = g;
+                vertColor->b = b;
+                vertColor->a = a;
+                lua_pushboolean(luaVM, true);
+                return 1;
+                
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+
+int CLuaEngineDefs::EngineDFFGetVertexLight(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    unsigned short uiVertexId;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadNumber(uiVertexId);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RpGeometry* pGeometry = pAtomic->geometry;
+                if ((pGeometry->flags & RpGeometryFlag::rpGEOMETRYPRELIT) != RpGeometryFlag::rpGEOMETRYPRELIT)
+                {
+                    lua_pushnumber(luaVM, 0);
+                    lua_pushnumber(luaVM, 0);
+                    lua_pushnumber(luaVM, 0);
+                    lua_pushnumber(luaVM, 0);
+                    return 1;
+
+                }
+                uiVertexId--;
+                if (!pGeometry->isValidVertexId(uiVertexId)) {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                RwColor vertColor = pGeometry->colors[uiVertexId];
+
+                lua_pushnumber(luaVM, vertColor.r);
+                lua_pushnumber(luaVM, vertColor.g);
+                lua_pushnumber(luaVM, vertColor.b);
+                lua_pushnumber(luaVM, vertColor.a);
+                return 4;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
 int CLuaEngineDefs::EngineDFFGetVertexUV(lua_State* luaVM)
 {
     CClientDFF* pDFF;
@@ -2306,7 +2469,6 @@ int CLuaEngineDefs::EngineDFFGetPolygonVertices(lua_State* luaVM)
     return 1;
 }
 
-
 int CLuaEngineDefs::EngineDFFSetPolygonMesh(lua_State* luaVM)
 {
     CClientDFF* pDFF;
@@ -2376,6 +2538,45 @@ int CLuaEngineDefs::EngineDFFDestroyPolygon(lua_State* luaVM)
                 uiTriangleId--;
                 bool ret = CClientDFF::GeometryDestroyPolygon(pGeometry, uiTriangleId);
                 lua_pushboolean(luaVM, ret);
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Dff model ID not set. Check 2 argument in engineLoadDFF");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineDFFCreateMesh(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RpGeometry* pGeometry = pAtomic->geometry;
+                unsigned short usMesh = CClientDFF::CreateMesh(pGeometry);
+                if (usMesh == 0)
+                {
+                    lua_pushboolean(luaVM, false);
+                }
+                else
+                {
+                    lua_pushnumber(luaVM, usMesh + 1);
+                }
                 return 1;
             }
             else

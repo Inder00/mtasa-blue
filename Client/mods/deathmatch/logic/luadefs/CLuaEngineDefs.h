@@ -80,6 +80,9 @@ public:
     LUA_DECLARE(EngineDFFCreateEmptyModel);
     LUA_DECLARE(EngineDFFUseVerticesTool);
     LUA_DECLARE(EngineDFFGetVertexPosition);
+    LUA_DECLARE(EngineDFFSetVertexLight);
+    LUA_DECLARE(EngineDFFGetVertexLight);
+    LUA_DECLARE(EngineDFFCreateMesh);
 
     LUA_DECLARE(EngineCOLGetInfo);
     LUA_DECLARE(EngineCOLSetPolygonSurface);

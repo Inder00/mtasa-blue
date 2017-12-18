@@ -535,23 +535,15 @@ RwTexture* CClientDFF::CreateTexture(RwRaster* pRaster)
 {
     return g_pGame->GetRenderWare()->RwCreateTexture(pRaster);
 }
+
 RwRaster* CClientDFF::CreateRaster(int width, int height, int depth, int flags)
 {
-    /*RwRaster* newRaster;
-    newRaster->renderResource = ((void(*)(void)) 0x261fae90); //(void *)0x261fae90;
-    newRaster->parent = newRaster;
-    newRaster->width = width;
-    newRaster->height = height;
-    newRaster->depth = depth;
-    newRaster->type = '\x4';
-    newRaster->flags = '\0';
-    newRaster->privateFlags = '\0';
-    newRaster->format = '\x2';
-    newRaster->origWidth = 512;
-    newRaster->origHeight = 512;
-    newRaster->origDepth = -1;
-    return newRaster;*/
     return g_pGame->GetRenderWare()->RasterCreate(width, height, depth, flags);
+}
+
+RpMaterial* CClientDFF::CreateMaterial( void )
+{
+    return g_pGame->GetRenderWare()->MaterialCreate( );
 }
 
 bool CClientDFF::CreatePolygon(RpGeometry* pGeometry, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3, unsigned short usMesh)
@@ -592,4 +584,33 @@ bool CClientDFF::CreatePolygon(RpGeometry* pGeometry, unsigned short vertex1, un
     myMesh->indices = newPolygons1;
     pGeometry->triangles = newPolygons2;
     return true;
+}
+
+unsigned short CClientDFF::CreateMesh(RpGeometry* pGeometry)
+{
+    if (pGeometry->mesh->numMeshes >= 24)
+    {
+        return 0;
+    }
+    RpMesh* mesh = pGeometry->mesh->getMeshes();
+    //RpMesh* newMeshes = reinterpret_cast<RpMesh*>(malloc(pGeometry->mesh->numMeshes * sizeof(RpMesh) ));
+    RpMesh newMesh;
+    newMesh.indices = 0;
+    newMesh.numIndices = 0;
+    newMesh.material = CreateMaterial();
+    mesh[pGeometry->mesh->numMeshes] = newMesh;
+    //newMeshes[pGeometry->mesh->numMeshes - 1] = newMesh;
+    //mesh = newMeshes;
+    pGeometry->mesh->numMeshes++;
+    return pGeometry->mesh->numMeshes;  // TODO 
+}
+
+RpLight* CClientDFF::CreateLight(int type)
+{
+    return g_pGame->GetRenderWare()->LightCreate( type );
+}
+
+RpClump* CClientDFF::ClumpAddLight(RpClump* clump, RpLight* light)
+{
+    return g_pGame->GetRenderWare()->ClumpAddLight(clump, light);
 }

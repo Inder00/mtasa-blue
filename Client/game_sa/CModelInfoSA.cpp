@@ -1477,7 +1477,6 @@ WORD CModelInfoSA::GetModelPolygonCount(CColModel* pColModel)
     }
 }
 
-
 WORD CModelInfoSA::GetModelVerticesCount(CColModel* pColModel)
 {
     CColModelSAInterface* pColModelInterface = pColModel->GetInterface();
@@ -1487,7 +1486,6 @@ WORD CModelInfoSA::GetModelVerticesCount(CColModel* pColModel)
         return pColData->numColVertices;
     }
 }
-
 
 float CModelInfoSA::GetModelBoundingBoxRadius(CColModel* pColModel)
 {

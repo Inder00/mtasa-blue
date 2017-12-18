@@ -504,7 +504,7 @@ struct RpLight
     RwList          sectors;
     RwListEntry     globalLights;
     unsigned short  frame;
-    unsigned short  unknown2;
+    unsigned short  pad;
 };
 struct RpClump
 {   // RenderWare (plugin) Clump (used by GTA)

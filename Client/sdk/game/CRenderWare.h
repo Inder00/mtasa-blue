@@ -105,6 +105,9 @@ class CRenderWare {
     virtual int ClumpGetNumAtomics(RpClump * clump)=0;
     virtual RwTexture* RwCreateTexture(RwRaster* pRaster)=0;
     virtual RwRaster*  RasterCreate(int width, int height, int depth, int flags)=0;
+    virtual RpMaterial*  MaterialCreate( void ) = 0;
+    virtual RpLight*  LightCreate(int type) = 0;
+    virtual RpClump* ClumpAddLight(RpClump* clump, RpLight* light) = 0;
 };
 
 
