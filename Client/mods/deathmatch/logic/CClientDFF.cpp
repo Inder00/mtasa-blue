@@ -593,15 +593,26 @@ unsigned short CClientDFF::CreateMesh(RpGeometry* pGeometry)
         return 0;
     }
     RpMesh* mesh = pGeometry->mesh->getMeshes();
-    //RpMesh* newMeshes = reinterpret_cast<RpMesh*>(malloc(pGeometry->mesh->numMeshes * sizeof(RpMesh) ));
-    RpMesh newMesh;
+    RpMesh* newMeshes = reinterpret_cast<RpMesh*>(malloc(pGeometry->mesh->numMeshes * sizeof(RpMesh) ));
+    for (unsigned short i = 0; i < pGeometry->mesh->numMeshes; i++)
+    {
+        newMeshes[i] = mesh[i];
+    }
+    newMeshes[pGeometry->mesh->numMeshes] = mesh[pGeometry->mesh->numMeshes - 1];
+    newMeshes[pGeometry->mesh->numMeshes].indices = 0;
+    newMeshes[pGeometry->mesh->numMeshes].numIndices = 0;
+    pGeometry->mesh->setMeshes(newMeshes);
+    pGeometry->mesh->numMeshes++;
+    /*RpMesh newMesh;
     newMesh.indices = 0;
     newMesh.numIndices = 0;
     newMesh.material = CreateMaterial();
-    mesh[pGeometry->mesh->numMeshes] = newMesh;
+    //mesh[pGeometry->mesh->numMeshes] = newMesh;
     //newMeshes[pGeometry->mesh->numMeshes - 1] = newMesh;
-    //mesh = newMeshes;
+    mesh[pGeometry->mesh->numMeshes] = newMesh;
     pGeometry->mesh->numMeshes++;
+    pGeometry->materials.materials[pGeometry->materials.entries] = pGeometry->materials.materials[pGeometry->materials.entries - 1];
+    pGeometry->materials.entries++;*/
     return pGeometry->mesh->numMeshes;  // TODO 
 }
 
