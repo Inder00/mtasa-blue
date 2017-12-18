@@ -83,6 +83,8 @@ public:
     LUA_DECLARE(EngineDFFSetVertexLight);
     LUA_DECLARE(EngineDFFGetVertexLight);
     LUA_DECLARE(EngineDFFCreateMesh);
+    LUA_DECLARE(EngineDFFTransformVertices);
+    LUA_DECLARE(EngineDFFTransformPolygons);
 
     LUA_DECLARE(EngineCOLGetInfo);
     LUA_DECLARE(EngineCOLSetPolygonSurface);

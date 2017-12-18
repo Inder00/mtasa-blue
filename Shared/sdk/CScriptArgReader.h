@@ -1001,6 +1001,31 @@ public:
     }
 
     //
+    // Read a table of numbers
+    //
+    void ReadNumberTable(std::vector < int >& outList)
+    {
+        outList.clear();
+
+        int iArgument = lua_type(m_luaVM, m_iIndex);
+        if (iArgument == LUA_TTABLE)
+        {
+            for (lua_pushnil(m_luaVM); lua_next(m_luaVM, m_iIndex) != 0; lua_pop(m_luaVM, 1))
+            {
+                int iArgument = lua_type(m_luaVM, -1);
+                if (iArgument == LUA_TNUMBER || iArgument == LUA_TNUMBER)
+                {
+                    outList.push_back(lua_tonumber(m_luaVM, -1));
+                }
+            }
+            m_iIndex++;
+            return;
+        }
+
+        SetTypeError("number");
+        m_iIndex++;
+    }
+    //
     // Reads a table as key-value string pair
     //
     void ReadStringMap(CStringMap& outMap)

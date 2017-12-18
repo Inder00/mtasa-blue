@@ -60,6 +60,8 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFCreateEmptyModel", EngineDFFCreateEmptyModel);
     CLuaCFunctions::AddFunction("engineDFFUseVerticesTool", EngineDFFUseVerticesTool);
     CLuaCFunctions::AddFunction("engineDFFCreateLight", EngineDFFCreateLight);
+    CLuaCFunctions::AddFunction("engineDFFTransformVertices", EngineDFFTransformVertices);
+    CLuaCFunctions::AddFunction("engineDFFTransformPolygons", EngineDFFTransformPolygons);
     //CLuaCFunctions::AddFunction("engineDFFGetFrameInfo", EngineDFFGetFrameInfo);
     //CLuaCFunctions::AddFunction("engineDFFSetInterpolation", EngineDFFSetInterpolation);
 
@@ -1464,6 +1466,17 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
                     }
                     return 1;
                 }
+                else if (sSelectType == "*")
+                {
+                    lua_newtable(luaVM);
+                    for (uint i = 0; i < pGeometry->vertices_size; i++)
+                    {
+                        lua_pushnumber(luaVM, i + 1);
+                        lua_pushnumber(luaVM, i + 1);
+                        lua_settable(luaVM, -3);
+                    }
+                    return 1;
+                }
                 else if (sSelectType == "byasdf")
                 {
 
@@ -1960,7 +1973,6 @@ int CLuaEngineDefs::EngineDFFSetVertexLight(lua_State* luaVM)
     lua_pushboolean(luaVM, false);
     return 1;
 }
-
 
 int CLuaEngineDefs::EngineDFFGetVertexLight(lua_State* luaVM)
 {
@@ -2923,6 +2935,197 @@ int CLuaEngineDefs::EngineDFFUseVerticesTool(lua_State* luaVM)
     return 1;
 }
 
+CVector RotatePointAroundAxis(const CVector& axis, const float radians, const CVector& point)
+{
+    float matrix[3][3];
+
+    float sn = sinf(radians);
+    float cs = cosf(radians);
+
+    float xSin = axis.fX * sn;
+    float ySin = axis.fY * sn;
+    float zSin = axis.fZ * sn;
+    float oneMinusCS = 1.0f - cs;
+    float xym = axis.fX * axis.fY * oneMinusCS;
+    float xzm = axis.fX * axis.fZ * oneMinusCS;
+    float yzm = axis.fY * axis.fZ * oneMinusCS;
+
+    matrix[0][0] = (axis.fX * axis.fX) * oneMinusCS + cs;
+    matrix[0][1] = xym + zSin;
+    matrix[0][2] = xzm - ySin;
+    matrix[1][0] = xym - zSin;
+    matrix[1][1] = (axis.fY * axis.fY) * oneMinusCS + cs;
+    matrix[1][2] = yzm + xSin;
+    matrix[2][0] = xzm + ySin;
+    matrix[2][1] = yzm - xSin;
+    matrix[2][2] = (axis.fZ * axis.fZ) * oneMinusCS + cs;
+    CVector point3D;
+
+    
+    point3D.fX = matrix[0][0] * point.fX + matrix[0][1] * point.fY + matrix[0][2] * point.fZ;
+
+    point3D.fY = matrix[1][0] * point.fX + matrix[1][1] * point.fY + matrix[1][2] * point.fZ;
+
+    point3D.fZ = matrix[2][0] * point.fX + matrix[2][1] * point.fY + matrix[2][2] * point.fZ;
+    return point3D;
+}
+
+int CLuaEngineDefs::EngineDFFTransformVertices(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    SString strTransform;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadString(strTransform);
+    std::vector< int > vertices;
+    argStream.ReadNumberTable(vertices);
+    if (!argStream.HasErrors())
+    {
+        if (vertices.empty())
+        {
+            lua_pushboolean(luaVM, false);
+            return 1;
+        }
+
+        sort(vertices.begin(), vertices.end());
+        vertices.erase(unique(vertices.begin(), vertices.end()), vertices.end());
+
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RpGeometry* pGeometry = pAtomic->geometry;
+                unsigned short usMaxVert = pGeometry->vertices_size;
+                for (int i = 0; i < vertices.size(); i++)
+                {
+                    unsigned short id = vertices.at(i);
+                    id--;
+                    vertices[i] = id;
+                    if (id < 0 || id > usMaxVert)
+                    {
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                }
+                if (strTransform == "move")
+                {
+                    CVector move;
+                    argStream.ReadVector3D(move);
+                    if (argStream.HasErrors())
+                    {
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                    for (int i = 0; i < vertices.size(); i++)
+                    {
+                        RwV3d* vVert = &pGeometry->morphTarget->verts[ vertices.at( i ) ];
+                        vVert->x += move.fX;
+                        vVert->y += move.fY;
+                        vVert->z += move.fZ;
+                    }
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                else if (strTransform == "rotation")
+                {
+                    CVector rotation;
+                    argStream.ReadVector3D(rotation);
+                    if (argStream.HasErrors())
+                    {
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                    CVector point;
+                    lua_pushvector(luaVM, RotatePointAroundAxis(rotation, 1, point));
+                    return 1;
+                }
+                else if (strTransform == "scale")
+                {
+                    CVector scale;
+                    argStream.ReadVector3D(scale);
+                    if (argStream.HasErrors())
+                    {
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                    CVector offset;
+                    for (int i = 0; i < vertices.size(); i++)
+                    {
+                        RwV3d vVert = pGeometry->morphTarget->verts[vertices.at(i)];
+                        offset += vVert.getVector();
+                    }
+                    offset /= vertices.size();
+
+                    for (int i = 0; i < vertices.size(); i++)
+                    {
+                        RwV3d *vVert = &pGeometry->morphTarget->verts[vertices.at(i)];
+                        vVert->x = (vVert->x - offset.fX) * scale.fX + offset.fX;
+                        vVert->y = (vVert->y - offset.fY) * scale.fY + offset.fY;
+                        vVert->z = (vVert->z - offset.fZ) * scale.fZ + offset.fZ;
+                    }
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Dff model ID not set. Check 2 argument in engineLoadDFF");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineDFFTransformPolygons(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    SString strTransform;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadString(strTransform);
+    std::vector< int > vertices;
+    argStream.ReadNumberTable(vertices);
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RpGeometry* pGeometry = pAtomic->geometry;
+                if (strTransform == "move")
+                {
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Dff model ID not set. Check 2 argument in engineLoadDFF");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
 
 int CLuaEngineDefs::EngineRestoreModel ( lua_State* luaVM )
 {

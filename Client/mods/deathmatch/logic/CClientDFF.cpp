@@ -426,7 +426,7 @@ RpMesh* CClientDFF::GetMeshFromPolygonId(RpGeometry* pGeometry, uint uiTriangleI
 
 int CClientDFF::GetMeshIdFromPolygonId(RpGeometry* pGeometry, uint uiTriangleId)
 {
-    RpMesh* mesh = pGeometry->mesh->getMeshes();
+    RpMesh* mesh = pGeometry->getMeshes();
     short meshCount = pGeometry->mesh->numMeshes;
     while (meshCount>0)
     {

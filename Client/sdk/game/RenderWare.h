@@ -648,7 +648,11 @@ struct RpGeometry
     RpTriangle           *triangles;
     RwColor              *colors;
     RwTextureCoordinates *texcoords[RW_MAX_TEXTURE_COORDS];
-    RpMeshHeader       *mesh;
+    struct {
+        RpMeshHeader header;
+        RpMesh* meshes;
+    } *mesh;
+    //RpMeshHeader       *mesh;
     RwResEntry         *repEntry;
     RpMorphTarget      *morphTarget;
 
