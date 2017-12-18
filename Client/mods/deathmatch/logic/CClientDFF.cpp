@@ -398,8 +398,8 @@ int CClientDFF::GetPolygonIdInMesh(RpGeometry* pGeometry, RpMesh* pMesh, uint ui
 
 RpMesh* CClientDFF::GetMeshFromPolygonId(RpGeometry* pGeometry, uint uiTriangleId)
 {
-    RpMesh* mesh = pGeometry->mesh->getMeshes();
-    short meshCount = pGeometry->mesh->numMeshes;
+    RpMesh* mesh = pGeometry->mesh->meshes;
+    unsigned short meshCount = pGeometry->mesh->header.numMeshes;
     while (meshCount>0)
     {
         meshCount--;
@@ -426,8 +426,8 @@ RpMesh* CClientDFF::GetMeshFromPolygonId(RpGeometry* pGeometry, uint uiTriangleI
 
 int CClientDFF::GetMeshIdFromPolygonId(RpGeometry* pGeometry, uint uiTriangleId)
 {
-    RpMesh* mesh = pGeometry->getMeshes();
-    short meshCount = pGeometry->mesh->numMeshes;
+    RpMesh* mesh = pGeometry->mesh->meshes;
+    unsigned short meshCount = pGeometry->mesh->header.numMeshes;
     while (meshCount>0)
     {
         meshCount--;
@@ -460,7 +460,7 @@ bool CClientDFF::GeometryDestroyPolygon(RpGeometry* pGeometry, uint uiTriangleId
     {
         return false;
     }
-    RpMesh* mesh = pGeometry->mesh->getMeshes();
+    RpMesh* mesh = pGeometry->mesh->meshes;
     RpMesh* myMesh = &mesh[meshId];
     unsigned short numIndices = myMesh->numIndices;
     if (numIndices <= 0)
@@ -469,7 +469,7 @@ bool CClientDFF::GeometryDestroyPolygon(RpGeometry* pGeometry, uint uiTriangleId
     }
     pGeometry->triangles_size--;
     myMesh->numIndices -= 3;
-    pGeometry->mesh->totalIndicesInMesh -= 3;
+    pGeometry->mesh->header.totalIndicesInMesh -= 3;
     unsigned short* polygons = myMesh->indices;
     unsigned short* newPolygons1 = reinterpret_cast<unsigned short*>(malloc(numIndices * 4));    // unsigned short - size=4
     RpTriangle* newPolygons2 = reinterpret_cast<RpTriangle*>(malloc(sizeof(RpTriangle) * pGeometry->triangles_size));
@@ -548,18 +548,18 @@ RpMaterial* CClientDFF::CreateMaterial( void )
 
 bool CClientDFF::CreatePolygon(RpGeometry* pGeometry, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3, unsigned short usMesh)
 {
-    if (!pGeometry->mesh->isValidMeshId(usMesh))
+    if (!pGeometry->mesh->header.isValidMeshId(usMesh))
         return false;
 
     if (!pGeometry->isValidTriangleId(vertex1) || !pGeometry->isValidTriangleId(vertex2) || !pGeometry->isValidTriangleId(vertex3))
         return false;
 
-    RpMesh* mesh = pGeometry->mesh->getMeshes();
+    RpMesh* mesh = pGeometry->mesh->meshes;
     RpMesh* myMesh = &mesh[usMesh];
     pGeometry->triangles_size++;
     uint lastPolygon = pGeometry->triangles_size - 1;
     myMesh->numIndices += 3;
-    pGeometry->mesh->totalIndicesInMesh += 3;
+    pGeometry->mesh->header.totalIndicesInMesh += 3;
     uint numIndices = myMesh->numIndices;
     unsigned short* polygons = myMesh->indices;
     unsigned short* newPolygons1 = reinterpret_cast<unsigned short*>(malloc(numIndices * 4));    // unsigned short - size=4
@@ -588,32 +588,33 @@ bool CClientDFF::CreatePolygon(RpGeometry* pGeometry, unsigned short vertex1, un
 
 unsigned short CClientDFF::CreateMesh(RpGeometry* pGeometry)
 {
-    if (pGeometry->mesh->numMeshes >= 24)
+    if (pGeometry->mesh->header.numMeshes >= 24)
     {
         return 0;
     }
-    RpMesh* mesh = pGeometry->mesh->getMeshes();
-    RpMesh* newMeshes = reinterpret_cast<RpMesh*>(malloc(pGeometry->mesh->numMeshes * sizeof(RpMesh) ));
-    for (unsigned short i = 0; i < pGeometry->mesh->numMeshes; i++)
+    RpMesh* newMeshes = reinterpret_cast<RpMesh*>(malloc((pGeometry->mesh->header.numMeshes+1) * sizeof(RpMesh) ));
+    RpMesh* mesh = pGeometry->mesh->meshes;
+    for (unsigned short i = 0; i < pGeometry->mesh->header.numMeshes; i++)
     {
         newMeshes[i] = mesh[i];
     }
-    newMeshes[pGeometry->mesh->numMeshes] = mesh[pGeometry->mesh->numMeshes - 1];
-    newMeshes[pGeometry->mesh->numMeshes].indices = 0;
-    newMeshes[pGeometry->mesh->numMeshes].numIndices = 0;
-    pGeometry->mesh->setMeshes(newMeshes);
-    pGeometry->mesh->numMeshes++;
-    /*RpMesh newMesh;
-    newMesh.indices = 0;
-    newMesh.numIndices = 0;
-    newMesh.material = CreateMaterial();
-    //mesh[pGeometry->mesh->numMeshes] = newMesh;
-    //newMeshes[pGeometry->mesh->numMeshes - 1] = newMesh;
-    mesh[pGeometry->mesh->numMeshes] = newMesh;
-    pGeometry->mesh->numMeshes++;
-    pGeometry->materials.materials[pGeometry->materials.entries] = pGeometry->materials.materials[pGeometry->materials.entries - 1];
-    pGeometry->materials.entries++;*/
-    return pGeometry->mesh->numMeshes;  // TODO 
+
+    //newMeshes[pGeometry->mesh->header.numMeshes] = mesh[pGeometry->mesh->header.numMeshes];   // crash
+    
+    // crash /*
+    unsigned short indices[3];
+    indices[0] = 0;
+    indices[1] = 1;
+    indices[2] = 2;
+    newMeshes[pGeometry->mesh->header.numMeshes].indices = indices; // = 0; // crash
+    // crash */
+
+
+    newMeshes[pGeometry->mesh->header.numMeshes].numIndices = 3;    // = 0; // crash
+    newMeshes[pGeometry->mesh->header.numMeshes].material = CreateMaterial();
+    pGeometry->mesh->header.numMeshes++;
+    pGeometry->mesh->meshes = newMeshes;
+    return pGeometry->mesh->header.numMeshes; 
 }
 
 RpLight* CClientDFF::CreateLight(int type)

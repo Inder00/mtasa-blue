@@ -698,7 +698,7 @@ int CLuaEngineDefs::EngineDFFGetProperties(lua_State* luaVM)
                 lua_settable(luaVM, -3);
 
                 lua_pushstring(luaVM, "meshCount");
-                lua_pushnumber(luaVM, pGeometry->mesh->numMeshes);
+                lua_pushnumber(luaVM, pGeometry->mesh->header.numMeshes);
                 lua_settable(luaVM, -3);
 
                 lua_pushstring(luaVM, "texCoordSetsCount");
@@ -837,11 +837,11 @@ int CLuaEngineDefs::EngineDFFSetMaterialColor(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
-                if (uiMaterialId > pGeometry->mesh->numMeshes-1) {
+                if (uiMaterialId > pGeometry->mesh->header.numMeshes-1) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                RpMesh* m = pGeometry->mesh->getMeshes() + uiMaterialId; // example textures 0-5 in mta are 1-6
+                RpMesh* m = &pGeometry->mesh->meshes[uiMaterialId]; // example textures 0-5 in mta are 1-6
                 m->material->color.r = uiMaterialR;
                 m->material->color.g = uiMaterialG;
                 m->material->color.b = uiMaterialB;
@@ -887,7 +887,7 @@ int CLuaEngineDefs::EngineDFFSetTextureProperties(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiTextureId--;
-                if (!pGeometry->mesh->isValidMeshId(uiTextureId)) {
+                if (!pGeometry->mesh->header.isValidMeshId(uiTextureId)) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
@@ -950,7 +950,7 @@ int CLuaEngineDefs::EngineDFFGetTextureProperties(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiTextureId--;
-                if (!pGeometry->mesh->isValidMeshId(uiTextureId)) {
+                if (!pGeometry->mesh->header.isValidMeshId(uiTextureId)) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
@@ -1032,12 +1032,12 @@ int CLuaEngineDefs::EngineDFFSetTexture(lua_State* luaVM)
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
                 textureId--;
-                if ( !pGeometry->mesh->isValidMeshId(uiMaterialId)) {
+                if ( !pGeometry->mesh->header.isValidMeshId(uiMaterialId)) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
                 RpMaterial* material = pGeometry->materials.materials[uiMaterialId];
-                RpMaterial* material2 = pGeometry->mesh->getMeshes()[uiMaterialId].material;
+                RpMaterial* material2 = pGeometry->mesh->meshes[uiMaterialId].material;
                 if (pTXD == NULL)
                 {
                     material->texture = NULL;
@@ -1137,11 +1137,11 @@ int CLuaEngineDefs::EngineDFFGetMaterialInfo(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
-                if (!pGeometry->mesh->isValidMeshId(uiMaterialId)) {
+                if (!pGeometry->mesh->header.isValidMeshId(uiMaterialId)) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                RpMesh m = pGeometry->mesh->getMeshes()[uiMaterialId];
+                RpMesh m = pGeometry->mesh->meshes[uiMaterialId];
                 RpMaterial* material = m.material;
                 lua_newtable(luaVM);
                 lua_pushstring(luaVM, "id");
@@ -1250,11 +1250,11 @@ int CLuaEngineDefs::EngineDFFSetMaterialLighting(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
-                if (uiMaterialId > pGeometry->mesh->numMeshes - 1) {
+                if (uiMaterialId > pGeometry->mesh->header.numMeshes - 1) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                RpMesh* m = pGeometry->mesh->getMeshes() + uiMaterialId; // example textures 0-5 in mta are 1-6
+                RpMesh* m = &pGeometry->mesh->meshes[uiMaterialId]; // example textures 0-5 in mta are 1-6
                 m->material->lighting.ambient = ambient;
                 m->material->lighting.diffuse = diffuse;
                 m->material->lighting.specular = specular;
@@ -1295,11 +1295,11 @@ int CLuaEngineDefs::EngineDFFSetTextureName(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
-                if (uiMaterialId > pGeometry->mesh->numMeshes - 1) {
+                if (uiMaterialId > pGeometry->mesh->header.numMeshes - 1) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                RpMesh* m = pGeometry->mesh->getMeshes() + uiMaterialId;
+                RpMesh* m = &pGeometry->mesh->meshes[uiMaterialId];
 
                 if (m->material->texture != nullptr)
                 {
@@ -1424,13 +1424,12 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
                         lua_pushboolean(luaVM, false);
                         return 1;
                     }
-                    RpMeshHeader* meshHeader = pGeometry->mesh;
-                    if (!meshHeader->isValidMeshId(usMeshId))
+                    if (!pGeometry->mesh->header.isValidMeshId(usMeshId))
                     {
                         lua_pushboolean(luaVM, false);
                         return 1;
                     }
-                    RpMesh* mesh = pGeometry->mesh->getMeshes();
+                    RpMesh* mesh = pGeometry->mesh->meshes;
                     usMeshId--;
                     mesh = mesh + usMeshId;
                     uint id = 0;
@@ -1626,10 +1625,10 @@ int CLuaEngineDefs::EngineDFFGetMeshInfo(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (uMeshId != NULL && uMeshId <= pGeometry->mesh->numMeshes)
+                if (uMeshId != NULL && uMeshId <= pGeometry->mesh->header.numMeshes)
                 {
-                    RpMesh* mesh = pGeometry->mesh->getMeshes();
-                    uint meshCount = pGeometry->mesh->numMeshes;
+                    RpMesh* mesh = pGeometry->mesh->meshes;
+                    unsigned short meshCount = pGeometry->mesh->header.numMeshes;
                     if (uMeshId > meshCount)
                     {
                         lua_pushboolean(luaVM, false);
@@ -1699,8 +1698,8 @@ int CLuaEngineDefs::EngineDFFGetPolygonInfo(lua_State* luaVM)
                 RpGeometry* pGeometry = pAtomic->geometry;
                 if (uTriangleId != NULL && uTriangleId <= pGeometry->triangles_size)
                 {
-                    RpMesh* mesh = pGeometry->mesh->getMeshes();
-                    uint meshCount = pGeometry->mesh->numMeshes;
+                    RpMesh* mesh = pGeometry->mesh->meshes;
+                    uint meshCount = pGeometry->mesh->header.numMeshes;
                     while (meshCount>0)
                     {
                         meshCount--;
@@ -2299,8 +2298,8 @@ int CLuaEngineDefs::EngineDFFSetPolygonVertices(lua_State* luaVM)
                 vertex3--;
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                RpMesh* mesh = pGeometry->mesh->getMeshes();
-                uint meshCount = pGeometry->mesh->numMeshes;
+                RpMesh* mesh = pGeometry->mesh->meshes;
+                unsigned short meshCount = pGeometry->mesh->header.numMeshes;
                 while (meshCount>0)
                 {
                     meshCount--;
