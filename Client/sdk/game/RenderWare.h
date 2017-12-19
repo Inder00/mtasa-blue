@@ -668,6 +668,10 @@ struct RpGeometry
     {
         return (textCoordId != NULL && texcoords_size >= textCoordId);
     }
+    inline bool isFlag(RpGeometryFlag flag)
+    {
+        return (flags & flag) != flag;
+    }
 };
 
 /*****************************************************************************/

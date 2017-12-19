@@ -67,6 +67,13 @@ public:
     static RpMaterial* CreateMaterial(void);
     static RpLight* CreateLight(int type);
     static RpClump* ClumpAddLight(RpClump* clump, RpLight* light);
+    static bool EnableVerticesLighting(RpGeometry* pGeometry);
+
+    bool TransformMove(std::vector< unsigned short > vertices, CVector vecMove);
+    bool TransformScale(std::vector< unsigned short > vertices, CVector vecScale);
+    std::vector < unsigned short > GetPolygonsUsedByVertex(unsigned short usVertex);
+
+
 
     RpClump*                        GetLoadedClump(ushort usModelId);
 

@@ -626,3 +626,98 @@ RpClump* CClientDFF::ClumpAddLight(RpClump* clump, RpLight* light)
 {
     return g_pGame->GetRenderWare()->ClumpAddLight(clump, light);
 }
+
+bool CClientDFF::TransformMove(std::vector< unsigned short > vertices, CVector vecMove)
+{
+    if (uimodel != INVALID_MODEL_ID)
+    {
+        RpClump* pClump = GetLoadedClump(uimodel);
+        if (pClump)
+        {
+            RpAtomic* pAtomic = pClump->getAtomic();
+            RpGeometry* pGeometry = pAtomic->geometry;
+            for (int i = 0; i < vertices.size(); i++)
+            {
+                RwV3d* vVert = &pGeometry->morphTarget->verts[vertices.at(i)];
+                vVert->x += vecMove.fX;
+                vVert->y += vecMove.fY;
+                vVert->z += vecMove.fZ;
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CClientDFF::TransformScale(std::vector< unsigned short > vertices, CVector vecScale)
+{
+    if (uimodel != INVALID_MODEL_ID)
+    {
+        RpClump* pClump = GetLoadedClump(uimodel);
+        if (pClump)
+        {
+            RpAtomic* pAtomic = pClump->getAtomic();
+            RpGeometry* pGeometry = pAtomic->geometry;
+            CVector offset;
+            for (int i = 0; i < vertices.size(); i++)
+            {
+                RwV3d vVert = pGeometry->morphTarget->verts[vertices.at(i)];
+                offset += vVert.getVector();
+            }
+            offset /= vertices.size();
+
+            for (int i = 0; i < vertices.size(); i++)
+            {
+                RwV3d *vVert = &pGeometry->morphTarget->verts[vertices.at(i)];
+                vVert->x = (vVert->x - offset.fX) * vecScale.fX + offset.fX;
+                vVert->y = (vVert->y - offset.fY) * vecScale.fY + offset.fY;
+                vVert->z = (vVert->z - offset.fZ) * vecScale.fZ + offset.fZ;
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CClientDFF::EnableVerticesLighting(RpGeometry* pGeometry)
+{
+    if ( !pGeometry->isFlag(RpGeometryFlag::rpGEOMETRYPRELIT) )
+    {
+        pGeometry->flags += RpGeometryFlag::rpGEOMETRYPRELIT;   // lets enable light;
+        RwColor* colors = reinterpret_cast<RwColor*>(malloc(pGeometry->vertices_size * sizeof(RwColor)));
+        for (unsigned short i = 0; i < pGeometry->vertices_size; i++)
+        {
+            RwColor col;
+            col.a = 0;
+            col.r = 32;
+            col.g = 32;
+            col.b = 32;
+            colors[i] = col;
+        }
+        pGeometry->colors = colors;
+        return true;
+    }
+    return false;
+}
+
+std::vector < unsigned short > CClientDFF::GetPolygonsUsedByVertex(unsigned short usVertex)
+{
+    std::vector < unsigned short > vecPolygons;
+    RpClump* pClump = GetLoadedClump(uimodel);
+    if (pClump)
+    {
+        RpAtomic* pAtomic = pClump->getAtomic();
+        RpGeometry* pGeometry = pAtomic->geometry;
+        for (unsigned short i = 0; i < pGeometry->triangles_size; i++)
+        {
+            RpTriangle pTriangle = pGeometry->triangles[i];
+            if (pTriangle.v[0] == usVertex ||
+                pTriangle.v[1] == usVertex ||
+                pTriangle.v[2] == usVertex)
+            {
+                vecPolygons.push_back(i);
+            }
+        }
+    }
+    return vecPolygons;
+}

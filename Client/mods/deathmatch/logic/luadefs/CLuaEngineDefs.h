@@ -85,6 +85,7 @@ public:
     LUA_DECLARE(EngineDFFCreateMesh);
     LUA_DECLARE(EngineDFFTransformVertices);
     LUA_DECLARE(EngineDFFTransformPolygons);
+    LUA_DECLARE(EngineDFFUsePolygonsTool);
 
     LUA_DECLARE(EngineCOLGetInfo);
     LUA_DECLARE(EngineCOLSetPolygonSurface);
