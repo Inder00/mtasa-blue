@@ -699,7 +699,7 @@ int CLuaEngineDefs::EngineDFFGetProperties(lua_State* luaVM)
                 lua_settable(luaVM, -3);
 
                 lua_pushstring(luaVM, "meshCount");
-                lua_pushnumber(luaVM, pGeometry->mesh->header.numMeshes);
+                lua_pushnumber(luaVM, pGeometry->header->numMeshes);
                 lua_settable(luaVM, -3);
 
                 lua_pushstring(luaVM, "texCoordSetsCount");
@@ -838,11 +838,11 @@ int CLuaEngineDefs::EngineDFFSetMaterialColor(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
-                if (uiMaterialId > pGeometry->mesh->header.numMeshes-1) {
+                if (uiMaterialId > pGeometry->header->numMeshes-1) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                RpMesh* m = &pGeometry->mesh->meshes[uiMaterialId]; // example textures 0-5 in mta are 1-6
+                RpMesh* m = &pGeometry->header->getMeshes()[uiMaterialId]; // example textures 0-5 in mta are 1-6
                 m->material->color.r = uiMaterialR;
                 m->material->color.g = uiMaterialG;
                 m->material->color.b = uiMaterialB;
@@ -888,7 +888,7 @@ int CLuaEngineDefs::EngineDFFSetTextureProperties(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiTextureId--;
-                if (!pGeometry->mesh->header.isValidMeshId(uiTextureId)) {
+                if (!pGeometry->header->isValidMeshId(uiTextureId)) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
@@ -951,7 +951,7 @@ int CLuaEngineDefs::EngineDFFGetTextureProperties(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiTextureId--;
-                if (!pGeometry->mesh->header.isValidMeshId(uiTextureId)) {
+                if (!pGeometry->header->isValidMeshId(uiTextureId)) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
@@ -1033,12 +1033,12 @@ int CLuaEngineDefs::EngineDFFSetTexture(lua_State* luaVM)
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
                 textureId--;
-                if ( !pGeometry->mesh->header.isValidMeshId(uiMaterialId)) {
+                if ( !pGeometry->header->isValidMeshId(uiMaterialId)) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
                 RpMaterial* material = pGeometry->materials.materials[uiMaterialId];
-                RpMaterial* material2 = pGeometry->mesh->meshes[uiMaterialId].material;
+                RpMaterial* material2 = pGeometry->header->getMeshes()[uiMaterialId].material;
                 if (pTXD == NULL)
                 {
                     material->texture = NULL;
@@ -1138,11 +1138,11 @@ int CLuaEngineDefs::EngineDFFGetMaterialInfo(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
-                if (!pGeometry->mesh->header.isValidMeshId(uiMaterialId)) {
+                if (!pGeometry->header->isValidMeshId(uiMaterialId)) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                RpMesh m = pGeometry->mesh->meshes[uiMaterialId];
+                RpMesh m = pGeometry->header->getMeshes()[uiMaterialId];
                 RpMaterial* material = m.material;
                 lua_newtable(luaVM);
                 lua_pushstring(luaVM, "id");
@@ -1251,11 +1251,11 @@ int CLuaEngineDefs::EngineDFFSetMaterialLighting(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
-                if (uiMaterialId > pGeometry->mesh->header.numMeshes - 1) {
+                if (uiMaterialId > pGeometry->header->numMeshes - 1) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                RpMesh* m = &pGeometry->mesh->meshes[uiMaterialId]; // example textures 0-5 in mta are 1-6
+                RpMesh* m = &pGeometry->header->getMeshes()[uiMaterialId]; // example textures 0-5 in mta are 1-6
                 m->material->lighting.ambient = ambient;
                 m->material->lighting.diffuse = diffuse;
                 m->material->lighting.specular = specular;
@@ -1296,11 +1296,11 @@ int CLuaEngineDefs::EngineDFFSetTextureName(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
-                if (uiMaterialId > pGeometry->mesh->header.numMeshes - 1) {
+                if (uiMaterialId > pGeometry->header->numMeshes - 1) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                RpMesh* m = &pGeometry->mesh->meshes[uiMaterialId];
+                RpMesh* m = &pGeometry->header->getMeshes()[uiMaterialId];
 
                 if (m->material->texture != nullptr)
                 {
@@ -1425,12 +1425,12 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
                         lua_pushboolean(luaVM, false);
                         return 1;
                     }
-                    if (!pGeometry->mesh->header.isValidMeshId(usMeshId))
+                    if (!pGeometry->header->isValidMeshId(usMeshId))
                     {
                         lua_pushboolean(luaVM, false);
                         return 1;
                     }
-                    RpMesh* mesh = pGeometry->mesh->meshes;
+                    RpMesh* mesh = pGeometry->header->getMeshes();
                     usMeshId--;
                     mesh = mesh + usMeshId;
                     unsigned short id = 0;
@@ -1626,10 +1626,10 @@ int CLuaEngineDefs::EngineDFFGetMeshInfo(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (uMeshId != NULL && uMeshId <= pGeometry->mesh->header.numMeshes)
+                if (uMeshId != NULL && uMeshId <= pGeometry->header->numMeshes)
                 {
-                    RpMesh* mesh = pGeometry->mesh->meshes;
-                    unsigned short meshCount = pGeometry->mesh->header.numMeshes;
+                    RpMesh* mesh = pGeometry->header->getMeshes();
+                    unsigned short meshCount = pGeometry->header->numMeshes;
                     if (uMeshId > meshCount)
                     {
                         lua_pushboolean(luaVM, false);
@@ -1699,8 +1699,8 @@ int CLuaEngineDefs::EngineDFFGetPolygonInfo(lua_State* luaVM)
                 RpGeometry* pGeometry = pAtomic->geometry;
                 if (uTriangleId != NULL && uTriangleId <= pGeometry->triangles_size)
                 {
-                    RpMesh* mesh = pGeometry->mesh->meshes;
-                    unsigned short meshCount = pGeometry->mesh->header.numMeshes;
+                    RpMesh* mesh = pGeometry->header->getMeshes();
+                    unsigned short meshCount = pGeometry->header->numMeshes;
                     while (meshCount>0)
                     {
                         meshCount--;
@@ -1925,9 +1925,13 @@ int CLuaEngineDefs::EngineDFFSetVertexLight(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if ((pGeometry->flags & RpGeometryFlag::rpGEOMETRYPRELIT) != RpGeometryFlag::rpGEOMETRYPRELIT)
+                if (!pGeometry->isFlag(RpGeometryFlag::rpGEOMETRYPRELIT))
                 {
-                    CClientDFF::EnableVerticesLighting(pGeometry);
+                    if (!CClientDFF::EnableVerticesLighting(pGeometry))
+                    {
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
                 }
                 usVertex--;
                 if (!pGeometry->isValidVertexId(usVertex)) {
@@ -2286,8 +2290,8 @@ int CLuaEngineDefs::EngineDFFSetPolygonVertices(lua_State* luaVM)
                 vertex3--;
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                RpMesh* mesh = pGeometry->mesh->meshes;
-                unsigned short meshCount = pGeometry->mesh->header.numMeshes;
+                RpMesh* mesh = pGeometry->header->getMeshes();
+                unsigned short meshCount = pGeometry->header->numMeshes;
                 while (meshCount>0)
                 {
                     meshCount--;
@@ -2650,34 +2654,12 @@ int CLuaEngineDefs::EngineDFFDestroyVertex(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (usVertex > pGeometry->vertices_size) {
+                usVertex--;
+                if ( !pGeometry->isValidVertexId(usVertex) ) {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                int ii = 0;
-                for (int i = 0; i < pGeometry->vertices_size; i++)
-                {
-                    //pGeometry->morphTarget->verts[i] = std::move(pGeometry->morphTarget->verts[i + 1]);
-                }
-                //RwV3d* vert = &pGeometry->morphTarget->verts[pGeometry->vertices_size-1];
-                //vert = NULL;
-                pGeometry->vertices_size--;
-                /*unsigned short removedTriangles = 0;
-                for (unsigned short i = 0; i < pGeometry->triangles_size; i++)
-                {
-                    RpTriangle* pTriangle = &pGeometry->triangles[i];
-                    if (pTriangle->v[0] == usVertex ||
-                        pTriangle->v[1] == usVertex ||
-                        pTriangle->v[2] == usVertex)
-                    {
-                        for (unsigned short i2 = i; i2 < pGeometry->triangles_size; i2++)
-                        {
-                            pGeometry->triangles[i] = std::move(pGeometry->triangles[i + 1]);
-                        }
-                        removedTriangles++;
-                    }
-                }
-                pGeometry->triangles_size -= removedTriangles;*/
+                CClientDFF::GeometryDestroyVertex(pGeometry, usVertex);
                 lua_pushboolean(luaVM, true);
                 return 1;
             }
@@ -2717,7 +2699,7 @@ int CLuaEngineDefs::EngineDFFGetPolygonConnectedToVertex(lua_State* luaVM)
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                std::vector < unsigned short > vecPolygons = pDFF->GetPolygonsUsedByVertex(usVertex);
+                std::vector < unsigned short > vecPolygons = CClientDFF::GetPolygonsUsedByVertex(pGeometry, usVertex);
                 lua_newtable(luaVM);
                 for (unsigned short i = 0; i < vecPolygons.size(); i++)
                 {

@@ -57,10 +57,11 @@ public:
     static int ClumpGetNumAtomics(RpClump * clump);
     static RwTexture* CreateTexture(RwRaster* pRaster);
     static RwRaster*  CreateRaster(int width, int height, int depth, int flags);
-    static int GetMeshIdFromPolygonId(RpGeometry* pGeometry, uint uiTriangleId);
-    static int GetPolygonIdInMesh(RpGeometry* pGeometry, RpMesh* pMesh, uint uiTriangleId);
-    static RpMesh* GetMeshFromPolygonId(RpGeometry* pGeometry, uint uiTriangleId);
-    static bool GeometryDestroyPolygon(RpGeometry* pGeometry, uint uiTriangleId);
+    static int GetMeshIdFromPolygonId(RpGeometry* pGeometry, unsigned short uiTriangle);
+    static int GetPolygonIdInMesh(RpGeometry* pGeometry, RpMesh* pMesh, unsigned short uiTriangle);
+    static RpMesh* GetMeshFromPolygonId(RpGeometry* pGeometry, unsigned short uiTriangle);
+    static bool CClientDFF::GeometryDestroyVertex(RpGeometry* pGeometry, unsigned short usVertex);
+    static bool GeometryDestroyPolygon(RpGeometry* pGeometry, unsigned short uiTriangle);
     static char* GetometryFlags(RpGeometry* pGeometry);
     static bool CreatePolygon(RpGeometry* pGeometry, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3, unsigned short usMesh);
     static unsigned short CreateMesh(RpGeometry* pGeometry);
@@ -68,10 +69,10 @@ public:
     static RpLight* CreateLight(int type);
     static RpClump* ClumpAddLight(RpClump* clump, RpLight* light);
     static bool EnableVerticesLighting(RpGeometry* pGeometry);
+    static std::vector < unsigned short > GetPolygonsUsedByVertex(RpGeometry* pGeometry, unsigned short usVertex);
 
     bool TransformMove(std::vector< unsigned short > vertices, CVector vecMove);
     bool TransformScale(std::vector< unsigned short > vertices, CVector vecScale);
-    std::vector < unsigned short > GetPolygonsUsedByVertex(unsigned short usVertex);
 
 
 

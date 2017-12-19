@@ -648,11 +648,7 @@ struct RpGeometry
     RpTriangle           *triangles;
     RwColor              *colors;
     RwTextureCoordinates *texcoords[RW_MAX_TEXTURE_COORDS];
-    struct {
-        RpMeshHeader header;
-        RpMesh* meshes;
-    } *mesh;
-    //RpMeshHeader       *mesh;
+    RpMeshHeader       *header;
     RwResEntry         *repEntry;
     RpMorphTarget      *morphTarget;
 
@@ -670,7 +666,7 @@ struct RpGeometry
     }
     inline bool isFlag(RpGeometryFlag flag)
     {
-        return (flags & flag) != flag;
+        return (flags & flag) == flag;
     }
 };
 
