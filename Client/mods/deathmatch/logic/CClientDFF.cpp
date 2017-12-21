@@ -637,28 +637,40 @@ unsigned short CClientDFF::CreateMesh(RpGeometry* pGeometry)
     {
         return 0;
     }
-    RpMesh* newMeshes = reinterpret_cast<RpMesh*>(malloc((pGeometry->header->numMeshes+1) * sizeof(RpMesh) ));
+    int s = sizeof(RpMesh);
+    int ss = (pGeometry->header->numMeshes + 2) * s;
+    RpMesh* newMeshes = reinterpret_cast<RpMesh*>(malloc(ss));
     RpMesh* mesh = pGeometry->header->getMeshes();
     for (unsigned short i = 0; i < pGeometry->header->numMeshes; i++)
     {
         newMeshes[i] = mesh[i];
     }
-
-    //newMeshes[pGeometry->header->numMeshes] = mesh[pGeometry->header->numMeshes];   // crash
-    
-    // crash /*
-    unsigned short indices[3];
-    indices[0] = 0;
-    indices[1] = 1;
-    indices[2] = 2;
-    newMeshes[pGeometry->header->numMeshes].indices = indices; // = 0; // crash
-    // crash */
-
-
-    newMeshes[pGeometry->header->numMeshes].numIndices = 3;    // = 0; // crash
-    newMeshes[pGeometry->header->numMeshes].material = CreateMaterial();
+    RpMesh newMesh;
+    newMesh.numIndices = 3;
+    unsigned short a[3];
+    a[0] = 0;
+    a[1] = 0;
+    a[2] = 0;
+    newMesh.indices = a;
+    newMesh.material = CreateMaterial();
+    newMeshes[pGeometry->header->numMeshes] = newMesh;
+    RpMesh mymesh21 = newMeshes[0];
+    RpMesh mymesh22 = newMeshes[6];
+    RpMesh mymesh23 = newMeshes[7];
+    mesh = newMeshes;
+    pGeometry->header->setMeshes(newMeshes);
     pGeometry->header->numMeshes++;
-    //pGeometry->header->getMeshes() = newMeshes;
+    RpMesh* mesha = pGeometry->header->getMeshes();
+    RpMesh myMesh1 = mesha[0];    // 0x2342edd8
+    RpMesh myMesh2 = mesha[1];    // 0x2342ede4
+    RpMesh myMesh3 = mesha[2];    // 0x2342edf0
+    RpMesh myMesh4 = mesha[3];    // 0x2342edfc
+    RpMesh myMesh5 = mesha[4];    // 0x2342ee08
+    RpMesh myMesh6 = mesha[5];    // 0x2342ee14   // 591588884
+    RpMesh myMesh7 = mesha[6];    // 0x2342ee20   // 591588896
+    RpMesh myMesh8 = mesha[7];    // 0x2342ee2c   // 591588908
+    unsigned short ilosc = pGeometry->header->numMeshes;
+    abort();
     return pGeometry->header->numMeshes; 
 }
 
@@ -759,4 +771,40 @@ std::vector < unsigned short > CClientDFF::GetPolygonsUsedByVertex(RpGeometry* p
         }
     }
     return vecPolygons;
+}
+
+bool CClientDFF::CreateVertex(RpGeometry* pGeometry, CVector vecPosition)
+{
+    pGeometry->vertices_size++;
+    int lastVertex = pGeometry->vertices_size - 1;
+    RwV3d* verts = pGeometry->morphTarget->verts;
+    RwV3d* newVerts = reinterpret_cast<RwV3d *>(malloc(pGeometry->vertices_size * sizeof(RwV3d)));
+    for (int i = 0; i < lastVertex; i++)
+    {
+        newVerts[i] = verts[i];
+    }
+    RwV3d vVert;
+    vVert.x = vecPosition.fX;
+    vVert.y = vecPosition.fY;
+    vVert.z = vecPosition.fZ;
+    newVerts[lastVertex] = vVert;
+    free(pGeometry->morphTarget->verts);
+    pGeometry->morphTarget->verts = (RwV3d *)newVerts;
+    if (pGeometry->isFlag(RpGeometryFlag::rpGEOMETRYPRELIT))
+    {
+        RwColor* newColors = reinterpret_cast<RwColor*>(malloc(pGeometry->vertices_size * sizeof(RwColor)));
+        for (int i = 0; i < lastVertex; i++)
+        {
+            newColors[i] = pGeometry->colors[i];
+        }
+        RwColor color;
+        color.a = 0;
+        color.r = 32;
+        color.g = 32;
+        color.b = 32;
+        newColors[lastVertex] = color;
+        pGeometry->colors = newColors;
+        
+    }
+    return true;
 }

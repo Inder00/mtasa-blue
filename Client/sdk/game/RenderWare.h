@@ -348,10 +348,11 @@ struct RpMeshHeader
     unsigned int   totalIndicesInMesh;
     unsigned int   firstMeshOffset;
     RpMesh *getMeshes(void) { return (RpMesh*)(this + 1); }
-    void setMeshes(RpMesh* newMeshes)
+    bool setMeshes(RpMesh* newMeshes)
     {
         RpMesh* meshes = (RpMesh*)(this + 1);
         meshes = newMeshes;
+        return true;
     }
     bool isValidMeshId(int meshId)
     {

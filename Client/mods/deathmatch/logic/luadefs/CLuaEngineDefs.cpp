@@ -84,7 +84,7 @@ void CLuaEngineDefs::LoadFunctions ( void )
 
     CLuaCFunctions::AddFunction("engineTXDGetTexturesCount", EngineTXDGetTexturesCount);
     CLuaCFunctions::AddFunction("engineTXDGetTextureInfo", EngineTXDGetTextureInfo);
-    CLuaCFunctions::AddFunction("engineTXDGetTexturePixels", EngineTXDGetTexturePixels);
+    //CLuaCFunctions::AddFunction("engineTXDGetTexturePixels", EngineTXDGetTexturePixels);
 
     CLuaCFunctions::AddFunction("engineReplaceModel", EngineReplaceModel);
     CLuaCFunctions::AddFunction ( "engineRestoreModel", EngineRestoreModel );
@@ -1477,6 +1477,32 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
                     }
                     return 1;
                 }
+                else if (sSelectType == "inRange")
+                {
+                    CVector vecPosition;
+                    float fRange = NULL;
+                    argStream.ReadVector3D(vecPosition);
+                    argStream.ReadNumber(fRange);
+                    if (argStream.HasErrors())
+                    {
+                        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                    lua_newtable(luaVM);
+                    unsigned short next = 0;
+                    for (unsigned short i = 0; i < pGeometry->vertices_size; i++)
+                    {
+                        RwV3d vert = pGeometry->morphTarget->verts[i];
+                        if (fRange >= (vert.getVector() - vecPosition).Length())
+                        {
+                            lua_pushnumber(luaVM, ++next);
+                            lua_pushnumber(luaVM, i + 1);
+                            lua_settable(luaVM, -3);
+                        }
+                    }
+                    return 1;
+                }
                 else if (sSelectType == "byasdf")
                 {
 
@@ -1805,10 +1831,10 @@ int CLuaEngineDefs::EngineDFFGetPolygons(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFCreateVertex(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    CVector pos;
+    CVector vecPosition;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
-    argStream.ReadVector3D(pos);
+    argStream.ReadVector3D(vecPosition);
 
     if (!argStream.HasErrors())
     {
@@ -1820,21 +1846,7 @@ int CLuaEngineDefs::EngineDFFCreateVertex(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                pGeometry->vertices_size++;
-                int lastVertex = pGeometry->vertices_size - 1;
-                RwV3d* verts = pGeometry->morphTarget->verts;
-                RwV3d* newVerts = reinterpret_cast<RwV3d *>(malloc(pGeometry->vertices_size * sizeof(RwV3d)));
-                for (int i = 0; i < lastVertex; i++)
-                {
-                    newVerts[i] = verts[i];
-                }
-                RwV3d vVert;
-                vVert.x = pos.fX;
-                vVert.y = pos.fY;
-                vVert.z = pos.fZ;
-                newVerts[lastVertex] = vVert;
-                free(pGeometry->morphTarget->verts);
-                pGeometry->morphTarget->verts = (RwV3d *)newVerts;
+                CClientDFF::CreateVertex(pGeometry, vecPosition);
                 lua_pushnumber(luaVM, pGeometry->vertices_size);
                 return 1;
             }
@@ -1902,18 +1914,25 @@ int CLuaEngineDefs::EngineDFFSetVertexUV(lua_State* luaVM)
     return 1;
 }
 
+inline float clamp(float x, float a, float b)
+{
+    return x < a ? a : (x > b ? b : x);
+}
+
 int CLuaEngineDefs::EngineDFFSetVertexLight(lua_State* luaVM)
 {
     CClientDFF* pDFF;
     unsigned short usVertex;
     unsigned short r, g, b, a;
+    bool blend;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(usVertex);
     argStream.ReadNumber(r);
     argStream.ReadNumber(g);
     argStream.ReadNumber(b);
-    argStream.ReadNumber(a, 255);
+    argStream.ReadNumber(a);
+    argStream.ReadBool(blend, false);
 
     if (!argStream.HasErrors())
     {
@@ -1945,10 +1964,18 @@ int CLuaEngineDefs::EngineDFFSetVertexLight(lua_State* luaVM)
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                vertColor->r = r;
-                vertColor->g = g;
-                vertColor->b = b;
-                vertColor->a = a;
+                if (blend)
+                {
+                    r += vertColor->r;
+                    g += vertColor->g;
+                    b += vertColor->b;
+                    a += vertColor->a;
+                }
+                
+                vertColor->r = clamp(r, 0, 255);
+                vertColor->g = clamp(g, 0, 255);
+                vertColor->b = clamp(b, 0, 255);
+                vertColor->a = clamp(a, 0, 255);
                 lua_pushboolean(luaVM, true);
                 return 1;
             }
@@ -2759,6 +2786,11 @@ int CLuaEngineDefs::EngineDFFUseVerticesTool(lua_State* luaVM)
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadString(strTool);
+    std::vector< unsigned short > vertices;
+    argStream.ReadNumberTable(vertices);
+
+    sort(vertices.begin(), vertices.end());
+    vertices.erase(unique(vertices.begin(), vertices.end()), vertices.end());
 
     if (!argStream.HasErrors())
     {
@@ -2770,14 +2802,19 @@ int CLuaEngineDefs::EngineDFFUseVerticesTool(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
+                for (unsigned short i = 0; i < vertices.size(); i++)
+                {
+                    if (!pGeometry->isValidVertexId(vertices.at(i)))
+                    {
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                }
+
                 if (strTool == "remove")
                 {
-                    unsigned short usVertexId;
-                    while (argStream.NextIsNumber())
-                    {
-                        //pDFF->
-                    }
-                    lua_pushboolean(luaVM, false);
+
+                    lua_pushboolean(luaVM, true);
                     return 1;
                 }
                 else if (strTool == "makeplanear")
@@ -2792,89 +2829,42 @@ int CLuaEngineDefs::EngineDFFUseVerticesTool(lua_State* luaVM)
                     }
                     if (axis == "x" || axis == "y" || axis == "z")
                     {
-                        std::vector < unsigned short > vertices;
-                        unsigned short usVertex;
-                        while (argStream.NextIsNumber())
+                        float averageX = 0;
+                        float averageY = 0;
+                        float averageZ = 0;
+                        for (unsigned short i = 0; i < vertices.size(); i++)
                         {
-                            argStream.ReadNumber(usVertex);
-                            if (std::find(vertices.begin(), vertices.end(), usVertex) == vertices.end())
-                                if (pGeometry->isValidVertexId(usVertex))
-                                    vertices.push_back(usVertex);
+                            RwV3d vVert = pGeometry->morphTarget->verts[vertices.at(i)];
+                            averageX += vVert.x;
+                            averageY += vVert.y;
+                            averageZ += vVert.z;
                         }
                         if (axis == "x")
                         {
-                            float averageX = 0;
-                            for (unsigned short i = 0; i < vertices.size(); i++)
-                            {
-                                unsigned short usVertex = vertices.at(i);
-                                if (pGeometry->isValidVertexId(usVertex + 1)) {
-                                    RwV3d vVert = pGeometry->morphTarget->verts[usVertex];
-                                    averageX += vVert.x;
-                                }
-                                else
-                                {
-                                    lua_pushboolean(luaVM, false);
-                                    return 1;
-                                }
-                            }
                             averageX /= vertices.size();
                             for (unsigned short i = 0; i < vertices.size(); i++)
                             {
-                                unsigned short usVertex = vertices.at(i);
-                                RwV3d* vVert = &pGeometry->morphTarget->verts[usVertex];
-                                vVert->x = averageX;
+                                pGeometry->morphTarget->verts[vertices.at(i)].x = averageX;
                             }
                             lua_pushboolean(luaVM, true);
                             return 1;
                         }
                         else if (axis == "y")
                         {
-                            float averageY = 0;
-                            for (unsigned short i = 0; i < vertices.size(); i++)
-                            {
-                                unsigned short usVertex = vertices.at(i);
-                                if (pGeometry->isValidVertexId(usVertex + 1)) {
-                                    RwV3d vVert = pGeometry->morphTarget->verts[usVertex];
-                                    averageY += vVert.y;
-                                }
-                                else
-                                {
-                                    lua_pushboolean(luaVM, false);
-                                    return 1;
-                                }
-                            }
                             averageY /= vertices.size();
                             for (unsigned short i = 0; i < vertices.size(); i++)
                             {
-                                unsigned short usVertex = vertices.at(i);
-                                RwV3d* vVert = &pGeometry->morphTarget->verts[usVertex];
-                                vVert->y = averageY;
+                                pGeometry->morphTarget->verts[vertices.at(i)].y = averageY;
                             }
                             lua_pushboolean(luaVM, true);
                             return 1;
                         }
                         else if (axis == "z")
                         {
-                            float averageZ = 0;
-                            for (unsigned short i = 0; i < vertices.size(); i++)
-                            {
-                                unsigned short usVertex = vertices.at(i);
-                                if (pGeometry->isValidVertexId(usVertex + 1)) {
-                                    RwV3d vVert = pGeometry->morphTarget->verts[usVertex];
-                                    averageZ += vVert.z;
-                                }
-                                else
-                                {
-                                    lua_pushboolean(luaVM, false);
-                                    return 1;
-                                }
-                            }
                             averageZ /= vertices.size();
                             for (unsigned short i = 0; i < vertices.size(); i++)
                             {
-                                unsigned short usVertex = vertices.at(i);
-                                RwV3d* vVert = &pGeometry->morphTarget->verts[usVertex];
-                                vVert->z = averageZ;
+                                pGeometry->morphTarget->verts[vertices.at(i)].z = averageZ;
                             }
                             lua_pushboolean(luaVM, true);
                             return 1;
@@ -2909,6 +2899,11 @@ int CLuaEngineDefs::EngineDFFUsePolygonsTool(lua_State* luaVM)
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadString(strTool);
+    std::vector< unsigned short > polygons;
+    argStream.ReadNumberTable(polygons);
+
+    sort(polygons.begin(), polygons.end());
+    polygons.erase(unique(polygons.begin(), polygons.end()), polygons.end());
 
     if (!argStream.HasErrors())
     {
@@ -2920,121 +2915,19 @@ int CLuaEngineDefs::EngineDFFUsePolygonsTool(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
+                for (unsigned short i = 0; i < polygons.size(); i++)
+                {
+                    if (!pGeometry->isValidTriangleId(polygons.at(i)))
+                    {
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                }
+
                 if (strTool == "remove")
                 {
-                    unsigned short usVertexId;
-                    while (argStream.NextIsNumber())
-                    {
-                        //pDFF->
-                    }
-                    lua_pushboolean(luaVM, false);
+                    lua_pushboolean(luaVM, true);
                     return 1;
-                }
-                else if (strTool == "makeplanear")
-                {
-                    SString axis;
-                    argStream.ReadString(axis);
-                    if (argStream.HasErrors())
-                    {
-                        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
-                        lua_pushboolean(luaVM, false);
-                        return 1;
-                    }
-                    if (axis == "x" || axis == "y" || axis == "z")
-                    {
-                        std::vector < unsigned short > vertices;
-                        unsigned short usVertex;
-                        while (argStream.NextIsNumber())
-                        {
-                            argStream.ReadNumber(usVertex);
-                            if (std::find(vertices.begin(), vertices.end(), usVertex) == vertices.end())
-                                if (pGeometry->isValidVertexId(usVertex))
-                                    vertices.push_back(usVertex);
-                        }
-                        if (axis == "x")
-                        {
-                            float averageX = 0;
-                            for (unsigned short i = 0; i < vertices.size(); i++)
-                            {
-                                unsigned short usVertex = vertices.at(i);
-                                if (pGeometry->isValidVertexId(usVertex + 1)) {
-                                    RwV3d vVert = pGeometry->morphTarget->verts[usVertex];
-                                    averageX += vVert.x;
-                                }
-                                else
-                                {
-                                    lua_pushboolean(luaVM, false);
-                                    return 1;
-                                }
-                            }
-                            averageX /= vertices.size();
-                            for (unsigned short i = 0; i < vertices.size(); i++)
-                            {
-                                unsigned short usVertex = vertices.at(i);
-                                RwV3d* vVert = &pGeometry->morphTarget->verts[usVertex];
-                                vVert->x = averageX;
-                            }
-                            lua_pushboolean(luaVM, true);
-                            return 1;
-                        }
-                        else if (axis == "y")
-                        {
-                            float averageY = 0;
-                            for (unsigned short i = 0; i < vertices.size(); i++)
-                            {
-                                unsigned short usVertex = vertices.at(i);
-                                if (pGeometry->isValidVertexId(usVertex + 1)) {
-                                    RwV3d vVert = pGeometry->morphTarget->verts[usVertex];
-                                    averageY += vVert.y;
-                                }
-                                else
-                                {
-                                    lua_pushboolean(luaVM, false);
-                                    return 1;
-                                }
-                            }
-                            averageY /= vertices.size();
-                            for (unsigned short i = 0; i < vertices.size(); i++)
-                            {
-                                unsigned short usVertex = vertices.at(i);
-                                RwV3d* vVert = &pGeometry->morphTarget->verts[usVertex];
-                                vVert->y = averageY;
-                            }
-                            lua_pushboolean(luaVM, true);
-                            return 1;
-                        }
-                        else if (axis == "z")
-                        {
-                            float averageZ = 0;
-                            for (unsigned short i = 0; i < vertices.size(); i++)
-                            {
-                                unsigned short usVertex = vertices.at(i);
-                                if (pGeometry->isValidVertexId(usVertex + 1)) {
-                                    RwV3d vVert = pGeometry->morphTarget->verts[usVertex];
-                                    averageZ += vVert.z;
-                                }
-                                else
-                                {
-                                    lua_pushboolean(luaVM, false);
-                                    return 1;
-                                }
-                            }
-                            averageZ /= vertices.size();
-                            for (unsigned short i = 0; i < vertices.size(); i++)
-                            {
-                                unsigned short usVertex = vertices.at(i);
-                                RwV3d* vVert = &pGeometry->morphTarget->verts[usVertex];
-                                vVert->z = averageZ;
-                            }
-                            lua_pushboolean(luaVM, true);
-                            return 1;
-                        }
-                    }
-                    else
-                    {
-                        lua_pushboolean(luaVM, false);
-                        return 1;
-                    }
                 }
                 lua_pushboolean(luaVM, false);
                 return 1;
@@ -4361,7 +4254,6 @@ int CLuaEngineDefs::EngineTXDGetTextureInfo(lua_State* luaVM)
 
 int CLuaEngineDefs::EngineTXDGetTexturePixels(lua_State* luaVM)
 {
-    /*
     CClientTXD* pTXD = NULL;
     unsigned short textureId = NULL;
     CScriptArgReader argStream(luaVM);
@@ -4374,18 +4266,18 @@ int CLuaEngineDefs::EngineTXDGetTexturePixels(lua_State* luaVM)
         if (textureId > NULL && textureId <= textures.size())
         {
             RwTexture* texture = textures.at(textureId);
-            unsigned char* pixels = texture->raster->pixels;    // NULL
-            unsigned char* pixels2 = pixels + 1;
-            unsigned char* pixels3 = pixels + 2;
-            unsigned char* pixels4 = pixels + 3;
-            //abort();
-            lua_pushstring(luaVM, (const char*)texture->raster->pixels);
+            unsigned char pixels1 = texture->raster->pixels[0];
+            unsigned char pixels2 = texture->raster->pixels[1];
+            unsigned char pixels3 = texture->raster->pixels[2];
+            unsigned char pixels4 = texture->raster->pixels[3];
+            abort();
+            lua_pushstring(luaVM, "ASDF");
             return 1;
         }
     }
     else
         m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
-        */
+
     lua_pushboolean(luaVM, false);
     return 1;
 }

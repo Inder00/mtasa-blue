@@ -70,6 +70,7 @@ public:
     static RpClump* ClumpAddLight(RpClump* clump, RpLight* light);
     static bool EnableVerticesLighting(RpGeometry* pGeometry);
     static std::vector < unsigned short > GetPolygonsUsedByVertex(RpGeometry* pGeometry, unsigned short usVertex);
+    static bool CreateVertex(RpGeometry* pGeometry, CVector vecPosition);
 
     bool TransformMove(std::vector< unsigned short > vertices, CVector vecMove);
     bool TransformScale(std::vector< unsigned short > vertices, CVector vecScale);
