@@ -125,6 +125,8 @@ public:
     RpMaterial* MaterialCreate(void);
     RpLight*  LightCreate(int type);
     RpClump* ClumpAddLight(RpClump* clump, RpLight* light);
+    RpMeshHeader* CreateMeshHeader(unsigned int size);
+
 
 
     static void         StaticSetHooks              ( void );

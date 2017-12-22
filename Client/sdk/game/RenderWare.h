@@ -348,15 +348,9 @@ struct RpMeshHeader
     unsigned int   totalIndicesInMesh;
     unsigned int   firstMeshOffset;
     RpMesh *getMeshes(void) { return (RpMesh*)(this + 1); }
-    bool setMeshes(RpMesh* newMeshes)
-    {
-        RpMesh* meshes = (RpMesh*)(this + 1);
-        meshes = newMeshes;
-        return true;
-    }
     bool isValidMeshId(int meshId)
     {
-        return (meshId != NULL && numMeshes >= meshId);
+        return (meshId >= 0 && numMeshes > meshId);
     }
 };
 struct RwTexDictionary

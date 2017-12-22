@@ -101,7 +101,7 @@ typedef RwRaster*               (__cdecl *RwRasterLock_t)                       
 typedef RwRaster*               (__cdecl *RwRasterCreate_t)                     (int width, int height, int depth, int flags);
 typedef RwTexture*              (__cdecl *RwTextureCreate_t)                    (RwRaster *raster);
 typedef RpMaterial*             (__cdecl *RpMaterialSetTexture_t)               (RpMaterial * mat, RwTexture * tex);
-
+typedef RpMeshHeader*           (__cdecl *RpMeshHeaderCreate_t)                 (unsigned int size);
 /*****************************************************************************/
 /** Renderware function mappings                                            **/
 /*****************************************************************************/
@@ -182,6 +182,7 @@ RWFUNC ( RwRasterLock_t                          RwRasterLock                   
 RWFUNC ( RwRasterCreate_t                        RwRasterCreate                          , (RwRasterCreate_t)                        0xDEAD )
 RWFUNC ( RwTextureCreate_t                       RwTextureCreate                         , (RwTextureCreate_t)                       0xDEAD )
 RWFUNC ( RpMaterialSetTexture_t                  RpMaterialSetTexture                    , (RpMaterialSetTexture_t)                  0xDEAD )
+RWFUNC ( RpMeshHeaderCreate_t                    RpMeshHeaderCreate                      , (RpMeshHeaderCreate_t)                    0xDEAD )
 
 /*****************************************************************************/
 /** GTA function definitions and mappings                                   **/

@@ -75,6 +75,7 @@ public:
     bool TransformMove(std::vector< unsigned short > vertices, CVector vecMove);
     bool TransformScale(std::vector< unsigned short > vertices, CVector vecScale);
 
+    static RpMeshHeader* CreateMeshHeader(unsigned int size);
 
 
     RpClump*                        GetLoadedClump(ushort usModelId);

@@ -893,3 +893,7 @@ RpClump* CRenderWareSA::ClumpAddLight(RpClump* clump, RpLight* light)
 {
     return RpClumpAddLight(clump, light);
 }
+RpMeshHeader* CRenderWareSA::CreateMeshHeader(unsigned int size)
+{
+    return RpMeshHeaderCreate(size);
+}

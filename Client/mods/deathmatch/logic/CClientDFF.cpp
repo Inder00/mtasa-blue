@@ -591,6 +591,11 @@ RpMaterial* CClientDFF::CreateMaterial( void )
     return g_pGame->GetRenderWare()->MaterialCreate( );
 }
 
+RpMeshHeader* CClientDFF::CreateMeshHeader(unsigned int size)
+{
+    return g_pGame->GetRenderWare()->CreateMeshHeader(size);
+}
+
 bool CClientDFF::CreatePolygon(RpGeometry* pGeometry, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3, unsigned short usMesh)
 {
     if (!pGeometry->header->isValidMeshId(usMesh))
@@ -637,40 +642,65 @@ unsigned short CClientDFF::CreateMesh(RpGeometry* pGeometry)
     {
         return 0;
     }
-    int s = sizeof(RpMesh);
-    int ss = (pGeometry->header->numMeshes + 2) * s;
-    RpMesh* newMeshes = reinterpret_cast<RpMesh*>(malloc(ss));
-    RpMesh* mesh = pGeometry->header->getMeshes();
-    for (unsigned short i = 0; i < pGeometry->header->numMeshes; i++)
+    unsigned short lastId = pGeometry->header->numMeshes;
+    RpMesh* oldMeshes = pGeometry->header->getMeshes();
+    unsigned short meshSize = sizeof(RpMesh);
+    unsigned short headerSize = sizeof(RpMeshHeader);
+    unsigned short mSize = 12 * (lastId + 1) + 16;
+    RpMeshHeader* newHeader = reinterpret_cast<RpMeshHeader*>(malloc(mSize));
+    newHeader->numMeshes = lastId;
+    newHeader->flags = pGeometry->header->flags;
+    newHeader->serialNum = pGeometry->header->serialNum;
+    newHeader->firstMeshOffset = pGeometry->header->firstMeshOffset;
+    newHeader->totalIndicesInMesh = pGeometry->header->totalIndicesInMesh + 3;
+    newHeader->numMeshes = pGeometry->header->numMeshes + 1;
+    RpMesh* b = newHeader->getMeshes();
+    for (int i = 0; i < lastId; i++)
     {
-        newMeshes[i] = mesh[i];
+        RpMesh* xd = &b[i];
+        xd->numIndices = oldMeshes[i].numIndices;
+        xd->indices = oldMeshes[i].indices;
+        xd->material = oldMeshes[i].material;
     }
-    RpMesh newMesh;
-    newMesh.numIndices = 3;
-    unsigned short a[3];
-    a[0] = 0;
-    a[1] = 0;
-    a[2] = 0;
-    newMesh.indices = a;
-    newMesh.material = CreateMaterial();
-    newMeshes[pGeometry->header->numMeshes] = newMesh;
-    RpMesh mymesh21 = newMeshes[0];
-    RpMesh mymesh22 = newMeshes[6];
-    RpMesh mymesh23 = newMeshes[7];
-    mesh = newMeshes;
-    pGeometry->header->setMeshes(newMeshes);
-    pGeometry->header->numMeshes++;
-    RpMesh* mesha = pGeometry->header->getMeshes();
-    RpMesh myMesh1 = mesha[0];    // 0x2342edd8
-    RpMesh myMesh2 = mesha[1];    // 0x2342ede4
-    RpMesh myMesh3 = mesha[2];    // 0x2342edf0
-    RpMesh myMesh4 = mesha[3];    // 0x2342edfc
-    RpMesh myMesh5 = mesha[4];    // 0x2342ee08
-    RpMesh myMesh6 = mesha[5];    // 0x2342ee14   // 591588884
-    RpMesh myMesh7 = mesha[6];    // 0x2342ee20   // 591588896
-    RpMesh myMesh8 = mesha[7];    // 0x2342ee2c   // 591588908
-    unsigned short ilosc = pGeometry->header->numMeshes;
-    abort();
+    RpMaterial* mat = CreateMaterial();
+    RpMesh* last = &b[lastId];
+    unsigned short indices[3];
+    indices[0] = 2;
+    indices[1] = 5;
+    indices[2] = 25;
+    last->numIndices = 3;
+    last->indices = indices;
+    last->material = mat;
+    auto a1_11 = &oldMeshes[0];
+    auto a1_12 = &oldMeshes[1];
+    auto a1_13 = &oldMeshes[3];
+    auto a1_14 = &oldMeshes[5];
+    auto a1_15 = &oldMeshes[6];
+    auto a1_16 = &oldMeshes[7];
+    auto a1_17 = &oldMeshes[8];
+    auto a1_18 = &oldMeshes[9];
+    pGeometry->header = newHeader;
+    auto newMeshes = pGeometry->header->getMeshes();
+    auto a1_21 = &newMeshes[0];
+    auto a1_22 = &newMeshes[1];
+    auto a1_23 = &newMeshes[2];
+    auto a1_24 = &newMeshes[6];
+    auto a1_25 = &newMeshes[7];
+    auto a1_26 = &newMeshes[8];
+    auto a1_27 = &newMeshes[9];
+    auto a1_28 = &newMeshes[10];
+    lastId = pGeometry->materials.entries;
+    RpMaterial** newMaterials = reinterpret_cast<RpMaterial**>(malloc(sizeof(RpMaterial) * (lastId + 1)));
+    for (int i = 0; i < pGeometry->materials.entries; i++)
+    {
+        newMaterials[i] = pGeometry->materials.materials[i];
+    }
+    newMaterials[lastId] = mat;
+    newMaterials[lastId]->refs = 1;
+    pGeometry->materials.entries++;
+    pGeometry->materials.unknown++;
+    pGeometry->materials.materials = newMaterials;
+    //abort();
     return pGeometry->header->numMeshes; 
 }
 

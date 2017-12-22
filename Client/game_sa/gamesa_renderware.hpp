@@ -101,6 +101,7 @@ void InitRwFunctions( eGameVersion version )
             CTxdStore_GetNumRefs                = (CTxdStore_GetNumRefs_t)                  0x00731AA0; 
             CClothesBuilder_CopyTexture         = (CClothesBuilder_CopyTexture_t)           0x005A5730;
 
+            RpMeshHeaderCreate                  = (RpMeshHeaderCreate_t)                    0x00758920;
             break;
         }    
 
@@ -191,6 +192,7 @@ void InitRwFunctions( eGameVersion version )
             CTxdStore_GetNumRefs                = (CTxdStore_GetNumRefs_t)                  0x00731AA0;
             CClothesBuilder_CopyTexture         = (CClothesBuilder_CopyTexture_t)           0x005A5730;
 
+            RpMeshHeaderCreate                  = (RpMeshHeaderCreate_t)                    0x00758920;
             break;
         }
     }

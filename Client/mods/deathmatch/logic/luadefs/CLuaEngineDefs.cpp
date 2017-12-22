@@ -2605,7 +2605,7 @@ int CLuaEngineDefs::EngineDFFCreateMesh(lua_State* luaVM)
                 }
                 else
                 {
-                    lua_pushnumber(luaVM, usMesh + 1);
+                    lua_pushnumber(luaVM, usMesh);
                 }
                 return 1;
             }
