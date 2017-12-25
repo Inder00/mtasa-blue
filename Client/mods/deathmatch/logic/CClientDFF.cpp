@@ -117,7 +117,7 @@ void CClientDFF::UnloadDFF ( void )
 }
 
 
-bool CClientDFF::ReplaceModel ( unsigned short usModel, bool bAlphaTransparency )
+bool CClientDFF::ReplaceModel ( ushort usModel, bool bAlphaTransparency )
 {
     // Record attempt in case it all goes wrong
     CArgMap argMap;
@@ -132,7 +132,7 @@ bool CClientDFF::ReplaceModel ( unsigned short usModel, bool bAlphaTransparency 
 }
 
 
-bool CClientDFF::DoReplaceModel ( unsigned short usModel, bool bAlphaTransparency )
+bool CClientDFF::DoReplaceModel ( ushort usModel, bool bAlphaTransparency )
 {
     if ( !CClientDFFManager::IsReplacableModel( usModel ) )
         return false;
@@ -184,10 +184,10 @@ bool CClientDFF::DoReplaceModel ( unsigned short usModel, bool bAlphaTransparenc
 }
 
 
-bool CClientDFF::HasReplaced ( unsigned short usModel )
+bool CClientDFF::HasReplaced ( ushort usModel )
 {
     // See if we have a match in our list
-    std::list < unsigned short > ::iterator iter = m_Replaced.begin ();
+    std::list < ushort > ::iterator iter = m_Replaced.begin ();
     for ( ; iter != m_Replaced.end (); iter++ )
     {
         // Compare the models
@@ -202,7 +202,7 @@ bool CClientDFF::HasReplaced ( unsigned short usModel )
 }
 
 
-void CClientDFF::RestoreModel ( unsigned short usModel )
+void CClientDFF::RestoreModel ( ushort usModel )
 {
     // Restore the model and remove it from the list
     InternalRestoreModel ( usModel );
@@ -213,7 +213,7 @@ void CClientDFF::RestoreModel ( unsigned short usModel )
 void CClientDFF::RestoreModels ( void )
 {
     // Loop through our list over replaced models
-    std::list < unsigned short > ::iterator iter = m_Replaced.begin ();
+    std::list < ushort > ::iterator iter = m_Replaced.begin ();
     for ( ; iter != m_Replaced.end (); iter++ )
     {
         // Restore this model
@@ -225,7 +225,7 @@ void CClientDFF::RestoreModels ( void )
 }
 
 
-void CClientDFF::InternalRestoreModel ( unsigned short usModel )
+void CClientDFF::InternalRestoreModel ( ushort usModel )
 {
     // Is this a vehicle ID?
     if ( CClientVehicleManager::IsValidModel ( usModel ) )
@@ -375,15 +375,15 @@ bool CClientDFF::IsDFFData ( const SString& strData )
     return strData.length() > 32 && memcmp( strData, "\x10\x00\x00\x00", 4 ) == 0;
 }
 
-int CClientDFF::GetPolygonIdInMesh(RpGeometry* pGeometry, RpMesh* pMesh, unsigned short uiTriangle)
+int CClientDFF::GetPolygonIdInMesh(RpGeometry* pGeometry, RpMesh* pMesh, ushort uiTriangle)
 {
-    for (unsigned short i = 0; i < pMesh->numIndices / 3; i++)
+    for (ushort i = 0; i < pMesh->numIndices / 3; i++)
     {
-        unsigned short indices1 = pMesh->indices[(i * 3) + 0];
-        unsigned short indices2 = pMesh->indices[(i * 3) + 1];
-        unsigned short indices3 = pMesh->indices[(i * 3) + 2];
+        ushort indices1 = pMesh->indices[(i * 3) + 0];
+        ushort indices2 = pMesh->indices[(i * 3) + 1];
+        ushort indices3 = pMesh->indices[(i * 3) + 2];
 
-        for (unsigned short i2 = 0; i2 < pGeometry->triangles_size; i2++)
+        for (ushort i2 = 0; i2 < pGeometry->triangles_size; i2++)
         {
             RpTriangle pTriangle = pGeometry->triangles[i2];
             if (i2 == uiTriangle &&
@@ -396,21 +396,21 @@ int CClientDFF::GetPolygonIdInMesh(RpGeometry* pGeometry, RpMesh* pMesh, unsigne
     return -1;
 }
 
-RpMesh* CClientDFF::GetMeshFromPolygonId(RpGeometry* pGeometry, unsigned short uiTriangle)
+RpMesh* CClientDFF::GetMeshFromPolygonId(RpGeometry* pGeometry, ushort uiTriangle)
 {
     RpMesh* mesh = pGeometry->header->getMeshes();
-    unsigned short meshCount = pGeometry->header->numMeshes;
+    ushort meshCount = pGeometry->header->numMeshes;
     while (meshCount>0)
     {
         meshCount--;
         RpMesh* myMesh = &mesh[meshCount];
-        for (unsigned short i = 0; i < myMesh->numIndices / 3; i++)
+        for (ushort i = 0; i < myMesh->numIndices / 3; i++)
         {
-            unsigned short indices1 = myMesh->indices[(i * 3) + 0];
-            unsigned short indices2 = myMesh->indices[(i * 3) + 1];
-            unsigned short indices3 = myMesh->indices[(i * 3) + 2];
+            ushort indices1 = myMesh->indices[(i * 3) + 0];
+            ushort indices2 = myMesh->indices[(i * 3) + 1];
+            ushort indices3 = myMesh->indices[(i * 3) + 2];
 
-            for (unsigned short i2 = 0; i2 < pGeometry->triangles_size; i2++)
+            for (ushort i2 = 0; i2 < pGeometry->triangles_size; i2++)
             {
                 RpTriangle pTriangle = pGeometry->triangles[i2];
                 if (i2 == uiTriangle &&
@@ -424,21 +424,21 @@ RpMesh* CClientDFF::GetMeshFromPolygonId(RpGeometry* pGeometry, unsigned short u
     return NULL;
 }
 
-int CClientDFF::GetMeshIdFromPolygonId(RpGeometry* pGeometry, unsigned short uiTriangle)
+int CClientDFF::GetMeshIdFromPolygonId(RpGeometry* pGeometry, ushort uiTriangle)
 {
     RpMesh* mesh = pGeometry->header->getMeshes();
-    unsigned short usMesh = pGeometry->header->numMeshes;
+    ushort usMesh = pGeometry->header->numMeshes;
     while (usMesh>0)
     {
         usMesh--;
         RpMesh* myMesh = &mesh[usMesh];
-        for (unsigned short i = 0; i < myMesh->numIndices / 3; i++)
+        for (ushort i = 0; i < myMesh->numIndices / 3; i++)
         {
-            unsigned short indices1 = myMesh->indices[(i * 3) + 0];
-            unsigned short indices2 = myMesh->indices[(i * 3) + 1];
-            unsigned short indices3 = myMesh->indices[(i * 3) + 2];
+            ushort indices1 = myMesh->indices[(i * 3) + 0];
+            ushort indices2 = myMesh->indices[(i * 3) + 1];
+            ushort indices3 = myMesh->indices[(i * 3) + 2];
 
-            for (unsigned short i2 = 0; i2 < pGeometry->triangles_size; i2++)
+            for (ushort i2 = 0; i2 < pGeometry->triangles_size; i2++)
             {
                 RpTriangle pTriangle = pGeometry->triangles[i2];
                 if (i2 == uiTriangle &&
@@ -452,39 +452,39 @@ int CClientDFF::GetMeshIdFromPolygonId(RpGeometry* pGeometry, unsigned short uiT
     return 9999;
 }
 
-bool CClientDFF::GeometryDestroyVertex(RpGeometry* pGeometry, unsigned short usVertex)
+bool CClientDFF::GeometryDestroyVertex(RpGeometry* pGeometry, ushort usVertex)
 {
-    std::vector < unsigned short > vecPolygons = GetPolygonsUsedByVertex(pGeometry, usVertex);
-    unsigned short polygons = vecPolygons.size();
-    std::sort(vecPolygons.begin(), vecPolygons.end(), std::greater<unsigned short>());  // sort from MAX to MIN
-    for (unsigned short i = 0; i < polygons; i++) // destroy all polygons which use this vertex
+    std::vector < ushort > vecPolygons = GetPolygonsUsedByVertex(pGeometry, usVertex);
+    ushort polygons = vecPolygons.size();
+    std::sort(vecPolygons.begin(), vecPolygons.end(), std::greater<ushort>());  // sort from MAX to MIN
+    for (ushort i = 0; i < polygons; i++) // destroy all polygons which use this vertex
     {
         GeometryDestroyPolygon(pGeometry, vecPolygons.at(i));
     }
-    unsigned short lastVertex = pGeometry->vertices_size;
+    ushort lastVertex = pGeometry->vertices_size;
     pGeometry->vertices_size--;
     RwV3d* newVerts = reinterpret_cast<RwV3d *>(malloc(pGeometry->vertices_size * sizeof(RwV3d)));
-    unsigned short next = 0;
-    for (unsigned short i = 0; i < lastVertex; i++)    // remove vertex
+    ushort next = 0;
+    for (ushort i = 0; i < lastVertex; i++)    // remove vertex
     {
         if (i != usVertex)
             newVerts[next++] = pGeometry->morphTarget->verts[i];
     }
 
     RpMesh* mesh = pGeometry->header->getMeshes();
-    unsigned short meshCount = pGeometry->header->numMeshes;
+    ushort meshCount = pGeometry->header->numMeshes;
     while (meshCount > 0)
     {
         meshCount--;
         RpMesh* myMesh = &mesh[meshCount];
-        for (unsigned short i = 0; i < myMesh->numIndices; i++)
+        for (ushort i = 0; i < myMesh->numIndices; i++)
         {
-            unsigned short indic = myMesh->indices[i];
+            ushort indic = myMesh->indices[i];
             if (indic > usVertex)
                 myMesh->indices[i]--;
         }
     }
-    for (unsigned short i = 0; i < pGeometry->triangles_size; i++) // fix gap
+    for (ushort i = 0; i < pGeometry->triangles_size; i++) // fix gap
     {
         RpTriangle* triangle = &pGeometry->triangles[i];
 
@@ -498,16 +498,16 @@ bool CClientDFF::GeometryDestroyVertex(RpGeometry* pGeometry, unsigned short usV
     pGeometry->morphTarget->verts = newVerts;
     return true;
 }
-bool CClientDFF::GeometryDestroyPolygon(RpGeometry* pGeometry, unsigned short uiTriangle)
+bool CClientDFF::GeometryDestroyPolygon(RpGeometry* pGeometry, ushort uiTriangle)
 {
-    unsigned short meshId = CClientDFF::GetMeshIdFromPolygonId(pGeometry, uiTriangle);
+    ushort meshId = CClientDFF::GetMeshIdFromPolygonId(pGeometry, uiTriangle);
     if (meshId == 9999)
     {
         return false;
     }
     RpMesh* mesh = pGeometry->header->getMeshes();
     RpMesh* myMesh = &mesh[meshId];
-    unsigned short numIndices = myMesh->numIndices;
+    ushort numIndices = myMesh->numIndices;
     if (numIndices <= 0)
     {
         return false;
@@ -515,11 +515,11 @@ bool CClientDFF::GeometryDestroyPolygon(RpGeometry* pGeometry, unsigned short ui
     pGeometry->triangles_size--;
     myMesh->numIndices -= 3;
     pGeometry->header->totalIndicesInMesh -= 3;
-    unsigned short* polygons = myMesh->indices;
-    unsigned short* newPolygons1 = reinterpret_cast<unsigned short*>(malloc(numIndices * 4));    // unsigned short - size=4
+    ushort* polygons = myMesh->indices;
+    ushort* newPolygons1 = reinterpret_cast<ushort*>(malloc(numIndices * 4));    // ushort - size=4
     RpTriangle* newPolygons2 = reinterpret_cast<RpTriangle*>(malloc(sizeof(RpTriangle) * pGeometry->triangles_size));
 
-    unsigned short id = GetPolygonIdInMesh(pGeometry, myMesh, uiTriangle);
+    ushort id = GetPolygonIdInMesh(pGeometry, myMesh, uiTriangle);
     unsigned int next = 0;
     for (int i = 0; i < numIndices/3; i++)
     {
@@ -557,7 +557,7 @@ char* CClientDFF::GetometryFlags(RpGeometry* pGeometry)
     return flags;
 }
 
-const RpGeometry * CClientDFF::GeometryTriangleSetVertexIndices(const RpGeometry * geo, RpTriangle * tri, unsigned short v1, unsigned short v2, unsigned short v3)
+const RpGeometry * CClientDFF::GeometryTriangleSetVertexIndices(const RpGeometry * geo, RpTriangle * tri, ushort v1, ushort v2, ushort v3)
 {
     return g_pGame->GetRenderWare()->GeometryTriangleSetVertexIndices(geo, tri, v1, v2, v3);
 }
@@ -596,7 +596,7 @@ RpMeshHeader* CClientDFF::CreateMeshHeader(unsigned int size)
     return g_pGame->GetRenderWare()->CreateMeshHeader(size);
 }
 
-bool CClientDFF::CreatePolygon(RpGeometry* pGeometry, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3, unsigned short usMesh)
+bool CClientDFF::CreatePolygon(RpGeometry* pGeometry, ushort vertex1, ushort vertex2, ushort vertex3, ushort usMesh)
 {
     if (!pGeometry->header->isValidMeshId(usMesh))
         return false;
@@ -607,12 +607,12 @@ bool CClientDFF::CreatePolygon(RpGeometry* pGeometry, unsigned short vertex1, un
     RpMesh* mesh = pGeometry->header->getMeshes();
     RpMesh* myMesh = &mesh[usMesh];
     pGeometry->triangles_size++;
-    unsigned short lastPolygon = pGeometry->triangles_size - 1;
+    ushort lastPolygon = pGeometry->triangles_size - 1;
     myMesh->numIndices += 3;
     pGeometry->header->totalIndicesInMesh += 3;
-    unsigned short numIndices = myMesh->numIndices;
-    unsigned short* polygons = myMesh->indices;
-    unsigned short* newPolygons1 = reinterpret_cast<unsigned short*>(malloc(numIndices * 4));    // unsigned short - size=4
+    ushort numIndices = myMesh->numIndices;
+    ushort* polygons = myMesh->indices;
+    ushort* newPolygons1 = reinterpret_cast<ushort*>(malloc(numIndices * 4));    // ushort - size=4
     RpTriangle* newPolygons2 = reinterpret_cast<RpTriangle*>(malloc(sizeof(RpTriangle) * pGeometry->triangles_size));
     for (int i = 0; i < numIndices - 3; i++)
     {
@@ -636,19 +636,18 @@ bool CClientDFF::CreatePolygon(RpGeometry* pGeometry, unsigned short vertex1, un
     return true;
 }
 
-unsigned short CClientDFF::CreateMesh(RpGeometry* pGeometry)
+ushort CClientDFF::CreateMesh(RpGeometry* pGeometry)
 {
     if (pGeometry->header->numMeshes >= 24)
     {
         return 0;
     }
-    unsigned short lastId = pGeometry->header->numMeshes;
+    ushort lastId = pGeometry->header->numMeshes;
     RpMesh* oldMeshes = pGeometry->header->getMeshes();
-    unsigned short meshSize = sizeof(RpMesh);
-    unsigned short headerSize = sizeof(RpMeshHeader);
-    unsigned short mSize = 12 * (lastId + 1) + 16;
+    ushort meshSize = sizeof(RpMesh);
+    ushort headerSize = sizeof(RpMeshHeader);
+    ushort mSize = sizeof(RpMesh) * (lastId + 1) + sizeof(RpMeshHeader);
     RpMeshHeader* newHeader = reinterpret_cast<RpMeshHeader*>(malloc(mSize));
-    newHeader->numMeshes = lastId;
     newHeader->flags = pGeometry->header->flags;
     newHeader->serialNum = pGeometry->header->serialNum;
     newHeader->firstMeshOffset = pGeometry->header->firstMeshOffset;
@@ -664,7 +663,7 @@ unsigned short CClientDFF::CreateMesh(RpGeometry* pGeometry)
     }
     RpMaterial* mat = CreateMaterial();
     RpMesh* last = &b[lastId];
-    unsigned short indices[3];
+    ushort indices[3];
     indices[0] = 2;
     indices[1] = 5;
     indices[2] = 25;
@@ -700,6 +699,7 @@ unsigned short CClientDFF::CreateMesh(RpGeometry* pGeometry)
     pGeometry->materials.entries++;
     pGeometry->materials.unknown++;
     pGeometry->materials.materials = newMaterials;
+    //free(pGeometry->header);
     //abort();
     return pGeometry->header->numMeshes; 
 }
@@ -714,7 +714,7 @@ RpClump* CClientDFF::ClumpAddLight(RpClump* clump, RpLight* light)
     return g_pGame->GetRenderWare()->ClumpAddLight(clump, light);
 }
 
-bool CClientDFF::TransformMove(std::vector< unsigned short > vertices, CVector vecMove)
+bool CClientDFF::TransformMove(std::vector< ushort > vertices, CVector vecMove)
 {
     if (uimodel != INVALID_MODEL_ID)
     {
@@ -736,7 +736,7 @@ bool CClientDFF::TransformMove(std::vector< unsigned short > vertices, CVector v
     return false;
 }
 
-bool CClientDFF::TransformScale(std::vector< unsigned short > vertices, CVector vecScale)
+bool CClientDFF::TransformScale(std::vector< ushort > vertices, CVector vecScale)
 {
     if (uimodel != INVALID_MODEL_ID)
     {
@@ -772,7 +772,7 @@ bool CClientDFF::EnableVerticesLighting(RpGeometry* pGeometry)
     {
         pGeometry->flags += RpGeometryFlag::rpGEOMETRYPRELIT;   // lets enable light;
         RwColor* colors = reinterpret_cast<RwColor*>(malloc(pGeometry->vertices_size * sizeof(RwColor)));
-        for (unsigned short i = 0; i < pGeometry->vertices_size; i++)
+        for (ushort i = 0; i < pGeometry->vertices_size; i++)
         {
             RwColor col;
             col.a = 0;
@@ -787,10 +787,10 @@ bool CClientDFF::EnableVerticesLighting(RpGeometry* pGeometry)
     return false;
 }
 
-std::vector < unsigned short > CClientDFF::GetPolygonsUsedByVertex(RpGeometry* pGeometry, unsigned short usVertex)
+std::vector < ushort > CClientDFF::GetPolygonsUsedByVertex(RpGeometry* pGeometry, ushort usVertex)
 {
-    std::vector < unsigned short > vecPolygons;
-    for (unsigned short i = 0; i < pGeometry->triangles_size; i++)
+    std::vector < ushort > vecPolygons;
+    for (ushort i = 0; i < pGeometry->triangles_size; i++)
     {
         RpTriangle pTriangle = pGeometry->triangles[i];
         if (pTriangle.v[0] == usVertex ||
@@ -837,4 +837,193 @@ bool CClientDFF::CreateVertex(RpGeometry* pGeometry, CVector vecPosition)
         
     }
     return true;
+}
+
+void CClientDFF::GetVerticesInMesh(lua_State* luaVM, RpMesh* mesh)
+{
+    lua_newtable(luaVM);
+    std::vector< ushort > vertices;
+    for (ushort i = 0; i < mesh->numIndices; i++)
+    {
+        ushort ind = mesh->indices[i];
+        if (std::find(vertices.begin(), vertices.end(), ind) == vertices.end())
+            vertices.push_back(ind);
+    }
+    for (int i = 0; i < vertices.size(); i++) {
+        lua_pushnumber(luaVM, i + 1);
+        lua_pushnumber(luaVM, vertices[i] + 1);
+        lua_settable(luaVM, -3);
+    }
+}
+
+void CClientDFF::GetVertices(lua_State* luaVM, RpGeometry* pGeometry)
+{
+    lua_newtable(luaVM);
+    for (ushort i = 0; i < pGeometry->vertices_size; i++)
+    {
+        lua_pushnumber(luaVM, i + 1);
+        lua_pushnumber(luaVM, i + 1);
+        lua_settable(luaVM, -3);
+    }
+}
+
+void CClientDFF::GetVerticesInRange(lua_State* luaVM, RpGeometry* pGeometry, CVector vecPosition, float fRange)
+{
+    lua_newtable(luaVM);
+    ushort next = 0;
+    for (ushort i = 0; i < pGeometry->vertices_size; i++)
+    {
+        RwV3d vert = pGeometry->morphTarget->verts[i];
+        if (fRange >= (vert.getVector() - vecPosition).Length())
+        {
+            lua_pushnumber(luaVM, ++next);
+            lua_pushnumber(luaVM, i + 1);
+            lua_settable(luaVM, -3);
+        }
+    }
+}
+
+
+void CClientDFF::GetVertexNeares3d(lua_State* luaVM, RpGeometry* pGeometry, CVector vecPosition)
+{
+    ushort nearest = NULL;
+    float distance = 99999;
+    for (ushort i = 0; i < pGeometry->vertices_size; i++)
+    {
+        RwV3d vert = pGeometry->morphTarget->verts[i];
+        float dis = DistanceBetweenPoints3D(vecPosition, vert.getVector());
+        if (distance > dis)
+        {
+            distance = dis;
+            nearest = i;
+        }
+    }
+    lua_pushnumber(luaVM, nearest + 1);
+}
+
+void CClientDFF::GetVertexNeares2d(lua_State* luaVM, RpGeometry* pGeometry, CVector2D vecPosition)
+{
+    ushort nearest = NULL;
+    float distance = 99999;
+    for (ushort i = 0; i < pGeometry->vertices_size; i++)
+    {
+        RwV3d vert = pGeometry->morphTarget->verts[i];
+        float dis = DistanceBetweenPoints2D(vecPosition, vert.getVector());
+        if (distance > dis)
+        {
+            distance = dis;
+            nearest = i + 1;
+        }
+    }
+    lua_pushnumber(luaVM, nearest);
+}
+
+bool CClientDFF::SetPolygonPosition(RpGeometry* pGeometry, ushort usPolygon, CVector newPosition)
+{
+    RpTriangle pTriangle = pGeometry->triangles[usPolygon];
+    RwV3d* vert1 = &pGeometry->morphTarget->verts[pTriangle.v[0]];
+    RwV3d* vert2 = &pGeometry->morphTarget->verts[pTriangle.v[1]];
+    RwV3d* vert3 = &pGeometry->morphTarget->verts[pTriangle.v[2]];
+    CVector moveOffset = newPosition - GetPolygonPosition(pGeometry, usPolygon);
+    vert1->x += moveOffset.fX;
+    vert2->x += moveOffset.fX;
+    vert3->x += moveOffset.fX;
+    vert1->y += moveOffset.fY;
+    vert2->y += moveOffset.fY;
+    vert3->y += moveOffset.fY;
+    vert1->z += moveOffset.fZ;
+    vert2->z += moveOffset.fZ;
+    vert3->z += moveOffset.fZ;
+    return true;
+}
+
+CVector CClientDFF::GetPolygonPosition(RpGeometry* pGeometry, ushort usPolygon)
+{
+    RpTriangle pTriangle = pGeometry->triangles[usPolygon];
+    RwV3d vert1 = pGeometry->morphTarget->verts[pTriangle.v[0]];
+    RwV3d vert2 = pGeometry->morphTarget->verts[pTriangle.v[1]];
+    RwV3d vert3 = pGeometry->morphTarget->verts[pTriangle.v[2]];
+    CVector avgPosition;
+    avgPosition.fX = (vert1.x + vert2.x + vert3.x) / 3;
+    avgPosition.fY = (vert1.y + vert2.y + vert3.y) / 3;
+    avgPosition.fZ = (vert1.z + vert2.z + vert3.z) / 3;
+    return avgPosition;
+}
+
+bool CClientDFF::SetPolygonVertices(RpGeometry* pGeometry, ushort usPolygon, ushort vertex1, ushort vertex2, ushort vertex3)
+{
+    RpMesh* mesh = pGeometry->header->getMeshes();
+    ushort meshCount = pGeometry->header->numMeshes;
+    while (meshCount>0)
+    {
+        meshCount--;
+        RpMesh* myMesh = &mesh[meshCount];
+        for (ushort i = 0; i < myMesh->numIndices / 3; i++)
+        {
+            ushort indices1 = myMesh->indices[(i * 3) + 0];
+            ushort indices2 = myMesh->indices[(i * 3) + 1];
+            ushort indices3 = myMesh->indices[(i * 3) + 2];
+
+            for (ushort i2 = 0; i2 < pGeometry->triangles_size; i2++)
+            {
+                RpTriangle pTriangle = pGeometry->triangles[i2];
+                if (i2 == usPolygon &&
+                    pTriangle.v[0] == indices1 &&
+                    pTriangle.v[1] == indices2 &&
+                    pTriangle.v[2] == indices3)
+                {
+                    myMesh->indices[i * 3] = vertex1;
+                    myMesh->indices[i * 3 + 1] = vertex2;
+                    myMesh->indices[i * 3 + 2] = vertex3;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool CClientDFF::VerticesToolMakePlanear(lua_State* luaVM, RpGeometry* pGeometry, std::vector< ushort > vertices, SString axis)
+{
+    if (axis == "x" || axis == "y" || axis == "z")
+    {
+        float averageX = 0;
+        float averageY = 0;
+        float averageZ = 0;
+        for (ushort i = 0; i < vertices.size(); i++)
+        {
+            RwV3d vVert = pGeometry->morphTarget->verts[vertices.at(i)];
+            averageX += vVert.x;
+            averageY += vVert.y;
+            averageZ += vVert.z;
+        }
+        if (axis == "x")
+        {
+            averageX /= vertices.size();
+            for (ushort i = 0; i < vertices.size(); i++)
+            {
+                pGeometry->morphTarget->verts[vertices.at(i)].x = averageX;
+            }
+            return true;
+        }
+        else if (axis == "y")
+        {
+            averageY /= vertices.size();
+            for (ushort i = 0; i < vertices.size(); i++)
+            {
+                pGeometry->morphTarget->verts[vertices.at(i)].y = averageY;
+            }
+            return true;
+        }
+        else if (axis == "z")
+        {
+            averageZ /= vertices.size();
+            for (ushort i = 0; i < vertices.size(); i++)
+            {
+                pGeometry->morphTarget->verts[vertices.at(i)].z = averageZ;
+            }
+            return true;
+        }
+    }
+    return false;
 }

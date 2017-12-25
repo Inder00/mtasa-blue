@@ -163,7 +163,7 @@ void CLuaEngineDefs::AddEngineDffClass ( lua_State* luaVM )
 int CLuaEngineDefs::EngineLoadCOL ( lua_State* luaVM )
 {
     SString strFile = "";
-    unsigned short usModel;
+    ushort usModel;
     CScriptArgReader argStream ( luaVM );
     // Grab the COL filename or data
     argStream.ReadString ( strFile );
@@ -223,12 +223,12 @@ int CLuaEngineDefs::EngineLoadCOL ( lua_State* luaVM )
 int CLuaEngineDefs::EngineLoadDFF ( lua_State* luaVM )
 {
     SString strFile = "";
-    SString strModelName = NULL;
+    SString strModelName;
 
     CScriptArgReader argStream ( luaVM );
     // Grab the DFF filename or data (model ID ignored after 1.3.1)
     argStream.ReadString ( strFile );
-    argStream.ReadString ( strModelName, NULL );
+    argStream.ReadString ( strModelName, "" );
     if ( !argStream.HasErrors ( ) )
     {
         // Grab our virtual machine and grab our resource from that.
@@ -260,9 +260,9 @@ int CLuaEngineDefs::EngineLoadDFF ( lua_State* luaVM )
                         {
                             ushort usModelID = CModelNames::ResolveModelID(strModelName);
                             if (usModelID != INVALID_MODEL_ID)
-                            {
                                 pDFF->uimodel = usModelID;
-                            }
+
+                            pDFF->strModelName = strModelName;
                         }
                         // Return the DFF
                         lua_pushelement ( luaVM, pDFF );
@@ -290,11 +290,11 @@ int CLuaEngineDefs::EngineLoadDFF ( lua_State* luaVM )
 
 int CLuaEngineDefs::EngineDFFCreateEmptyModel(lua_State* luaVM)
 {
-    SString strModelName = NULL;
+    SString strModelName;
     CScriptArgReader argStream(luaVM);
     SString strEmptyBase64 = "EAAAAIACAAD//wMYAQAAAAwAAAD//wMYAQAAAAAAAAAAAAAADgAAAGQAAAD//wMYAQAAADwAAAD//wMYAQAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP////8DAAIAAwAAABAAAAD//wMY/vJTAgQAAAD//wMYQmFzZRoAAAAoAQAA//8DGAEAAAAEAAAA//8DGAEAAAAPAAAADAEAAP//AxgBAAAAQAAAAP//AxhyAAAAAAAAAAEAAAABAAAAF7dROBe3UTgXt1E4Yp61OAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAHgAAAD//wMYAQAAAAgAAAD//wMYAQAAAP////8HAAAAWAAAAP//AxgBAAAAHAAAAP//AxgAAAAAlpaW/9yj/gAAAAAAAACAPwAAAAAAAIA/AwAAACQAAAD//wMY/PJTAhgAAAD//wMYZmZmP2ZmZj9mZmY/AACAP5mZIUEAAAAAAwAAADAAAAD//wMYDgUAABQAAAD//wMYAAAAAAEAAAAAAAAAAAAAAAAAAAD98lMCBAAAAP//AxgAAAAAFAAAACgAAAD//wMYAQAAABAAAAD//wMYAAAAAAAAAAAFAAAAAAAAAAMAAAAAAAAA//8DGAMAAACEAAAA//8DGPryUwJ4AAAA//8DGENPTDNwAAAAQmFzZQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAF7dRuBe3UbgXt1G4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
     SString strFile = SharedUtil::Base64decode(strEmptyBase64);
-    argStream.ReadString(strModelName, NULL);
+    argStream.ReadString(strModelName);
     if (!argStream.HasErrors())
     {
         // Grab our virtual machine and grab our resource from that.
@@ -418,7 +418,7 @@ int CLuaEngineDefs::EngineLoadTXD ( lua_State* luaVM )
 int CLuaEngineDefs::EngineReplaceCOL ( lua_State* luaVM )
 {
     CClientColModel* pCol = NULL;
-    unsigned short usModel = 0;
+    ushort usModel = 0;
     CScriptArgReader argStream ( luaVM );
     // Grab the COL and model ID
     argStream.ReadUserData ( pCol );
@@ -455,7 +455,7 @@ int CLuaEngineDefs::EngineRestoreCOL ( lua_State* luaVM )
 
     if ( !argStream.HasErrors ( ) )
     {
-        unsigned short usModelID = CModelNames::ResolveModelID ( strModelName );
+        ushort usModelID = CModelNames::ResolveModelID ( strModelName );
 
         if ( m_pColModelManager->RestoreModel ( usModelID ) )
         {
@@ -515,12 +515,27 @@ int CLuaEngineDefs::EngineReplaceModel(lua_State* luaVM)
 
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
-    argStream.ReadString(strModelName);
-    argStream.ReadBool(bAlphaTransparency, false);
+    if (argStream.NextIsBool())
+    {
+        argStream.ReadBool(bAlphaTransparency, false);
+    }
+    else
+    {
+        argStream.ReadString(strModelName, "");
+        argStream.ReadBool(bAlphaTransparency, false);
+    }
 
     if (!argStream.HasErrors())
     {
-        ushort usModelID = CModelNames::ResolveModelID(strModelName);
+        ushort usModelID = INVALID_MODEL_ID;
+        if (pDFF->strModelName != "")
+        {
+            usModelID = CModelNames::ResolveModelID(pDFF->strModelName);
+        }
+        else
+        {
+            usModelID = CModelNames::ResolveModelID(strModelName);
+        }
         if (usModelID != INVALID_MODEL_ID)
         {
             if (pDFF->ReplaceModel(usModelID, bAlphaTransparency))
@@ -544,7 +559,7 @@ int CLuaEngineDefs::EngineReplaceModel(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFGetFrameInfo(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short usFrameId;
+    ushort usFrameId;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(usFrameId);
@@ -560,7 +575,7 @@ int CLuaEngineDefs::EngineDFFGetFrameInfo(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RwFrame* pFrame = reinterpret_cast<RwFrame *>(pAtomic->object.object.parent);
                 RpGeometry* pGeometry = pAtomic->geometry;
-                unsigned short framesCount = 1;
+                ushort framesCount = 1;
                 while (pFrame->child != NULL)
                 {
                     framesCount++;
@@ -579,13 +594,13 @@ int CLuaEngineDefs::EngineDFFGetFrameInfo(lua_State* luaVM)
                 if (pFrame->child != NULL)
                 {
                     lua_pushstring(luaVM, "child");
-                    lua_pushnumber(luaVM, (unsigned short)pFrame->child);
+                    lua_pushnumber(luaVM, (ushort)pFrame->child);
                     lua_settable(luaVM, -3);
                 }
                 if (pFrame->next != NULL)
                 {
                     lua_pushstring(luaVM, "next");
-                    lua_pushnumber(luaVM, (unsigned short)pFrame->next);
+                    lua_pushnumber(luaVM, (ushort)pFrame->next);
                     lua_settable(luaVM, -3);
                 }
                 lua_pushstring(luaVM, "rotationMatrixAt");
@@ -701,7 +716,7 @@ int CLuaEngineDefs::EngineDFFGetProperties(lua_State* luaVM)
                 lua_settable(luaVM, -3);
 
                 /*lua_pushstring(luaVM, "framesCount");
-                unsigned short framesCount = 1;
+                ushort framesCount = 1;
                 while (pFrame->child != NULL)
                 {
                     framesCount++;
@@ -757,7 +772,7 @@ int CLuaEngineDefs::EngineDFFGetBoundingBox(lua_State* luaVM)
 
                 CVector vecMin;
                 CVector vecMax;
-                for (unsigned short i = 0; i < pGeometry->vertices_size; i++)
+                for (ushort i = 0; i < pGeometry->vertices_size; i++)
                 {
                     RwV3d vVert = pGeometry->morphTarget->verts[i];
                     if (vVert.x < vecMin.fX)
@@ -811,11 +826,11 @@ int CLuaEngineDefs::EngineDFFGetBoundingBox(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFSetMaterialColor(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uiMaterialId = NULL;
-    unsigned short uiMaterialR = NULL;
-    unsigned short uiMaterialG = NULL;
-    unsigned short uiMaterialB = NULL;
-    unsigned short uiMaterialA = NULL;
+    ushort uiMaterialId = NULL;
+    ushort uiMaterialR = NULL;
+    ushort uiMaterialG = NULL;
+    ushort uiMaterialB = NULL;
+    ushort uiMaterialA = NULL;
 
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
@@ -867,7 +882,7 @@ int CLuaEngineDefs::EngineDFFSetMaterialColor(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFSetTextureProperties(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uiTextureId = NULL;
+    ushort uiTextureId = NULL;
     float uiValue;
     SString sPropertiesName;
     CScriptArgReader argStream(luaVM);
@@ -932,7 +947,7 @@ int CLuaEngineDefs::EngineDFFSetTextureProperties(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFGetTextureProperties(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uiTextureId = NULL;
+    ushort uiTextureId = NULL;
     SString sPropertiesName;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
@@ -1010,9 +1025,9 @@ int CLuaEngineDefs::EngineDFFGetTextureProperties(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFSetTexture(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uiMaterialId = NULL;
+    ushort uiMaterialId = NULL;
     CClientTXD* pTXD = NULL;
-    unsigned short textureId = NULL;
+    ushort textureId = NULL;
     SString sName;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
@@ -1120,7 +1135,7 @@ int CLuaEngineDefs::EngineDFFSetInterpolation(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFGetMaterialProperties(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uiMaterialId = NULL;
+    ushort uiMaterialId = NULL;
 
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
@@ -1227,7 +1242,7 @@ int CLuaEngineDefs::EngineDFFGetMaterialProperties(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFSetMaterialLighting(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uiMaterialId = NULL;
+    ushort uiMaterialId = NULL;
     float ambient = NULL;
     float diffuse = NULL;
     float specular = NULL;
@@ -1277,7 +1292,7 @@ int CLuaEngineDefs::EngineDFFSetMaterialLighting(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFSetTextureName(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uiMaterialId = NULL;
+    ushort uiMaterialId = NULL;
     SString name, mask;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
@@ -1416,7 +1431,7 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 if (sSelectType == "byMeshId") {
-                    unsigned short usMeshId = NULL;
+                    ushort usMeshId = NULL;
                     argStream.ReadNumber(usMeshId);
                     if (argStream.HasErrors())
                     {
@@ -1430,50 +1445,12 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
                         return 1;
                     }
                     RpMesh* mesh = pGeometry->header->getMeshes();
-                    usMeshId--;
-                    mesh = mesh + usMeshId;
-                    unsigned short id = 0;
-                    std::vector<int> vertices;
-                    lua_newtable(luaVM);
-                    
-                    for (unsigned short i = 0; i < mesh->numIndices / 3; i++)
-                    {
-                        unsigned short indices1 = mesh->indices[(i * 3) + 0];
-                        unsigned short indices2 = mesh->indices[(i * 3) + 1];
-                        unsigned short indices3 = mesh->indices[(i * 3) + 2];
-
-                        for (unsigned short i2 = 0; i2 < pGeometry->triangles_size; i2++)
-                        {
-                            RpTriangle pTriangle = pGeometry->triangles[i2];
-                            if (pTriangle.v[0] == indices1 &&
-                                pTriangle.v[1] == indices2 &&
-                                pTriangle.v[2] == indices3)
-                            {
-                                if (std::find(vertices.begin(), vertices.end(), indices1) == vertices.end())
-                                    vertices.push_back(indices1);
-                                if (std::find(vertices.begin(), vertices.end(), indices2) == vertices.end())
-                                    vertices.push_back(indices2);
-                                if (std::find(vertices.begin(), vertices.end(), indices3) == vertices.end())
-                                    vertices.push_back(indices3);
-                            }
-                        }
-                    }
-                    for (int i = 0; i < vertices.size(); i++) {
-                        lua_pushnumber(luaVM, i+1);
-                        lua_pushnumber(luaVM, vertices[i]+1);
-                        lua_settable(luaVM, -3);
-                    }
+                    CClientDFF::GetVerticesInMesh(luaVM, &mesh[usMeshId-1]);
                     return 1;
                 }
                 else if (sSelectType == "*")
                 {
-                    lua_newtable(luaVM);
-                    for (unsigned short i = 0; i < pGeometry->vertices_size; i++)
-                    {
-                        lua_pushnumber(luaVM, i + 1);
-                        lua_pushnumber(luaVM, i + 1);
-                        lua_settable(luaVM, -3);
-                    }
+                    CClientDFF::GetVertices(luaVM, pGeometry);
                     return 1;
                 }
                 else if (sSelectType == "inRange")
@@ -1488,12 +1465,40 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
                         lua_pushboolean(luaVM, false);
                         return 1;
                     }
+                    CClientDFF::GetVerticesInRange(luaVM, pGeometry, vecPosition, fRange);
+                    return 1;
+                }
+                else if (sSelectType == "nearest3d")
+                {
+                    CVector vecPosition;
+                    argStream.ReadVector3D(vecPosition);
+                    if (argStream.HasErrors())
+                    {
+                        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                    CClientDFF::GetVertexNeares3d(luaVM, pGeometry, vecPosition);
+
+                    return 1;
+                }
+                else if (sSelectType == "betweenPosition2d")
+                {
+                    CVector2D vPositionA, vPositionB;
+                    argStream.ReadVector2D(vPositionA);
+                    argStream.ReadVector2D(vPositionB);
+                    if (argStream.HasErrors())
+                    {
+                        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
                     lua_newtable(luaVM);
-                    unsigned short next = 0;
-                    for (unsigned short i = 0; i < pGeometry->vertices_size; i++)
+                    ushort next = 0;
+                    for ( ushort i = 0; i < pGeometry->vertices_size; i++)
                     {
                         RwV3d vert = pGeometry->morphTarget->verts[i];
-                        if (fRange >= (vert.getVector() - vecPosition).Length())
+                        if (vPositionA.fX < vert.x && vPositionA.fY < vert.y && vPositionB.fX > vert.x && vPositionB.fY > vert.y)
                         {
                             lua_pushnumber(luaVM, ++next);
                             lua_pushnumber(luaVM, i + 1);
@@ -1502,34 +1507,29 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
                     }
                     return 1;
                 }
-                else if (sSelectType == "byasdf")
+                else if (sSelectType == "betweenPosition3d")
                 {
-
-                }
-                else if (sSelectType == "nearest3d")
-                {
-                    CVector vPosition;
-                    argStream.ReadVector3D(vPosition);
+                    CVector vPositionA, vPositionB;
+                    argStream.ReadVector3D(vPositionA);
+                    argStream.ReadVector3D(vPositionB);
                     if (argStream.HasErrors())
                     {
                         m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
                         lua_pushboolean(luaVM, false);
                         return 1;
                     }
-                    unsigned short nearest = NULL;
-                    float distance = 99999;
-                    for (unsigned short i = 0; i < pGeometry->vertices_size; i++)
+                    lua_newtable(luaVM);
+                    ushort next = 0;
+                    for (ushort i = 0; i < pGeometry->vertices_size; i++)
                     {
                         RwV3d vert = pGeometry->morphTarget->verts[i];
-                        CVector vVertPosition = vert.getVector();
-                        float dis=DistanceBetweenPoints3D(vPosition, vVertPosition);
-                        if (distance > dis)
+                        if (vPositionA.fX < vert.x && vPositionA.fY < vert.y && vPositionA.fZ < vert.z && vPositionB.fX > vert.x && vPositionB.fY > vert.y && vPositionA.fZ > vert.z)
                         {
-                            distance = dis;
-                            nearest = i+1;
+                            lua_pushnumber(luaVM, ++next);
+                            lua_pushnumber(luaVM, i + 1);
+                            lua_settable(luaVM, -3);
                         }
                     }
-                    lua_pushnumber(luaVM, nearest);
                     return 1;
                 }
                 else if (sSelectType == "nearest2d")
@@ -1542,20 +1542,7 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
                         lua_pushboolean(luaVM, false);
                         return 1;
                     }
-                    unsigned short nearest = NULL;
-                    float distance = 99999;
-                    for (unsigned short i = 0; i < pGeometry->vertices_size; i++)
-                    {
-                        RwV3d vert = pGeometry->morphTarget->verts[i];
-                        CVector2D vVertPosition = vert.getVector();
-                        float dis = DistanceBetweenPoints2D(vPosition, vVertPosition);
-                        if (distance > dis)
-                        {
-                            distance = dis;
-                            nearest = i + 1;
-                        }
-                    }
-                    lua_pushnumber(luaVM, nearest);
+                    
                     return 1;
                 }
                 lua_pushboolean(luaVM, false);
@@ -1577,7 +1564,7 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFGetMeshInfo(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uMeshId = NULL;
+    ushort uMeshId = NULL;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(uMeshId);
@@ -1594,8 +1581,8 @@ int CLuaEngineDefs::EngineDFFGetMeshInfo(lua_State* luaVM)
                 if (uMeshId != NULL && uMeshId <= pGeometry->header->numMeshes)
                 {
                     RpMesh* mesh = pGeometry->header->getMeshes();
-                    unsigned short meshCount = pGeometry->header->numMeshes;
-                    if (uMeshId > meshCount)
+                    ushort meshCount = pGeometry->header->numMeshes;
+                    if (pGeometry->header->isValidMeshId(uMeshId))
                     {
                         lua_pushboolean(luaVM, false);
                         return 1;
@@ -1683,7 +1670,7 @@ int CLuaEngineDefs::EngineDFFCreateVertex(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFSetVertexUV(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short usVertexId;
+    ushort usVertexId;
     float u,v;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
@@ -1739,8 +1726,8 @@ inline float clamp(float x, float a, float b)
 int CLuaEngineDefs::EngineDFFSetVertexLight(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short usVertex;
-    unsigned short r, g, b, a;
+    ushort usVertex;
+    ushort r, g, b, a;
     bool blend;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
@@ -1812,7 +1799,7 @@ int CLuaEngineDefs::EngineDFFSetVertexLight(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFGetVertexLight(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short usVertex;
+    ushort usVertex;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(usVertex);
@@ -1865,7 +1852,7 @@ int CLuaEngineDefs::EngineDFFGetVertexLight(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFGetVertexUV(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short usVertexId;
+    ushort usVertexId;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(usVertexId);
@@ -1886,11 +1873,6 @@ int CLuaEngineDefs::EngineDFFGetVertexUV(lua_State* luaVM)
                 }
                 usVertexId--;
                 RwTextureCoordinates* vVert = &pGeometry->texcoords[0][usVertexId];
-                if (vVert == NULL)
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
                 lua_pushnumber(luaVM, vVert->u);
                 lua_pushnumber(luaVM, vVert->v);
                 return 2;
@@ -1911,7 +1893,7 @@ int CLuaEngineDefs::EngineDFFGetVertexUV(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFSetVertexPosition(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short usVertex;
+    ushort usVertex;
     CVector pos;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
@@ -1956,7 +1938,7 @@ int CLuaEngineDefs::EngineDFFSetVertexPosition(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFGetVertexPosition(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short usVertex;
+    ushort usVertex;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(usVertex);
@@ -1998,7 +1980,7 @@ int CLuaEngineDefs::EngineDFFGetVertexPosition(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFSetPolygonPosition(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uiPolygonId;
+    ushort uiPolygonId;
     CVector vNewPosition;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
@@ -2016,30 +1998,13 @@ int CLuaEngineDefs::EngineDFFSetPolygonPosition(lua_State* luaVM)
 
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (uiPolygonId == NULL || uiPolygonId > pGeometry->triangles_size)
+                if (!pGeometry->isValidTriangleId(uiPolygonId))
                 {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
                 uiPolygonId--;
-                RpTriangle pTriangle = pGeometry->triangles[uiPolygonId];
-                RwV3d* vert1 = &pGeometry->morphTarget->verts[pTriangle.v[0]];
-                RwV3d* vert2 = &pGeometry->morphTarget->verts[pTriangle.v[1]];
-                RwV3d* vert3 = &pGeometry->morphTarget->verts[pTriangle.v[2]];
-                CVector avgPosition;
-                avgPosition.fX = (vert1->x + vert2->x + vert3->x) / 3;
-                avgPosition.fY = (vert1->y + vert2->y + vert3->y) / 3;
-                avgPosition.fZ = (vert1->z + vert2->z + vert3->z) / 3;
-                CVector moveOffset = vNewPosition - avgPosition;
-                vert1->x += moveOffset.fX;
-                vert2->x += moveOffset.fX;
-                vert3->x += moveOffset.fX;
-                vert1->y += moveOffset.fY;
-                vert2->y += moveOffset.fY;
-                vert3->y += moveOffset.fY;
-                vert1->z += moveOffset.fZ;
-                vert2->z += moveOffset.fZ;
-                vert3->z += moveOffset.fZ;
+                CClientDFF::SetPolygonPosition(pGeometry, uiPolygonId, vNewPosition);
                 lua_pushboolean(luaVM, true);
                 return 1;
             }
@@ -2059,10 +2024,10 @@ int CLuaEngineDefs::EngineDFFSetPolygonPosition(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFGetPolygonPosition(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uiPolygonId;
+    ushort usPolygon;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
-    argStream.ReadNumber(uiPolygonId);
+    argStream.ReadNumber(usPolygon);
 
     if (!argStream.HasErrors())
     {
@@ -2074,22 +2039,17 @@ int CLuaEngineDefs::EngineDFFGetPolygonPosition(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (uiPolygonId == NULL || uiPolygonId > pGeometry->triangles_size)
+                if (pGeometry->isValidTriangleId(usPolygon))
                 {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                uiPolygonId--;
-                RpTriangle pTriangle = pGeometry->triangles[uiPolygonId];
-                RwV3d vert1 = pGeometry->morphTarget->verts[pTriangle.v[0]];
-                RwV3d vert2 = pGeometry->morphTarget->verts[pTriangle.v[1]];
-                RwV3d vert3 = pGeometry->morphTarget->verts[pTriangle.v[2]];
-                CVector avgPosition;
-                avgPosition.fX = (vert1.x + vert2.x + vert3.x)/3;
-                avgPosition.fY = (vert1.y + vert2.y + vert3.y)/3;
-                avgPosition.fZ = (vert1.z + vert2.z + vert3.z)/3;
-                lua_pushvector(luaVM, avgPosition);
-                return 1;
+                usPolygon--;
+                CVector vecPosition = CClientDFF::GetPolygonPosition(pGeometry, usPolygon);
+                lua_pushnumber(luaVM, vecPosition.fX);
+                lua_pushnumber(luaVM, vecPosition.fY);
+                lua_pushnumber(luaVM, vecPosition.fZ);
+                return 3;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2107,11 +2067,11 @@ int CLuaEngineDefs::EngineDFFGetPolygonPosition(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFSetPolygonVertices(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uTriangleId = NULL;
-    unsigned short vertex1, vertex2, vertex3;
+    ushort usPolygon = NULL;
+    ushort vertex1, vertex2, vertex3;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
-    argStream.ReadNumber(uTriangleId);
+    argStream.ReadNumber(usPolygon);
     argStream.ReadNumber(vertex1);
     argStream.ReadNumber(vertex2);
     argStream.ReadNumber(vertex3);
@@ -2123,46 +2083,31 @@ int CLuaEngineDefs::EngineDFFSetPolygonVertices(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                if (uTriangleId == NULL)
+
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RpGeometry* pGeometry = pAtomic->geometry;
+                if (!pGeometry->isValidTriangleId(usPolygon))
                 {
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                uTriangleId--;
+                if (vertex1 == vertex2 || vertex1 == vertex3 || vertex2 == vertex3) // prevent set vertices like 1,2,2 - this make no sens
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                if (!pGeometry->isValidVertexId(vertex1) || !pGeometry->isValidVertexId(vertex2) || !pGeometry->isValidVertexId(vertex3))
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                usPolygon--;
                 vertex1--;
                 vertex2--;
                 vertex3--;
-                RpAtomic* pAtomic = pClump->getAtomic();
-                RpGeometry* pGeometry = pAtomic->geometry;
-                RpMesh* mesh = pGeometry->header->getMeshes();
-                unsigned short meshCount = pGeometry->header->numMeshes;
-                while (meshCount>0)
-                {
-                    meshCount--;
-                    RpMesh* myMesh = &mesh[meshCount];
-                    for (unsigned short i = 0; i < myMesh->numIndices / 3; i++)
-                    {
-                        unsigned short indices1 = myMesh->indices[(i * 3) + 0];
-                        unsigned short indices2 = myMesh->indices[(i * 3) + 1];
-                        unsigned short indices3 = myMesh->indices[(i * 3) + 2];
-
-                        for (unsigned short i2 = 0; i2 < pGeometry->triangles_size; i2++)
-                        {
-                            RpTriangle pTriangle = pGeometry->triangles[i2];
-                            if (i2 == uTriangleId &&
-                                pTriangle.v[0] == indices1 &&
-                                pTriangle.v[1] == indices2 &&
-                                pTriangle.v[2] == indices3)
-                            {
-                                myMesh->indices[i * 3] = vertex1;
-                                myMesh->indices[i * 3 + 1] = vertex2;
-                                myMesh->indices[i * 3 + 2] = vertex3;
-                                lua_pushboolean(luaVM, true);
-                                return 1;
-                            }
-                        }
-                    }
-                }
+                bool result = CClientDFF::SetPolygonVertices(pGeometry, usPolygon, vertex1, vertex2, vertex3);
+                lua_pushboolean(luaVM, result);
+                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2180,8 +2125,8 @@ int CLuaEngineDefs::EngineDFFSetPolygonVertices(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFSetPolygonMaterial(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uiPolygon = NULL;
-    unsigned short uiMaterialId = NULL;
+    ushort uiPolygon = NULL;
+    ushort uiMaterialId = NULL;
 
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
@@ -2233,7 +2178,7 @@ int CLuaEngineDefs::EngineDFFSetPolygonMaterial(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFGetPolygonMesh(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uTriangleId = NULL;
+    ushort uTriangleId = NULL;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(uTriangleId);
@@ -2253,12 +2198,11 @@ int CLuaEngineDefs::EngineDFFGetPolygonMesh(lua_State* luaVM)
                     return 1;
                 }
                 uTriangleId--;
-                unsigned short meshId = CClientDFF::GetMeshIdFromPolygonId(pGeometry, uTriangleId);
+                ushort meshId = CClientDFF::GetMeshIdFromPolygonId(pGeometry, uTriangleId);
                 if(meshId==-1)
                     lua_pushboolean(luaVM, false);
                 else
                     lua_pushnumber(luaVM, meshId+1);
-
                 return 1;
             }
             else
@@ -2277,7 +2221,7 @@ int CLuaEngineDefs::EngineDFFGetPolygonMesh(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFGetPolygonVertices(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uTriangleId = NULL;
+    ushort uTriangleId = NULL;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(uTriangleId);
@@ -2319,8 +2263,8 @@ int CLuaEngineDefs::EngineDFFGetPolygonVertices(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFSetPolygonMesh(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short usTriangle = NULL;
-    unsigned short usMesh = NULL;
+    ushort usTriangle = NULL;
+    ushort usMesh = NULL;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(usTriangle);
@@ -2363,7 +2307,7 @@ int CLuaEngineDefs::EngineDFFSetPolygonMesh(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFDestroyPolygon(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short uiTriangleId;
+    ushort uiTriangleId;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(uiTriangleId);
@@ -2415,7 +2359,7 @@ int CLuaEngineDefs::EngineDFFCreateMesh(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                unsigned short usMesh = CClientDFF::CreateMesh(pGeometry);
+                ushort usMesh = CClientDFF::CreateMesh(pGeometry);
                 if (usMesh == 0)
                 {
                     lua_pushboolean(luaVM, false);
@@ -2442,7 +2386,7 @@ int CLuaEngineDefs::EngineDFFCreateMesh(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short vertex1, vertex2, vertex3, usMesh;
+    ushort vertex1, vertex2, vertex3, usMesh;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(vertex1);
@@ -2457,12 +2401,22 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RpGeometry* pGeometry = pAtomic->geometry;
+                if (vertex1 == vertex2 || vertex1 == vertex3 || vertex2 == vertex3)
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                if (!pGeometry->isValidVertexId(vertex1) || !pGeometry->isValidVertexId(vertex2) || !pGeometry->isValidVertexId(vertex3))
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
                 vertex1--;
                 vertex2--;
                 vertex3--;
                 usMesh--;
-                RpAtomic* pAtomic = pClump->getAtomic();
-                RpGeometry* pGeometry = pAtomic->geometry;
                 CClientDFF::CreatePolygon(pGeometry, vertex1, vertex2, vertex3, usMesh);
                 lua_pushnumber(luaVM, pGeometry->triangles_size);
                 return 1;
@@ -2483,7 +2437,7 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFDestroyVertex(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short usVertex = NULL;
+    ushort usVertex = NULL;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(usVertex);
@@ -2523,7 +2477,7 @@ int CLuaEngineDefs::EngineDFFDestroyVertex(lua_State* luaVM)
 int CLuaEngineDefs::EngineDFFGetPolygonConnectedToVertex(lua_State* luaVM)
 {
     CClientDFF* pDFF;
-    unsigned short usVertex;
+    ushort usVertex;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(usVertex);
@@ -2543,9 +2497,9 @@ int CLuaEngineDefs::EngineDFFGetPolygonConnectedToVertex(lua_State* luaVM)
                     lua_pushboolean(luaVM, false);
                     return 1;
                 }
-                std::vector < unsigned short > vecPolygons = CClientDFF::GetPolygonsUsedByVertex(pGeometry, usVertex);
+                std::vector < ushort > vecPolygons = CClientDFF::GetPolygonsUsedByVertex(pGeometry, usVertex);
                 lua_newtable(luaVM);
-                for (unsigned short i = 0; i < vecPolygons.size(); i++)
+                for (ushort i = 0; i < vecPolygons.size(); i++)
                 {
                         lua_pushnumber(luaVM, i + 1);
                         lua_pushnumber(luaVM, vecPolygons.at(i) );
@@ -2573,7 +2527,7 @@ int CLuaEngineDefs::EngineDFFUseVerticesTool(lua_State* luaVM)
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadString(strTool);
-    std::vector< unsigned short > vertices;
+    std::vector< ushort > vertices;
     argStream.ReadNumberTable(vertices);
 
     sort(vertices.begin(), vertices.end());
@@ -2589,7 +2543,7 @@ int CLuaEngineDefs::EngineDFFUseVerticesTool(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                for (unsigned short i = 0; i < vertices.size(); i++)
+                for (ushort i = 0; i < vertices.size(); i++)
                 {
                     if (!pGeometry->isValidVertexId(vertices.at(i)))
                     {
@@ -2614,54 +2568,9 @@ int CLuaEngineDefs::EngineDFFUseVerticesTool(lua_State* luaVM)
                         lua_pushboolean(luaVM, false);
                         return 1;
                     }
-                    if (axis == "x" || axis == "y" || axis == "z")
-                    {
-                        float averageX = 0;
-                        float averageY = 0;
-                        float averageZ = 0;
-                        for (unsigned short i = 0; i < vertices.size(); i++)
-                        {
-                            RwV3d vVert = pGeometry->morphTarget->verts[vertices.at(i)];
-                            averageX += vVert.x;
-                            averageY += vVert.y;
-                            averageZ += vVert.z;
-                        }
-                        if (axis == "x")
-                        {
-                            averageX /= vertices.size();
-                            for (unsigned short i = 0; i < vertices.size(); i++)
-                            {
-                                pGeometry->morphTarget->verts[vertices.at(i)].x = averageX;
-                            }
-                            lua_pushboolean(luaVM, true);
-                            return 1;
-                        }
-                        else if (axis == "y")
-                        {
-                            averageY /= vertices.size();
-                            for (unsigned short i = 0; i < vertices.size(); i++)
-                            {
-                                pGeometry->morphTarget->verts[vertices.at(i)].y = averageY;
-                            }
-                            lua_pushboolean(luaVM, true);
-                            return 1;
-                        }
-                        else if (axis == "z")
-                        {
-                            averageZ /= vertices.size();
-                            for (unsigned short i = 0; i < vertices.size(); i++)
-                            {
-                                pGeometry->morphTarget->verts[vertices.at(i)].z = averageZ;
-                            }
-                            lua_pushboolean(luaVM, true);
-                            return 1;
-                        }
-                    }
-                    else
-                    {
-                        lua_pushboolean(luaVM, false);
-                        return 1;
-                    }
+                    bool result = CClientDFF::VerticesToolMakePlanear(luaVM, pGeometry, vertices, axis);
+                    lua_pushboolean(luaVM, result);
+                    return 1;
                 }
                 lua_pushboolean(luaVM, false);
                 return 1;
@@ -2686,7 +2595,7 @@ int CLuaEngineDefs::EngineDFFUsePolygonsTool(lua_State* luaVM)
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadString(strTool);
-    std::vector< unsigned short > polygons;
+    std::vector< ushort > polygons;
     argStream.ReadNumberTable(polygons);
 
     sort(polygons.begin(), polygons.end());
@@ -2702,7 +2611,7 @@ int CLuaEngineDefs::EngineDFFUsePolygonsTool(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                for (unsigned short i = 0; i < polygons.size(); i++)
+                for (ushort i = 0; i < polygons.size(); i++)
                 {
                     if (!pGeometry->isValidTriangleId(polygons.at(i)))
                     {
@@ -2774,7 +2683,7 @@ int CLuaEngineDefs::EngineDFFTransformVertices(lua_State* luaVM)
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadString(strTransform);
-    std::vector< unsigned short > vertices;
+    std::vector< ushort > vertices;
     argStream.ReadNumberTable(vertices);
     if (!argStream.HasErrors())
     {
@@ -2787,7 +2696,7 @@ int CLuaEngineDefs::EngineDFFTransformVertices(lua_State* luaVM)
         sort(vertices.begin(), vertices.end());
         vertices.erase(unique(vertices.begin(), vertices.end()), vertices.end());
 
-        unsigned short usModelID = pDFF->uimodel;
+        ushort usModelID = pDFF->uimodel;
         if (usModelID != INVALID_MODEL_ID)
         {
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
@@ -2795,10 +2704,10 @@ int CLuaEngineDefs::EngineDFFTransformVertices(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                unsigned short usMaxVert = pGeometry->vertices_size;
+                ushort usMaxVert = pGeometry->vertices_size;
                 for (int i = 0; i < vertices.size(); i++)   // check did vertices are fine and descress once
                 {
-                    unsigned short id = vertices.at(i);
+                    ushort id = vertices.at(i);
                     id--;
                     vertices[i] = id;
                     if (id < 0 || id > usMaxVert)
@@ -2907,7 +2816,7 @@ int CLuaEngineDefs::EngineDFFTransformPolygons(lua_State* luaVM)
 int CLuaEngineDefs::EngineRestoreModel ( lua_State* luaVM )
 {
     // Grab the model ID
-    unsigned short usModelID = CModelNames::ResolveModelID ( lua_tostring ( luaVM, 1 ) );
+    ushort usModelID = CModelNames::ResolveModelID ( lua_tostring ( luaVM, 1 ) );
 
     // Valid client DFF and model?
     if ( CClientDFFManager::IsReplacableModel ( usModelID )  )
@@ -2967,7 +2876,7 @@ int CLuaEngineDefs::EngineSetModelLODDistance ( lua_State* luaVM )
 
     if ( !argStream.HasErrors () )
     {
-        unsigned short usModelID = CModelNames::ResolveModelID ( strModel );
+        ushort usModelID = CModelNames::ResolveModelID ( strModel );
         CModelInfo* pModelInfo = g_pGame->GetModelInfo ( usModelID );
         if ( pModelInfo && fDistance > 0.0f )
         {
@@ -3226,7 +3135,7 @@ int CLuaEngineDefs::EngineGetModelTextureNames ( lua_State* luaVM )
             g_pGame->GetRenderWare ()->GetModelTextureNames ( nameList, usModelID );
 
             lua_newtable ( luaVM );
-            for ( unsigned short i = 0 ; i < nameList.size () ; i++ )
+            for ( ushort i = 0 ; i < nameList.size () ; i++ )
             {                
                 lua_pushnumber ( luaVM, i + 1 );
                 lua_pushstring ( luaVM, nameList [ i ] );
@@ -3262,7 +3171,7 @@ int CLuaEngineDefs::EngineGetVisibleTextureNames ( lua_State* luaVM )
             g_pCore->GetGraphics ()->GetRenderItemManager ()->GetVisibleTextureNames ( nameList, strTextureNameMatch, usModelID );
 
             lua_newtable ( luaVM );
-            for ( unsigned short i = 0 ; i < nameList.size () ; i++ )
+            for ( ushort i = 0 ; i < nameList.size () ; i++ )
             {                
                 lua_pushnumber ( luaVM, i + 1 );
                 lua_pushstring ( luaVM, nameList [ i ] );
@@ -3326,7 +3235,7 @@ int CLuaEngineDefs::EngineCOLGetInfo(lua_State* luaVM)
 int CLuaEngineDefs::EngineCOLSetPolygonSurface(lua_State* luaVM)
 {
     CClientColModel* pCOL;
-    unsigned short usSurfaceId, usVertex;
+    ushort usSurfaceId, usVertex;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pCOL);
     argStream.ReadNumber(usSurfaceId);
@@ -3348,7 +3257,7 @@ int CLuaEngineDefs::EngineCOLSetPolygonSurface(lua_State* luaVM)
 int CLuaEngineDefs::EngineCOLGetVertexPosition(lua_State* luaVM)
 {
     CClientColModel* pCOL;
-    unsigned short usVertex;
+    ushort usVertex;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pCOL);
     argStream.ReadNumber(usVertex);
@@ -3374,7 +3283,7 @@ int CLuaEngineDefs::EngineCOLGetVertexPosition(lua_State* luaVM)
 int CLuaEngineDefs::EngineCOLGetPolygonPosition(lua_State* luaVM)
 {
     CClientColModel* pCOL;
-    unsigned short usPolygon;
+    ushort usPolygon;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pCOL);
     argStream.ReadNumber(usPolygon);
@@ -3401,7 +3310,7 @@ int CLuaEngineDefs::EngineCOLGetPolygonPosition(lua_State* luaVM)
 int CLuaEngineDefs::EngineCOLSetVertexPosition(lua_State* luaVM)
 {
     CClientColModel* pCOL;
-    unsigned short usVertex;
+    ushort usVertex;
     CVector position;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pCOL);
@@ -3431,7 +3340,7 @@ int CLuaEngineDefs::EngineCOLSetVertexPosition(lua_State* luaVM)
 int CLuaEngineDefs::EngineCOLGetPolygonConnectedVertices(lua_State* luaVM)
 {
     CClientColModel* pCOL;
-    unsigned short usPolygon;
+    ushort usPolygon;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pCOL);
     argStream.ReadNumber(usPolygon);
@@ -3444,9 +3353,9 @@ int CLuaEngineDefs::EngineCOLGetPolygonConnectedVertices(lua_State* luaVM)
             return 1;
         }
         usPolygon--;
-        unsigned short vertex1 = NULL;
-        unsigned short vertex2 = NULL;
-        unsigned short vertex3 = NULL;
+        ushort vertex1 = NULL;
+        ushort vertex2 = NULL;
+        ushort vertex3 = NULL;
         pCOL->GetTriangleConnectedVertices(usPolygon, vertex1, vertex2, vertex3);
         if (vertex1 == NULL)
         {
@@ -3471,7 +3380,7 @@ int CLuaEngineDefs::EngineCOLGetPolygonConnectedVertices(lua_State* luaVM)
 int CLuaEngineDefs::EngineCOLSetPolygonConnectedVertices(lua_State* luaVM)
 {
     CClientColModel* pCOL;
-    unsigned short usPolygon, usVertex1, usVertex2, usVertex3;
+    ushort usPolygon, usVertex1, usVertex2, usVertex3;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pCOL);
     argStream.ReadNumber(usPolygon);
@@ -3504,9 +3413,9 @@ int CLuaEngineDefs::EngineCOLSetPolygonConnectedVertices(lua_State* luaVM)
 int CLuaEngineDefs::EngineCOLSetPolygonLighting(lua_State* luaVM)
 {
     CClientColModel* pCOL;
-    unsigned short usPolygon;
+    ushort usPolygon;
     CVector position;
-    unsigned short day, night=NULL;
+    ushort day, night=NULL;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pCOL);
     argStream.ReadNumber(usPolygon);
@@ -3535,7 +3444,7 @@ int CLuaEngineDefs::EngineCOLSetPolygonLighting(lua_State* luaVM)
 int CLuaEngineDefs::EngineCOLCreatePolygon(lua_State* luaVM)
 {
     CClientColModel* pCOL;
-    unsigned short vertex1, vertex2, vertex3;
+    ushort vertex1, vertex2, vertex3;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pCOL);
     argStream.ReadNumber(vertex1);
@@ -3547,7 +3456,7 @@ int CLuaEngineDefs::EngineCOLCreatePolygon(lua_State* luaVM)
         vertex1--;
         vertex2--;
         vertex3--;
-        unsigned short usPolygon = pCOL->CreatePolygon(vertex1, vertex2, vertex3);
+        ushort usPolygon = pCOL->CreatePolygon(vertex1, vertex2, vertex3);
         if (usPolygon == NULL)
         {
             lua_pushboolean(luaVM, false);
@@ -3570,7 +3479,7 @@ int CLuaEngineDefs::EngineCOLCreatePolygon(lua_State* luaVM)
 int CLuaEngineDefs::EngineCOLDestroyPolygon(lua_State* luaVM)
 {
     CClientColModel* pCOL;
-    unsigned short usPolygon;
+    ushort usPolygon;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pCOL);
     argStream.ReadNumber(usPolygon);
@@ -3608,7 +3517,7 @@ int CLuaEngineDefs::EngineCOLCreateVertex(lua_State* luaVM)
 
     if (!argStream.HasErrors())
     {
-        unsigned short usVertex = pCOL->CreateVertex(vecPosition);
+        ushort usVertex = pCOL->CreateVertex(vecPosition);
         if (usVertex == NULL)
         {
             lua_pushboolean(luaVM, false);
@@ -3632,7 +3541,7 @@ int CLuaEngineDefs::EngineCOLCreateVertex(lua_State* luaVM)
 int CLuaEngineDefs::EngineCOLDestroyVertex(lua_State* luaVM)
 {
     CClientColModel* pCOL;
-    unsigned short usVertex;
+    ushort usVertex;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pCOL);
     argStream.ReadNumber(usVertex);
@@ -3669,7 +3578,7 @@ int CLuaEngineDefs::EngineCOLSelectVertices(lua_State* luaVM)
 {
     /*
     CClientColModel* pCOL;
-    unsigned short usPolygon;
+    ushort usPolygon;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pCOL);
     argStream.ReadNumber(usPolygon);
@@ -3682,9 +3591,9 @@ int CLuaEngineDefs::EngineCOLSelectVertices(lua_State* luaVM)
             return 1;
         }
         usPolygon--;
-        unsigned short vertex1 = NULL;
-        unsigned short vertex2 = NULL;
-        unsigned short vertex3 = NULL;
+        ushort vertex1 = NULL;
+        ushort vertex2 = NULL;
+        ushort vertex3 = NULL;
         pCOL->GetTriangleConnectedVertices(usPolygon, vertex1, vertex2, vertex3);
         CVector position;
         position += pCOL->GetVertexPosition(vertex1) / 128;
@@ -3712,7 +3621,7 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
     {
         if (select == "byMaterial")
         {
-            unsigned short usMaterial;
+            ushort usMaterial;
             argStream.ReadNumber(usMaterial);
             if (argStream.HasErrors())
             {
@@ -3723,7 +3632,7 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
             std::vector < CColTriangleSA > polygons = pCOL->GetAllPolygons();
 
             lua_newtable(luaVM);
-            unsigned short next = 1;
+            ushort next = 1;
             for (int i = 0; i < polygons.size(); i++)
             {
                 if (polygons.at(i).material == usMaterial)
@@ -3737,7 +3646,7 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
         }
         else if (select == "nearest3d")
         {
-            unsigned short usMaterial;
+            ushort usMaterial;
             CVector vecPosition;
             bool findByPolygonPosition = false;
             if (argStream.NextIsVector3D())
@@ -3759,8 +3668,8 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
 
             lua_newtable(luaVM);
             float distance = 256; // bigger couse collision bugs
-            unsigned short nearest = 0;
-            unsigned short next = 1;
+            ushort nearest = 0;
+            ushort next = 1;
             for (int i = 0; i < polygons.size(); i++)
             {
                 float dis = DistanceBetweenPoints3D(vecPosition, pCOL->GetTrianglePosition(i));
@@ -3775,7 +3684,7 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
         }
         else if (select == "nearest2d")
         {
-            unsigned short usMaterial;
+            ushort usMaterial;
             CVector2D vecPosition;
             bool findByPolygonPosition = false;
             if (argStream.NextIsVector2D())
@@ -3797,8 +3706,8 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
 
             lua_newtable(luaVM);
             float distance = 256; // bigger couse collision bugs
-            unsigned short nearest = 0;
-            unsigned short next = 1;
+            ushort nearest = 0;
+            ushort next = 1;
             for (int i = 0; i < polygons.size(); i++)
             {
                 float dis = DistanceBetweenPoints2D(vecPosition, pCOL->GetTrianglePosition(i));
@@ -3813,7 +3722,7 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
         }
         else if (select == "inRange")
         {
-            unsigned short usMaterial;
+            ushort usMaterial;
             CVector vecPosition;
             float fRange;
             bool findByPolygonPosition = false;
@@ -3823,7 +3732,7 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
             }
             else if (argStream.NextIsNumber())
             {
-                unsigned short usPolygon;
+                ushort usPolygon;
                 argStream.ReadNumber(usPolygon);
                 if (pCOL->IsValidPolygonId(--usPolygon))
                 {
@@ -3856,7 +3765,7 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
             std::vector < CColTriangleSA > polygons = pCOL->GetAllPolygons();
 
             lua_newtable(luaVM);
-            unsigned short next = 1;
+            ushort next = 1;
             for (int i = 0; i < polygons.size(); i++)
             {
                 float dis = DistanceBetweenPoints2D(vecPosition, pCOL->GetTrianglePosition(i));
@@ -3871,7 +3780,7 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
         }
         else if (select == "outRange")
         {
-            unsigned short usMaterial;
+            ushort usMaterial;
             CVector vecPosition;
             float fRange;
             bool findByPolygonPosition = false;
@@ -3881,7 +3790,7 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
             }
             else if (argStream.NextIsNumber())
             {
-                unsigned short usPolygon;
+                ushort usPolygon;
                 argStream.ReadNumber(usPolygon);
                 if (pCOL->IsValidPolygonId(--usPolygon))
                 {
@@ -3914,7 +3823,7 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
             std::vector < CColTriangleSA > polygons = pCOL->GetAllPolygons();
 
             lua_newtable(luaVM);
-            unsigned short next = 1;
+            ushort next = 1;
             for (int i = 0; i < polygons.size(); i++)
             {
                 float dis = DistanceBetweenPoints2D(vecPosition, pCOL->GetTrianglePosition(i));
@@ -3929,7 +3838,7 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
         }
         else if (select == "element")
         {
-            unsigned short usPolygon;
+            ushort usPolygon;
             argStream.ReadNumber(usPolygon);
             usPolygon--;
             if (!pCOL->IsValidPolygonId(usPolygon))
@@ -3945,9 +3854,9 @@ int CLuaEngineDefs::EngineCOLSelectPolygons(lua_State* luaVM)
         }
         else if (select == "grow")
         {
-            unsigned short usPolygon;
+            ushort usPolygon;
             lua_newtable(luaVM);
-            unsigned short usNext = 0;
+            ushort usNext = 0;
             while (argStream.NextIsNumber())
             {
                 argStream.ReadNumber(usPolygon);
@@ -3997,7 +3906,7 @@ int CLuaEngineDefs::EngineTXDGetTexturesCount(lua_State* luaVM)
 int CLuaEngineDefs::EngineTXDGetTextureInfo(lua_State* luaVM)
 {
     CClientTXD* pTXD = NULL;
-    unsigned short textureId=NULL;
+    ushort textureId=NULL;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pTXD);
     argStream.ReadNumber(textureId);
@@ -4042,7 +3951,7 @@ int CLuaEngineDefs::EngineTXDGetTextureInfo(lua_State* luaVM)
 int CLuaEngineDefs::EngineTXDGetTexturePixels(lua_State* luaVM)
 {
     CClientTXD* pTXD = NULL;
-    unsigned short textureId = NULL;
+    ushort textureId = NULL;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pTXD);
     argStream.ReadNumber(textureId);

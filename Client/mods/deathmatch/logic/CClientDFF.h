@@ -51,29 +51,40 @@ public:
     void                            Unlink                  ( void ) {};
     void                            GetPosition             ( CVector& vecPosition ) const {};
     void                            SetPosition             ( const CVector& vecPosition ) {};
-    const RpGeometry * GeometryTriangleSetVertexIndices(const RpGeometry * geo, RpTriangle * tri, unsigned short v1, unsigned short v2, unsigned short v3);
+    const RpGeometry * GeometryTriangleSetVertexIndices(const RpGeometry * geo, RpTriangle * tri, ushort v1, ushort v2, ushort v3);
     RpGeometry * GeometryTriangleSetMaterialId(RpGeometry * geo, RpTriangle * tri, RpMaterial * mat);
     RpAtomic * AtomicSetGeometry(RpAtomic * atomic, RpGeometry * geometry, unsigned int flags);
     static int ClumpGetNumAtomics(RpClump * clump);
     static RwTexture* CreateTexture(RwRaster* pRaster);
     static RwRaster*  CreateRaster(int width, int height, int depth, int flags);
-    static int GetMeshIdFromPolygonId(RpGeometry* pGeometry, unsigned short uiTriangle);
-    static int GetPolygonIdInMesh(RpGeometry* pGeometry, RpMesh* pMesh, unsigned short uiTriangle);
-    static RpMesh* GetMeshFromPolygonId(RpGeometry* pGeometry, unsigned short uiTriangle);
-    static bool CClientDFF::GeometryDestroyVertex(RpGeometry* pGeometry, unsigned short usVertex);
-    static bool GeometryDestroyPolygon(RpGeometry* pGeometry, unsigned short uiTriangle);
+    static int GetMeshIdFromPolygonId(RpGeometry* pGeometry, ushort uiTriangle);
+    static int GetPolygonIdInMesh(RpGeometry* pGeometry, RpMesh* pMesh, ushort uiTriangle);
+    static RpMesh* GetMeshFromPolygonId(RpGeometry* pGeometry, ushort uiTriangle);
+    static bool CClientDFF::GeometryDestroyVertex(RpGeometry* pGeometry, ushort usVertex);
+    static bool GeometryDestroyPolygon(RpGeometry* pGeometry, ushort uiTriangle);
     static char* GetometryFlags(RpGeometry* pGeometry);
-    static bool CreatePolygon(RpGeometry* pGeometry, unsigned short vertex1, unsigned short vertex2, unsigned short vertex3, unsigned short usMesh);
-    static unsigned short CreateMesh(RpGeometry* pGeometry);
+    static bool CreatePolygon(RpGeometry* pGeometry, ushort vertex1, ushort vertex2, ushort vertex3, ushort usMesh);
+    static ushort CreateMesh(RpGeometry* pGeometry);
     static RpMaterial* CreateMaterial(void);
     static RpLight* CreateLight(int type);
     static RpClump* ClumpAddLight(RpClump* clump, RpLight* light);
     static bool EnableVerticesLighting(RpGeometry* pGeometry);
-    static std::vector < unsigned short > GetPolygonsUsedByVertex(RpGeometry* pGeometry, unsigned short usVertex);
+    static std::vector < ushort > GetPolygonsUsedByVertex(RpGeometry* pGeometry, ushort usVertex);
     static bool CreateVertex(RpGeometry* pGeometry, CVector vecPosition);
+    static bool SetPolygonPosition(RpGeometry* pGeometry, ushort usPolygon, CVector newPosition);
 
-    bool TransformMove(std::vector< unsigned short > vertices, CVector vecMove);
-    bool TransformScale(std::vector< unsigned short > vertices, CVector vecScale);
+    static void GetVerticesInMesh(lua_State* luaVM, RpMesh* mesh);
+    static void GetVertices(lua_State* luaVM, RpGeometry* pGeometry);
+    static void GetVerticesInRange(lua_State* luaVM, RpGeometry* pGeometry, CVector vecPosition, float fRange);
+    static void GetVertexNeares3d(lua_State* luaVM, RpGeometry* pGeometry, CVector vecPosition);
+    static void GetVertexNeares2d(lua_State* luaVM, RpGeometry* pGeometry, CVector2D vecPosition);
+    static CVector GetPolygonPosition(RpGeometry* pGeometry, ushort usPolygon);
+    static bool SetPolygonVertices(RpGeometry* pGeometry, ushort usPolygon, ushort vertex1, ushort vertex2, ushort vertex3);
+
+    bool TransformMove(std::vector< ushort > vertices, CVector vecMove);
+    bool TransformScale(std::vector< ushort > vertices, CVector vecScale);
+
+    static bool VerticesToolMakePlanear(lua_State* luaVM, RpGeometry* pGeometry, std::vector< ushort > vertices, SString axis);
 
     static RpMeshHeader* CreateMeshHeader(unsigned int size);
 
@@ -81,6 +92,7 @@ public:
     RpClump*                        GetLoadedClump(ushort usModelId);
 
     ushort                            uimodel = NULL;
+    SString                           strModelName = "";
     ushort                            uiGeometry = 0;
 
 protected:
