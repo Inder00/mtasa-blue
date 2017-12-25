@@ -648,21 +648,20 @@ ushort CClientDFF::CreateMesh(RpGeometry* pGeometry)
     ushort headerSize = sizeof(RpMeshHeader);
     ushort mSize = sizeof(RpMesh) * (lastId + 1) + sizeof(RpMeshHeader);
     RpMeshHeader* newHeader = reinterpret_cast<RpMeshHeader*>(malloc(mSize));
-    newHeader->flags = pGeometry->header->flags;
-    newHeader->serialNum = pGeometry->header->serialNum;
-    newHeader->firstMeshOffset = pGeometry->header->firstMeshOffset;
-    newHeader->totalIndicesInMesh = pGeometry->header->totalIndicesInMesh + 3;
-    newHeader->numMeshes = pGeometry->header->numMeshes + 1;
+    newHeader = pGeometry->header;
+    newHeader->totalIndicesInMesh+= 3;
+    newHeader->numMeshes++;
     RpMesh* b = newHeader->getMeshes();
-    for (int i = 0; i < lastId; i++)
+    /*for (int i = 0; i < lastId; i++)
     {
         RpMesh* xd = &b[i];
         xd->numIndices = oldMeshes[i].numIndices;
         xd->indices = oldMeshes[i].indices;
         xd->material = oldMeshes[i].material;
-    }
+    }*/
     RpMaterial* mat = CreateMaterial();
     RpMesh* last = &b[lastId];
+    last[lastId] = last[lastId - 1];
     ushort indices[3];
     indices[0] = 2;
     indices[1] = 5;
@@ -670,30 +669,19 @@ ushort CClientDFF::CreateMesh(RpGeometry* pGeometry)
     last->numIndices = 3;
     last->indices = indices;
     last->material = mat;
-    auto a1_11 = &oldMeshes[0];
-    auto a1_12 = &oldMeshes[1];
-    auto a1_13 = &oldMeshes[3];
-    auto a1_14 = &oldMeshes[5];
-    auto a1_15 = &oldMeshes[6];
-    auto a1_16 = &oldMeshes[7];
-    auto a1_17 = &oldMeshes[8];
-    auto a1_18 = &oldMeshes[9];
     pGeometry->header = newHeader;
-    auto newMeshes = pGeometry->header->getMeshes();
-    auto a1_21 = &newMeshes[0];
-    auto a1_22 = &newMeshes[1];
-    auto a1_23 = &newMeshes[2];
-    auto a1_24 = &newMeshes[6];
-    auto a1_25 = &newMeshes[7];
-    auto a1_26 = &newMeshes[8];
-    auto a1_27 = &newMeshes[9];
-    auto a1_28 = &newMeshes[10];
     lastId = pGeometry->materials.entries;
     RpMaterial** newMaterials = reinterpret_cast<RpMaterial**>(malloc(sizeof(RpMaterial) * (lastId + 1)));
-    for (int i = 0; i < pGeometry->materials.entries; i++)
-    {
-        newMaterials[i] = pGeometry->materials.materials[i];
-    }
+    newMaterials = pGeometry->materials.materials;
+    auto a1_21a = &pGeometry->materials.materials[0];
+    auto a1_22b = &pGeometry->materials.materials[1];
+    auto a1_23c = &pGeometry->materials.materials[2];
+    auto a1_24d = &pGeometry->materials.materials[6];
+    auto a1_25e = &pGeometry->materials.materials[7];
+    auto a1_26f = &pGeometry->materials.materials[8];
+    auto a1_27g = &pGeometry->materials.materials[9];
+    auto a1_28h = &pGeometry->materials.materials[10];
+    newMaterials[lastId] = pGeometry->materials.materials[lastId - 1];
     newMaterials[lastId] = mat;
     newMaterials[lastId]->refs = 1;
     pGeometry->materials.entries++;
