@@ -82,6 +82,7 @@ public:
     LUA_DECLARE(EngineDFFTransformVertices);
     LUA_DECLARE(EngineDFFTransformPolygons);
     LUA_DECLARE(EngineDFFUsePolygonsTool);
+    LUA_DECLARE(EngineDFFCreateObject);
 
     LUA_DECLARE(EngineCOLGetInfo);
     LUA_DECLARE(EngineCOLSetPolygonSurface);
@@ -97,6 +98,7 @@ public:
     LUA_DECLARE(EngineCOLDestroyPolygon);
     LUA_DECLARE(EngineCOLSelectVertices);
     LUA_DECLARE(EngineCOLSelectPolygons);
+    LUA_DECLARE(EngineCOLCreateEmptyCollision);
 
     LUA_DECLARE(EngineTXDGetTexturesCount);
     LUA_DECLARE(EngineTXDGetTextureInfo);

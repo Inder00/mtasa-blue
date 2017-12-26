@@ -50,15 +50,17 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFDestroyPolygon", EngineDFFDestroyPolygon);
     CLuaCFunctions::AddFunction("engineDFFCreatePolygon", EngineDFFCreatePolygon);
     CLuaCFunctions::AddFunction("engineDFFCreateVertex", EngineDFFCreateVertex);
-    CLuaCFunctions::AddFunction("engineDFFCreateMesh", EngineDFFCreateMesh);
     CLuaCFunctions::AddFunction("engineDFFGetMeshInfo", EngineDFFGetMeshInfo);
     CLuaCFunctions::AddFunction("engineDFFSelectVertices", EngineDFFSelectVertices);
     CLuaCFunctions::AddFunction("engineDFFCreateEmptyModel", EngineDFFCreateEmptyModel);
-    CLuaCFunctions::AddFunction("engineDFFCreateLight", EngineDFFCreateLight);
+    CLuaCFunctions::AddFunction("engineDFFCreateObject", EngineDFFCreateObject);
+    CLuaCFunctions::AddFunction("engineDFFCreateCollision", EngineDFFCreateLight);
     CLuaCFunctions::AddFunction("engineDFFUseVerticesTool", EngineDFFUseVerticesTool);
     CLuaCFunctions::AddFunction("engineDFFUsePolygonsTool", EngineDFFUsePolygonsTool);
     CLuaCFunctions::AddFunction("engineDFFTransformVertices", EngineDFFTransformVertices);
     CLuaCFunctions::AddFunction("engineDFFTransformPolygons", EngineDFFTransformPolygons);
+    //CLuaCFunctions::AddFunction("engineDFFCreateLight", EngineDFFCreateLight);
+    //CLuaCFunctions::AddFunction("engineDFFCreateMesh", EngineDFFCreateMesh);
     //CLuaCFunctions::AddFunction("engineDFFGetFrameInfo", EngineDFFGetFrameInfo);
     //CLuaCFunctions::AddFunction("engineDFFSetInterpolation", EngineDFFSetInterpolation);
 
@@ -66,6 +68,7 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineCOLGetInfo", EngineCOLGetInfo);
     CLuaCFunctions::AddFunction("engineCOLSetPolygonSurface", EngineCOLSetPolygonSurface);
     CLuaCFunctions::AddFunction("engineCOLSetPolygonLighting", EngineCOLSetPolygonLighting);
+    CLuaCFunctions::AddFunction("engineCOLCreateEmptyCollision", EngineCOLCreateEmptyCollision);
 
     CLuaCFunctions::AddFunction("engineCOLGetPolygonPosition", EngineCOLGetPolygonPosition);
     CLuaCFunctions::AddFunction("engineCOLGetPolygonConnectedVertices", EngineCOLGetPolygonConnectedVertices);
@@ -291,10 +294,12 @@ int CLuaEngineDefs::EngineLoadDFF ( lua_State* luaVM )
 int CLuaEngineDefs::EngineDFFCreateEmptyModel(lua_State* luaVM)
 {
     SString strModelName;
+    ushort usMeshes;
     CScriptArgReader argStream(luaVM);
-    SString strEmptyBase64 = "EAAAAIACAAD//wMYAQAAAAwAAAD//wMYAQAAAAAAAAAAAAAADgAAAGQAAAD//wMYAQAAADwAAAD//wMYAQAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP////8DAAIAAwAAABAAAAD//wMY/vJTAgQAAAD//wMYQmFzZRoAAAAoAQAA//8DGAEAAAAEAAAA//8DGAEAAAAPAAAADAEAAP//AxgBAAAAQAAAAP//AxhyAAAAAAAAAAEAAAABAAAAF7dROBe3UTgXt1E4Yp61OAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAHgAAAD//wMYAQAAAAgAAAD//wMYAQAAAP////8HAAAAWAAAAP//AxgBAAAAHAAAAP//AxgAAAAAlpaW/9yj/gAAAAAAAACAPwAAAAAAAIA/AwAAACQAAAD//wMY/PJTAhgAAAD//wMYZmZmP2ZmZj9mZmY/AACAP5mZIUEAAAAAAwAAADAAAAD//wMYDgUAABQAAAD//wMYAAAAAAEAAAAAAAAAAAAAAAAAAAD98lMCBAAAAP//AxgAAAAAFAAAACgAAAD//wMYAQAAABAAAAD//wMYAAAAAAAAAAAFAAAAAAAAAAMAAAAAAAAA//8DGAMAAACEAAAA//8DGPryUwJ4AAAA//8DGENPTDNwAAAAQmFzZQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAF7dRuBe3UbgXt1G4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
-    SString strFile = SharedUtil::Base64decode(strEmptyBase64);
+
+
     argStream.ReadString(strModelName);
+    argStream.ReadNumber(usMeshes, 24);
     if (!argStream.HasErrors())
     {
         // Grab our virtual machine and grab our resource from that.
@@ -305,6 +310,16 @@ int CLuaEngineDefs::EngineDFFCreateEmptyModel(lua_State* luaVM)
             CResource* pResource = pLuaMain->GetResource();
             if (pResource)
             {
+                SString strEmptyBase64;
+                if (usMeshes == 1)
+                {
+                    strEmptyBase64 = "EAAAAIACAAD//wMYAQAAAAwAAAD//wMYAQAAAAAAAAAAAAAADgAAAGQAAAD//wMYAQAAADwAAAD//wMYAQAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP////8DAAIAAwAAABAAAAD//wMY/vJTAgQAAAD//wMYQmFzZRoAAAAoAQAA//8DGAEAAAAEAAAA//8DGAEAAAAPAAAADAEAAP//AxgBAAAAQAAAAP//AxhyAAAAAAAAAAEAAAABAAAAF7dROBe3UTgXt1E4Yp61OAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAHgAAAD//wMYAQAAAAgAAAD//wMYAQAAAP////8HAAAAWAAAAP//AxgBAAAAHAAAAP//AxgAAAAAlpaW/9yj/gAAAAAAAACAPwAAAAAAAIA/AwAAACQAAAD//wMY/PJTAhgAAAD//wMYZmZmP2ZmZj9mZmY/AACAP5mZIUEAAAAAAwAAADAAAAD//wMYDgUAABQAAAD//wMYAAAAAAEAAAAAAAAAAAAAAAAAAAD98lMCBAAAAP//AxgAAAAAFAAAACgAAAD//wMYAQAAABAAAAD//wMYAAAAAAAAAAAFAAAAAAAAAAMAAAAAAAAA//8DGAMAAACEAAAA//8DGPryUwJ4AAAA//8DGENPTDNwAAAAQmFzZQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAF7dRuBe3UbgXt1G4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
+                }
+                else
+                {
+                    strEmptyBase64 = "EAAAAHYQAAD//wMYAQAAAAwAAAD//wMYAQAAAAAAAAAAAAAADgAAAGYAAAD//wMYAQAAADwAAAD//wMYAQAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP////8DAAIAAwAAABIAAAD//wMY/vJTAgYAAAD//wMYQmFzZTI0GgAAAKAPAAD//wMYAQAAAAQAAAD//wMYAQAAAA8AAACEDwAA//8DGAEAAACIAwAA//8DGHYAAQAYAAAAFQAAAAEAAAAAAAAAAACAPwAAgD4AAIA/AAAAPwAAgD8AAAAAVVVVPwAAgD5VVVU/AAAAP1VVVT8AAAAAqqoqPwAAgD6qqio/AAAAP6qqKj8AAAAAAAAAPwAAgD4AAAA/AAAAPwAAAD8AAAAAqqqqPgAAgD6qqqo+AAAAP6qqqj4AAAAAqKoqPgAAgD6oqio+AAAAP6iqKj4AAAAAAAAAAAAAgD4AAAAAAAAAPwAAAAAAAAMAAAABAAQAAQAAAAMABAAFAAAAAQACAAEAAAAFAAQAAwAAAAcABgAHAAAAAwAEAAcAAAAFAAgABQAAAAcABgAJAAAABwAKAAcAAAAJAAgABwAAAAsACgALAAAABwAKAAkAAAANAAwADQAAAAkACgANAAAACwAOAAsAAAANAAwADwAAAA0AEAANAAAADwAOAA0AAAARABAAEQAAAA0AEAAPAAAAEwASABMAAAAPABAAEwAAABEAFAARAAAAEwAXt1E4AADAsxe3UTiCSpQ4AQAAAAEAAAAAAAAAAAAAtAAAAAAAAAAAAAAAtAAAAAAAAAAAAAAAtAAAAAAAAAAAAACAswAAAAAAAAAAAACAswAAAAAAAAAAAACAswAAAAAAAAAAAACAswAAAAAAAAAAAACAswAAAAAAAAAAAACAswAAAAAAAAAAJUmSswAAAAAAAAAAJUmSswAAAAAAAAAAJUmSswAAAAAAAAAAAACAswAAAAAAAAAAAACAswAAAAAAAAAAAACAswAAAAAAAAAAAACAswAAAAAAAAAAAACAswAAAAAAAAAAAACAswAAAAAAAAAAAAAAtAAAAAAAAAAAAAAAtAAAAAAAAAAAAAAAtAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAIAAAA0AkAAP//AxgBAAAAZAAAAP//AxgYAAAA////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////BwAAAFgAAAD//wMYAQAAABwAAAD//wMYAAAAAJaWlv/co/4AAAAAAAAAgD8AAAAAAACAPwMAAAAkAAAA//8DGPzyUwIYAAAA//8DGGZmZj9mZmY/ZmZmPwAAgD+ZmSFBAAAAAAcAAABYAAAA//8DGAEAAAAcAAAA//8DGAAAAACWlpb/3KP+AAAAAAAAAIA/AAAAAAAAgD8DAAAAJAAAAP//Axj88lMCGAAAAP//AxhmZmY/ZmZmP2ZmZj8AAIA/mZkhQQAAAAAHAAAAWAAAAP//AxgBAAAAHAAAAP//AxgAAAAAlpaW/9yj/gAAAAAAAACAPwAAAAAAAIA/AwAAACQAAAD//wMY/PJTAhgAAAD//wMYZmZmP2ZmZj9mZmY/AACAP5mZIUEAAAAABwAAAFgAAAD//wMYAQAAABwAAAD//wMYAAAAAJaWlv/co/4AAAAAAAAAgD8AAAAAAACAPwMAAAAkAAAA//8DGPzyUwIYAAAA//8DGGZmZj9mZmY/ZmZmPwAAgD+ZmSFBAAAAAAcAAABYAAAA//8DGAEAAAAcAAAA//8DGAAAAACWlpb/3KP+AAAAAAAAAIA/AAAAAAAAgD8DAAAAJAAAAP//Axj88lMCGAAAAP//AxhmZmY/ZmZmP2ZmZj8AAIA/mZkhQQAAAAAHAAAAWAAAAP//AxgBAAAAHAAAAP//AxgAAAAAlpaW/9yj/gAAAAAAAACAPwAAAAAAAIA/AwAAACQAAAD//wMY/PJTAhgAAAD//wMYZmZmP2ZmZj9mZmY/AACAP5mZIUEAAAAABwAAAFgAAAD//wMYAQAAABwAAAD//wMYAAAAAJaWlv/co/4AAAAAAAAAgD8AAAAAAACAPwMAAAAkAAAA//8DGPzyUwIYAAAA//8DGGZmZj9mZmY/ZmZmPwAAgD+ZmSFBAAAAAAcAAABYAAAA//8DGAEAAAAcAAAA//8DGAAAAACWlpb/3KP+AAAAAAAAAIA/AAAAAAAAgD8DAAAAJAAAAP//Axj88lMCGAAAAP//AxhmZmY/ZmZmP2ZmZj8AAIA/mZkhQQAAAAAHAAAAWAAAAP//AxgBAAAAHAAAAP//AxgAAAAAlpaW/9yj/gAAAAAAAACAPwAAAAAAAIA/AwAAACQAAAD//wMY/PJTAhgAAAD//wMYZmZmP2ZmZj9mZmY/AACAP5mZIUEAAAAABwAAAFgAAAD//wMYAQAAABwAAAD//wMYAAAAAJaWlv/co/4AAAAAAAAAgD8AAAAAAACAPwMAAAAkAAAA//8DGPzyUwIYAAAA//8DGGZmZj9mZmY/ZmZmPwAAgD+ZmSFBAAAAAAcAAABYAAAA//8DGAEAAAAcAAAA//8DGAAAAACWlpb/3KP+AAAAAAAAAIA/AAAAAAAAgD8DAAAAJAAAAP//Axj88lMCGAAAAP//AxhmZmY/ZmZmP2ZmZj8AAIA/mZkhQQAAAAAHAAAAWAAAAP//AxgBAAAAHAAAAP//AxgAAAAAlpaW/9yj/gAAAAAAAACAPwAAAAAAAIA/AwAAACQAAAD//wMY/PJTAhgAAAD//wMYZmZmP2ZmZj9mZmY/AACAP5mZIUEAAAAABwAAAFgAAAD//wMYAQAAABwAAAD//wMYAAAAAJaWlv/co/4AAAAAAAAAgD8AAAAAAACAPwMAAAAkAAAA//8DGPzyUwIYAAAA//8DGGZmZj9mZmY/ZmZmPwAAgD+ZmSFBAAAAAAcAAABYAAAA//8DGAEAAAAcAAAA//8DGAAAAACWlpb/3KP+AAAAAAAAAIA/AAAAAAAAgD8DAAAAJAAAAP//Axj88lMCGAAAAP//AxhmZmY/ZmZmP2ZmZj8AAIA/mZkhQQAAAAAHAAAAWAAAAP//AxgBAAAAHAAAAP//AxgAAAAAlpaW/9yj/gAAAAAAAACAPwAAAAAAAIA/AwAAACQAAAD//wMY/PJTAhgAAAD//wMYZmZmP2ZmZj9mZmY/AACAP5mZIUEAAAAABwAAAFgAAAD//wMYAQAAABwAAAD//wMYAAAAAJaWlv/co/4AAAAAAAAAgD8AAAAAAACAPwMAAAAkAAAA//8DGPzyUwIYAAAA//8DGGZmZj9mZmY/ZmZmPwAAgD+ZmSFBAAAAAAcAAABYAAAA//8DGAEAAAAcAAAA//8DGAAAAACWlpb/3KP+AAAAAAAAAIA/AAAAAAAAgD8DAAAAJAAAAP//Axj88lMCGAAAAP//AxhmZmY/ZmZmP2ZmZj8AAIA/mZkhQQAAAAAHAAAAWAAAAP//AxgBAAAAHAAAAP//AxgAAAAAlpaW/9yj/gAAAAAAAACAPwAAAAAAAIA/AwAAACQAAAD//wMY/PJTAhgAAAD//wMYZmZmP2ZmZj9mZmY/AACAP5mZIUEAAAAABwAAAFgAAAD//wMYAQAAABwAAAD//wMYAAAAAJaWlv/co/4AAAAAAAAAgD8AAAAAAACAPwMAAAAkAAAA//8DGPzyUwIYAAAA//8DGGZmZj9mZmY/ZmZmPwAAgD+ZmSFBAAAAAAcAAABYAAAA//8DGAEAAAAcAAAA//8DGAAAAACWlpb/3KP+AAAAAAAAAIA/AAAAAAAAgD8DAAAAJAAAAP//Axj88lMCGAAAAP//AxhmZmY/ZmZmP2ZmZj8AAIA/mZkhQQAAAAAHAAAAWAAAAP//AxgBAAAAHAAAAP//AxgAAAAAlpaW/9yj/gAAAAAAAACAPwAAAAAAAIA/AwAAACQAAAD//wMY/PJTAhgAAAD//wMYZmZmP2ZmZj9mZmY/AACAP5mZIUEAAAAABwAAAFgAAAD//wMYAQAAABwAAAD//wMYAAAAAJaWlv/co/4AAAAAAAAAgD8AAAAAAACAPwMAAAAkAAAA//8DGPzyUwIYAAAA//8DGGZmZj9mZmY/ZmZmPwAAgD+ZmSFBAAAAAAcAAABYAAAA//8DGAEAAAAcAAAA//8DGAAAAACWlpb/3KP+AAAAAAAAAIA/AAAAAAAAgD8DAAAAJAAAAP//Axj88lMCGAAAAP//AxhmZmY/ZmZmP2ZmZj8AAIA/mZkhQQAAAAAHAAAAWAAAAP//AxgBAAAAHAAAAP//AxgAAAAAlpaW/9yj/gAAAAAAAACAPwAAAAAAAIA/AwAAACQAAAD//wMY/PJTAhgAAAD//wMYZmZmP2ZmZj9mZmY/AACAP5mZIUEAAAAAAwAAAAgCAAD//wMYDgUAAOwBAAD//wMYAAAAABgAAABIAAAAAwAAAAAAAAATAAAAEgAAAA8AAAADAAAAAQAAAAEAAAACAAAABQAAAAMAAAACAAAABQAAAAQAAAABAAAAAwAAAAMAAAAHAAAABAAAAAUAAAADAAAABAAAAAUAAAAIAAAABwAAAAMAAAAFAAAABwAAAAgAAAALAAAAAwAAAAYAAAALAAAACgAAAAcAAAADAAAABwAAAA0AAAAKAAAACwAAAAMAAAAIAAAACwAAAA4AAAANAAAAAwAAAAkAAAANAAAADgAAABEAAAADAAAACgAAABEAAAAQAAAADQAAAAMAAAALAAAAEwAAABAAAAARAAAAAwAAAAwAAAARAAAAFAAAABMAAAADAAAADQAAAAMAAAAAAAAAAQAAAAMAAAAOAAAAAQAAAAQAAAADAAAAAwAAAA8AAAADAAAABAAAAAcAAAADAAAAEAAAAAcAAAAGAAAAAwAAAAMAAAARAAAACQAAAAYAAAAHAAAAAwAAABIAAAAHAAAACgAAAAkAAAADAAAAEwAAAAkAAAAKAAAADQAAAAMAAAAUAAAADQAAAAwAAAAJAAAAAwAAABUAAAAPAAAADAAAAA0AAAADAAAAFgAAAA0AAAAQAAAADwAAAAMAAAAXAAAADwAAABAAAAATAAAA/fJTAgQAAAD//wMYAAAAABQAAAAoAAAA//8DGAEAAAAQAAAA//8DGAAAAAAAAAAABQAAAAAAAAADAAAAAAAAAP//AxgDAAAAAAAAAP//Axg=";
+                }
+                SString strFile = SharedUtil::Base64decode(strEmptyBase64);
                 bool bIsRawData = CClientDFF::IsDFFData(strFile);
                 SString strPath;
                 // Is this a legal filepath?
@@ -329,6 +344,7 @@ int CLuaEngineDefs::EngineDFFCreateEmptyModel(lua_State* luaVM)
                             {
                                 pDFF->uimodel = usModelID;
                             }
+                            pDFF->strModelName = strModelName;
                         }
                         // Return the DFF
                         lua_pushelement(luaVM, pDFF);
@@ -422,7 +438,14 @@ int CLuaEngineDefs::EngineReplaceCOL ( lua_State* luaVM )
     CScriptArgReader argStream ( luaVM );
     // Grab the COL and model ID
     argStream.ReadUserData ( pCol );
-    argStream.ReadNumber ( usModel );
+    if (argStream.NextIsNumber())
+    {
+        argStream.ReadNumber(usModel);
+    }
+    else
+    {
+        usModel = pCol->usModel;
+    }
 
     if ( !argStream.HasErrors ( ) )
     {
@@ -2417,8 +2440,13 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
                 vertex2--;
                 vertex3--;
                 usMesh--;
-                CClientDFF::CreatePolygon(pGeometry, vertex1, vertex2, vertex3, usMesh);
-                lua_pushnumber(luaVM, pGeometry->triangles_size);
+                bool result = CClientDFF::CreatePolygon(pGeometry, vertex1, vertex2, vertex3, usMesh);
+
+                if (result)
+                    lua_pushnumber(luaVM, pGeometry->triangles_size);
+                else
+                    lua_pushboolean(luaVM, false);
+
                 return 1;
             }
             else
@@ -2772,6 +2800,89 @@ int CLuaEngineDefs::EngineDFFTransformVertices(lua_State* luaVM)
     return 1;
 }
 
+int CLuaEngineDefs::EngineDFFCreateObject(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    SString strObject;
+    ushort usMesh;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadString(strObject);
+    argStream.ReadNumber(usMesh);
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RpGeometry* pGeometry = pAtomic->geometry;
+                usMesh--;
+                if (!pGeometry->header->isValidMeshId(usMesh))
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                if (strObject == "plane")
+                {
+                    CVector2D vecStart, vecEnd;
+                    ushort usSegmentLenght, usSegmentWidth;
+                    float fHeight;
+                    argStream.ReadVector2D(vecStart);
+                    argStream.ReadVector2D(vecEnd);
+                    argStream.ReadNumber(fHeight);
+                    argStream.ReadNumber(usSegmentLenght);
+                    argStream.ReadNumber(usSegmentWidth);
+                    if (argStream.HasErrors())
+                    {
+                        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                    if (vecEnd.fX < vecStart.fX || vecEnd.fY < vecStart.fY)
+                    {
+                        argStream.SetCustomError("End vector, x and y should be bigger then start vector.");
+                        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                    if (usSegmentLenght * usSegmentWidth > 32768)
+                    {
+                        argStream.SetCustomError("Too meny segments, segments lenght * segmnets width should be less than 32768.");
+                        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                    if (usSegmentLenght < 2 || usSegmentWidth < 2)
+                    {
+                        argStream.SetCustomError("Not enough segments, minimum lenght 2 and width 2.");
+                        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                    bool ret = CClientDFF::CreateObjectPlane(pGeometry, usMesh, vecStart.fX, vecStart.fY, vecEnd.fX, vecEnd.fY, fHeight, usSegmentLenght, usSegmentWidth);
+                    lua_pushboolean(luaVM, true);
+                    lua_pushboolean(luaVM, ret);
+                    return 2;
+                }
+
+                lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Dff model ID not set. Check 2 argument in engineLoadDFF");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
 int CLuaEngineDefs::EngineDFFTransformPolygons(lua_State* luaVM)
 {
     CClientDFF* pDFF;
@@ -3573,6 +3684,68 @@ int CLuaEngineDefs::EngineCOLDestroyVertex(lua_State* luaVM)
     lua_pushboolean(luaVM, false);
     return 1;
 }
+
+int CLuaEngineDefs::EngineCOLCreateEmptyCollision(lua_State* luaVM)
+{
+    SString strFile = "";
+    ushort usModel;
+    CScriptArgReader argStream(luaVM);
+    // Grab the COL filename or data
+    argStream.ReadNumber(usModel);
+
+    if (!argStream.HasErrors())
+    {
+        // Grab the lua main and the resource belonging to this script
+        CLuaMain* pLuaMain = m_pLuaManager->GetVirtualMachine(luaVM);
+        if (pLuaMain)
+        {
+            // Get the resource we belong to
+            CResource* pResource = pLuaMain->GetResource();
+            if (pResource)
+            {
+                SString strEmptyBase64 = "Q09MM3wAAABiYXNlAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAXt1G4F7dRuBe3UbgAAAAAAAAAAAAAAAASAAAAAAAAAAAAAAAAAAAAdAAAAHoAAAAAAAAAAAAAAHoAAACAAAAAAAAAAAAAAAAAAAAA";
+                SString strFile = SharedUtil::Base64decode(strEmptyBase64);
+                bool bIsRawData = CClientColModel::IsCOLData(strFile);
+                SString strPath;
+                // Is this a legal filepath?
+                if (bIsRawData || CResourceManager::ParseResourcePathInput(strFile, pResource, &strPath))
+                {
+                    // Grab the resource root entity
+                    CClientEntity* pRoot = pResource->GetResourceCOLModelRoot();
+
+                    // Create the col model
+                    CClientColModel* pCol = new CClientColModel(m_pManager, INVALID_ELEMENT_ID);
+
+                    // Attempt loading the file
+                    if (pCol->LoadCol(bIsRawData ? strFile : strPath, bIsRawData))
+                    {
+                        // Success. Make it a child of the resource collision root
+                        pCol->SetParent(pRoot);
+                        pCol->usModel = usModel;
+                        // Return the created col model
+                        lua_pushelement(luaVM, pCol);
+                        return 1;
+                    }
+                    else
+                    {
+                        // Delete it again. We failed
+                        delete pCol;
+                        argStream.SetCustomError(bIsRawData ? "raw data" : strFile, "Error loading COL");
+                    }
+                }
+                else
+                    argStream.SetCustomError(bIsRawData ? "raw data" : strFile, "Bad file path");
+            }
+        }
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    // We failed for some reason
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
 
 int CLuaEngineDefs::EngineCOLSelectVertices(lua_State* luaVM)
 {

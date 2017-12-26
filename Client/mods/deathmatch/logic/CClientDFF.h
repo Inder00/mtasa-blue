@@ -88,6 +88,8 @@ public:
 
     static RpMeshHeader* CreateMeshHeader(unsigned int size);
 
+    static bool CreateObjectPlane(RpGeometry* pGeometry, ushort usMesh, float fXs, float fYs, float fXe, float fYe, float fHeight, ushort usSegmentLenght, ushort usSegmentWidth);
+
 
     RpClump*                        GetLoadedClump(ushort usModelId);
 
