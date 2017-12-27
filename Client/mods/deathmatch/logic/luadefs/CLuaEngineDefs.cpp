@@ -54,11 +54,12 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFSelectVertices", EngineDFFSelectVertices);
     CLuaCFunctions::AddFunction("engineDFFCreateEmptyModel", EngineDFFCreateEmptyModel);
     CLuaCFunctions::AddFunction("engineDFFCreateObject", EngineDFFCreateObject);
-    CLuaCFunctions::AddFunction("engineDFFCreateCollision", EngineDFFCreateLight);
+    CLuaCFunctions::AddFunction("engineDFFCreateCollision", EngineDFFCreateCollision);
     CLuaCFunctions::AddFunction("engineDFFUseVerticesTool", EngineDFFUseVerticesTool);
     CLuaCFunctions::AddFunction("engineDFFUsePolygonsTool", EngineDFFUsePolygonsTool);
     CLuaCFunctions::AddFunction("engineDFFTransformVertices", EngineDFFTransformVertices);
     CLuaCFunctions::AddFunction("engineDFFTransformPolygons", EngineDFFTransformPolygons);
+    CLuaCFunctions::AddFunction("engineDFFCopy", EngineDFFCopy);
     //CLuaCFunctions::AddFunction("engineDFFCreateLight", EngineDFFCreateLight);
     //CLuaCFunctions::AddFunction("engineDFFCreateMesh", EngineDFFCreateMesh);
     //CLuaCFunctions::AddFunction("engineDFFGetFrameInfo", EngineDFFGetFrameInfo);
@@ -223,6 +224,57 @@ int CLuaEngineDefs::EngineLoadCOL ( lua_State* luaVM )
     return 1;
 }
 
+int CLuaEngineDefs::EngineDFFCopy(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    SString strModelName;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadString(strModelName);
+    if (!argStream.HasErrors())
+    {
+        // Grab our virtual machine and grab our resource from that.
+        CLuaMain* pLuaMain = m_pLuaManager->GetVirtualMachine(luaVM);
+        if (pLuaMain)
+        {
+            // Get this resource
+            CResource* pResource = pLuaMain->GetResource();
+            if (pResource)
+            {
+                // Grab the resource root entity
+                CClientEntity* pRoot = pResource->GetResourceDFFRoot();
+
+                // Create a DFF element
+                CClientDFF* pDFFNew = new CClientDFF(m_pManager, INVALID_ELEMENT_ID);
+
+                pDFFNew->SetParent(pRoot);
+
+                if (strModelName != NULL)
+                {
+                    ushort usModelID = CModelNames::ResolveModelID(strModelName);
+                    if (usModelID != INVALID_MODEL_ID)
+                        pDFFNew->uimodel = usModelID;
+
+                    pDFFNew->strModelName = strModelName;
+                    RpClump* pClumpOrigin = pDFF->GetLoadedClump(pDFF->uimodel);
+                    RpClump* pClumpDesc = pDFF->GetLoadedClump(usModelID);
+                    CClientDFF::Copy(pClumpOrigin, pClumpDesc); // not working
+                    //abort();
+                    lua_pushelement(luaVM, pDFFNew);
+                    return 1;
+                }
+            }
+        }
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    // We failed
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
 int CLuaEngineDefs::EngineLoadDFF ( lua_State* luaVM )
 {
     SString strFile = "";
@@ -288,6 +340,72 @@ int CLuaEngineDefs::EngineLoadDFF ( lua_State* luaVM )
 
     // We failed
     lua_pushboolean ( luaVM, false );
+    return 1;
+}
+
+int CLuaEngineDefs::EngineDFFCreateCollision(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    ushort usModel;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadNumber(usModel, NULL);
+
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RpGeometry* pGeometry = pAtomic->geometry;
+                CLuaMain* pLuaMain = m_pLuaManager->GetVirtualMachine(luaVM);
+                if (pLuaMain)
+                {
+                    // Get the resource we belong to
+                    CResource* pResource = pLuaMain->GetResource();
+                    if (pResource)
+                    {
+                        SString strEmptyBase64 = "Q09MM3wAAABiYXNlAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAXt1G4F7dRuBe3UbgAAAAAAAAAAAAAAAASAAAAAAAAAAAAAAAAAAAAdAAAAHoAAAAAAAAAAAAAAHoAAACAAAAAAAAAAAAAAAAAAAAA";
+                        SString strFile = SharedUtil::Base64decode(strEmptyBase64);
+                        // Grab the resource root entity
+                        CClientEntity* pRoot = pResource->GetResourceCOLModelRoot();
+
+                        // Create the col model
+                        CClientColModel* pCol = new CClientColModel(m_pManager, INVALID_ELEMENT_ID);
+
+                        // Attempt loading the file
+                        if (pCol->LoadCol(strFile, true))
+                        {
+                            pCol->SetParent(pRoot);
+                            if (usModel == NULL && pDFF->uimodel != NULL)
+                            {
+                                pCol->usModel = pDFF->uimodel;
+                            }
+                            else
+                            {
+                                pCol->usModel = usModel;
+                            }
+                            CClientDFF::CreateCollision(pGeometry, pCol);
+                            lua_pushelement(luaVM, pCol);
+                            return 1;
+                        }
+                    }
+                }
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Expected valid model ID or name at argument 2");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
     return 1;
 }
 
@@ -3705,36 +3823,22 @@ int CLuaEngineDefs::EngineCOLCreateEmptyCollision(lua_State* luaVM)
             {
                 SString strEmptyBase64 = "Q09MM3wAAABiYXNlAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAXt1G4F7dRuBe3UbgAAAAAAAAAAAAAAAASAAAAAAAAAAAAAAAAAAAAdAAAAHoAAAAAAAAAAAAAAHoAAACAAAAAAAAAAAAAAAAAAAAA";
                 SString strFile = SharedUtil::Base64decode(strEmptyBase64);
-                bool bIsRawData = CClientColModel::IsCOLData(strFile);
-                SString strPath;
-                // Is this a legal filepath?
-                if (bIsRawData || CResourceManager::ParseResourcePathInput(strFile, pResource, &strPath))
+                // Grab the resource root entity
+                CClientEntity* pRoot = pResource->GetResourceCOLModelRoot();
+
+                // Create the col model
+                CClientColModel* pCol = new CClientColModel(m_pManager, INVALID_ELEMENT_ID);
+
+                // Attempt loading the file
+                if (pCol->LoadCol(strFile, true))
                 {
-                    // Grab the resource root entity
-                    CClientEntity* pRoot = pResource->GetResourceCOLModelRoot();
-
-                    // Create the col model
-                    CClientColModel* pCol = new CClientColModel(m_pManager, INVALID_ELEMENT_ID);
-
-                    // Attempt loading the file
-                    if (pCol->LoadCol(bIsRawData ? strFile : strPath, bIsRawData))
-                    {
-                        // Success. Make it a child of the resource collision root
-                        pCol->SetParent(pRoot);
-                        pCol->usModel = usModel;
-                        // Return the created col model
-                        lua_pushelement(luaVM, pCol);
-                        return 1;
-                    }
-                    else
-                    {
-                        // Delete it again. We failed
-                        delete pCol;
-                        argStream.SetCustomError(bIsRawData ? "raw data" : strFile, "Error loading COL");
-                    }
+                    // Success. Make it a child of the resource collision root
+                    pCol->SetParent(pRoot);
+                    pCol->usModel = usModel;
+                    // Return the created col model
+                    lua_pushelement(luaVM, pCol);
+                    return 1;
                 }
-                else
-                    argStream.SetCustomError(bIsRawData ? "raw data" : strFile, "Bad file path");
             }
         }
     }

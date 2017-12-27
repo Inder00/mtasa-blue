@@ -1789,10 +1789,6 @@ void CModelInfoSA::UpdateBoundingBox(CColModel* pColModel)
         point.fX = vert.x / 128;
         point.fY = vert.y / 128;
         point.fX = vert.z / 128;
-        float r = DistanceBetweenPoints3D(point, offset);
-
-        if (r > maxRadius)
-            maxRadius = r;
 
         if (x < vecMin.fX)
             vecMin.fX = x;
@@ -1807,6 +1803,18 @@ void CModelInfoSA::UpdateBoundingBox(CColModel* pColModel)
             vecMax.fY = y;
         if (z > vecMax.fZ)
             vecMax.fZ = z;
+    }
+    offset = (vecMax + vecMin)/2;
+    for (int i = 0; i < pColData->numColVertices; i++)
+    {
+        CompressedVector vert = pColData->m_pVertices[i];
+        CVector point;
+        point.fX = vert.x / 128;
+        point.fY = vert.y / 128;
+        point.fZ = vert.z / 128;
+        float r = DistanceBetweenPoints3D(point, offset);
+        if (r > maxRadius)
+            maxRadius = r;
     }
     pColModelInterface->boundingBox.fRadius = maxRadius;
     pColModelInterface->boundingBox.vecMax = vecMax;

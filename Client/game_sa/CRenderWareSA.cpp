@@ -897,3 +897,9 @@ RpMeshHeader* CRenderWareSA::CreateMeshHeader(unsigned int size)
 {
     return RpMeshHeaderCreate(size);
 }
+
+void CRenderWareSA::ClumpClone(RpClump* pClumpOrigin, RpClump* &pClumpDesc)
+{
+    if (pClumpOrigin && pClumpDesc)
+        pClumpDesc = RpClumpClone(pClumpOrigin);
+}

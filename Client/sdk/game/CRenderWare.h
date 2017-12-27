@@ -109,6 +109,8 @@ class CRenderWare {
     virtual RpLight*  LightCreate(int type) = 0;
     virtual RpClump* ClumpAddLight(RpClump* clump, RpLight* light) = 0;
     virtual RpMeshHeader* CreateMeshHeader(unsigned int size) = 0;
+    virtual void ClumpClone(RpClump* pClumpOrigin, RpClump* &pClumpDesc) = 0;
+
 
 };
 

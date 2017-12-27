@@ -126,6 +126,8 @@ public:
     RpLight*  LightCreate(int type);
     RpClump* ClumpAddLight(RpClump* clump, RpLight* light);
     RpMeshHeader* CreateMeshHeader(unsigned int size);
+    void ClumpClone(RpClump* pClumpOrigin, RpClump* &pClumpDesc);
+
 
 
 

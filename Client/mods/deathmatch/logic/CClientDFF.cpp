@@ -1019,8 +1019,8 @@ bool CClientDFF::VerticesToolMakePlanear(lua_State* luaVM, RpGeometry* pGeometry
 bool CClientDFF::CreateObjectPlane(RpGeometry* pGeometry, ushort usMesh, float fXs, float fYs, float fXe, float fYe, float fHeight, ushort usSegmentLenght, ushort usSegmentWidth)
 {
     ushort usStartVertices = pGeometry->vertices_size;
-    usSegmentLenght--;
-    usSegmentWidth--;
+    //usSegmentLenght--;
+    //usSegmentWidth--;
     float spaceX = (fXe - fXs) / usSegmentLenght;
     float spaceY = (fYe - fYs) / usSegmentWidth;
     CVector vecPosition;
@@ -1057,4 +1057,23 @@ bool CClientDFF::CreateObjectPlane(RpGeometry* pGeometry, ushort usMesh, float f
         }
     }
     return true;
+}
+
+void CClientDFF::Copy(RpClump* pClumpOrigin, RpClump* &pClumpDesc)
+{
+    g_pGame->GetRenderWare()->ClumpClone(pClumpOrigin, pClumpDesc);
+}
+
+void CClientDFF::CreateCollision(RpGeometry* pGeometry, CClientColModel* pCol)
+{
+    for (ushort i = 0; i < pGeometry->vertices_size; i++)
+    {
+        pCol->CreateVertex(pGeometry->morphTarget->verts[i].getVector());
+    }
+    for (ushort i = 0; i < pGeometry->triangles_size; i++)
+    {
+        RpTriangle polygon = pGeometry->triangles[i];
+        pCol->CreatePolygon(polygon.v[0], polygon.v[1], polygon.v[2]);
+    }
+    pCol->UpdateBoundingBox();
 }

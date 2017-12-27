@@ -83,6 +83,8 @@ public:
     LUA_DECLARE(EngineDFFTransformPolygons);
     LUA_DECLARE(EngineDFFUsePolygonsTool);
     LUA_DECLARE(EngineDFFCreateObject);
+    LUA_DECLARE(EngineDFFCopy);
+    LUA_DECLARE(EngineDFFCreateCollision);
 
     LUA_DECLARE(EngineCOLGetInfo);
     LUA_DECLARE(EngineCOLSetPolygonSurface);

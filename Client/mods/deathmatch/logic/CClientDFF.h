@@ -87,6 +87,8 @@ public:
     static bool VerticesToolMakePlanear(lua_State* luaVM, RpGeometry* pGeometry, std::vector< ushort > vertices, SString axis);
 
     static RpMeshHeader* CreateMeshHeader(unsigned int size);
+    static void Copy(RpClump* pClumpOrigin, RpClump* &pClumpDesc);
+    static void CreateCollision(RpGeometry* pGeometry, CClientColModel* pCol);
 
     static bool CreateObjectPlane(RpGeometry* pGeometry, ushort usMesh, float fXs, float fYs, float fXe, float fYe, float fHeight, ushort usSegmentLenght, ushort usSegmentWidth);
 
