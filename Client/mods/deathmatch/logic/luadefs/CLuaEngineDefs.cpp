@@ -2214,7 +2214,7 @@ int CLuaEngineDefs::EngineDFFGetPolygonPosition(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (pGeometry->isValidTriangleId(usPolygon))
+                if (!pGeometry->isValidTriangleId(usPolygon))
                 {
                     lua_pushboolean(luaVM, false);
                     return 1;

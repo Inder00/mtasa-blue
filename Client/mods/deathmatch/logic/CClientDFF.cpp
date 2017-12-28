@@ -516,7 +516,7 @@ bool CClientDFF::GeometryDestroyPolygon(RpGeometry* pGeometry, ushort uiTriangle
     myMesh->numIndices -= 3;
     pGeometry->header->totalIndicesInMesh -= 3;
     ushort* polygons = myMesh->indices;
-    ushort* newPolygons1 = reinterpret_cast<ushort*>(malloc(numIndices * 4));    // ushort - size=4
+    ushort* newPolygons1 = reinterpret_cast<ushort*>(malloc(numIndices * sizeof(ushort*)));    // ushort - size=2
     RpTriangle* newPolygons2 = reinterpret_cast<RpTriangle*>(malloc(sizeof(RpTriangle) * pGeometry->triangles_size));
 
     ushort id = GetPolygonIdInMesh(pGeometry, myMesh, uiTriangle);
@@ -596,6 +596,50 @@ RpMeshHeader* CClientDFF::CreateMeshHeader(unsigned int size)
     return g_pGame->GetRenderWare()->CreateMeshHeader(size);
 }
 
+bool CClientDFF::CreatePolygons(RpGeometry* pGeometry, ushort usMesh, std::vector < RpTriangle > vecPolygons)
+{
+
+    if (!pGeometry->header->isValidMeshId(usMesh))
+        return false;
+
+    uint vecSize = vecPolygons.size();
+    RpMesh* mesh = pGeometry->header->getMeshes();
+    RpMesh* myMesh = &mesh[usMesh];
+
+    ushort numIndices = myMesh->numIndices;
+    ushort lastPolygon = pGeometry->triangles_size;
+    ushort* newPolygons1 = reinterpret_cast<ushort*>(malloc((numIndices + vecSize * 3) * sizeof(ushort)));
+    RpTriangle* newPolygons2 = reinterpret_cast<RpTriangle*>(malloc((lastPolygon + vecSize) * sizeof(RpTriangle)));
+
+    
+    pGeometry->triangles_size += vecSize;
+    myMesh->numIndices += (vecSize * 3);
+    pGeometry->header->totalIndicesInMesh += (vecSize * 3);
+    ushort* polygons = myMesh->indices;
+    for (ushort i = 0; i < numIndices; i++)
+    {
+        newPolygons1[i] = polygons[i];
+    }
+    for (ushort i = 0; i < lastPolygon; i++)
+    {
+        newPolygons2[i] = pGeometry->triangles[i];
+    }
+    for (ushort i = 0; i < vecSize; i++)
+    {
+        RpTriangle triangle = vecPolygons.at(i);
+        newPolygons2[lastPolygon + i] = triangle;
+        newPolygons1[numIndices + (i * 3)] = triangle.v[2];
+        newPolygons1[numIndices + (i * 3) + 1] = triangle.v[1];
+        newPolygons1[numIndices + (i * 3) + 2] = triangle.v[0];
+    }
+    
+    free(myMesh->indices);  //crash
+    free(pGeometry->triangles);
+    myMesh->indices = newPolygons1;
+    pGeometry->triangles = newPolygons2;
+    return true;
+}
+
 bool CClientDFF::CreatePolygon(RpGeometry* pGeometry, ushort vertex1, ushort vertex2, ushort vertex3, ushort usMesh)
 {
 
@@ -613,7 +657,7 @@ bool CClientDFF::CreatePolygon(RpGeometry* pGeometry, ushort vertex1, ushort ver
     pGeometry->header->totalIndicesInMesh += 3;
     ushort numIndices = myMesh->numIndices;
     ushort* polygons = myMesh->indices;
-    ushort* newPolygons1 = reinterpret_cast<ushort*>(malloc(numIndices * 4));    // ushort - size=4
+    ushort* newPolygons1 = reinterpret_cast<ushort*>(malloc(numIndices * 2));    // ushort - size=422
     RpTriangle* newPolygons2 = reinterpret_cast<RpTriangle*>(malloc(sizeof(RpTriangle) * pGeometry->triangles_size));
     for (int i = 0; i < numIndices - 3; i++)
     {
@@ -827,6 +871,57 @@ bool CClientDFF::CreateVertex(RpGeometry* pGeometry, CVector vecPosition)
     return true;
 }
 
+
+bool CClientDFF::CreateVertices(RpGeometry* pGeometry, std::vector < CVector > vecPosition)
+{
+    RwV3d* newVerts = reinterpret_cast<RwV3d *>(malloc((pGeometry->vertices_size + vecPosition.size()) * sizeof(RwV3d)));
+    if (!newVerts)
+    {
+        return false;
+    }
+    ushort lastVertex = pGeometry->vertices_size;
+    pGeometry->vertices_size += vecPosition.size();
+    RwV3d* verts = pGeometry->morphTarget->verts;
+    for (ushort i = 0; i < lastVertex; i++)
+    {
+        newVerts[i] = verts[i];
+    }
+    for (ushort i = 0; i < vecPosition.size(); i++)
+    {
+        CVector pos = vecPosition.at(i);
+        RwV3d vVert;
+        vVert.x = pos.fX;
+        vVert.y = pos.fY;
+        vVert.z = pos.fZ;
+        newVerts[lastVertex + i] = vVert;
+    }
+    free(pGeometry->morphTarget->verts);
+    pGeometry->morphTarget->verts = (RwV3d *)newVerts;
+    if (pGeometry->isFlag(RpGeometryFlag::rpGEOMETRYPRELIT))
+    {
+        RwColor* newColors = reinterpret_cast<RwColor*>(malloc((pGeometry->vertices_size + vecPosition.size()) * sizeof(RwColor)));
+        if (newColors != NULL)
+        {
+            for (ushort i = 0; i < lastVertex; i++)
+            {
+                newColors[i] = pGeometry->colors[i];
+            }
+
+            RwColor color;
+            color.a = 0;
+            color.r = 32;
+            color.g = 32;
+            color.b = 32;
+            for (ushort i = 0; i < vecPosition.size(); i++)
+            {
+                newColors[lastVertex + i] = color;
+            }
+            pGeometry->colors = newColors;
+        }
+    }
+    return true;
+}
+
 void CClientDFF::GetVerticesInMesh(lua_State* luaVM, RpMesh* mesh)
 {
     lua_newtable(luaVM);
@@ -870,7 +965,6 @@ void CClientDFF::GetVerticesInRange(lua_State* luaVM, RpGeometry* pGeometry, CVe
         }
     }
 }
-
 
 void CClientDFF::GetVertexNeares3d(lua_State* luaVM, RpGeometry* pGeometry, CVector vecPosition)
 {
@@ -1027,18 +1121,22 @@ bool CClientDFF::CreateObjectPlane(RpGeometry* pGeometry, ushort usMesh, float f
     vecPosition.fZ = fHeight;
     vecPosition.fX = fXs;
     vecPosition.fY = fYs;   
+    std::vector < CVector > vecPositions;
     for (ushort i1 = 0; i1 <= usSegmentLenght; i1++)
     {
         for (ushort i2 = 0; i2 <= usSegmentWidth; i2++)
         {
-            CreateVertex(pGeometry, vecPosition);
+            vecPositions.push_back(vecPosition);
+            //CreateVertex(pGeometry, vecPosition);
             vecPosition.fY += spaceY;
         }
         vecPosition.fX += spaceX;
         vecPosition.fY = fYs;
     }
+    CClientDFF::CreateVertices(pGeometry, vecPositions);
     usSegmentWidth++;
     usSegmentLenght++;
+    std::vector < RpTriangle > vecPolygons;
     for (ushort i1 = usStartVertices; i1 < usSegmentWidth + usStartVertices; ++i1)
     {
         ushort a = i1;
@@ -1048,14 +1146,27 @@ bool CClientDFF::CreateObjectPlane(RpGeometry* pGeometry, ushort usMesh, float f
         for (ushort i2 = 0; i2 < usSegmentLenght - 1; ++i2)
         {
             ushort e = i2 * usSegmentWidth;
-            if(i1 != usSegmentWidth + usStartVertices - 1)
-                CreatePolygon(pGeometry, a + e, c + e, d + e, usMesh);
+            RpTriangle triangle;
+            triangle.matId = 0;
+            if (i1 != usSegmentWidth + usStartVertices - 1)
+            {
+                triangle.v[0] = a + e;
+                triangle.v[1] = c + e;
+                triangle.v[2] = d + e;
+                vecPolygons.push_back(triangle);
+            }
+                //CreatePolygon(pGeometry, a + e, c + e, d + e, usMesh);
             if(i1 != usStartVertices)
-                CreatePolygon(pGeometry, b + e, a + e, d + e, usMesh);
-            //if(i1 != usSegmentWidth + usStartVertices)
+            {
+                triangle.v[0] = b + e;
+                triangle.v[1] = a + e;
+                triangle.v[2] = d + e;
+                vecPolygons.push_back(triangle);
+            }
                 //CreatePolygon(pGeometry, b + e, a + e, d + e, usMesh);
         }
     }
+    CreatePolygons(pGeometry, usMesh, vecPolygons);
     return true;
 }
 

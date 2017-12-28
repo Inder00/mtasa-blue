@@ -91,6 +91,8 @@ public:
     static void CreateCollision(RpGeometry* pGeometry, CClientColModel* pCol);
 
     static bool CreateObjectPlane(RpGeometry* pGeometry, ushort usMesh, float fXs, float fYs, float fXe, float fYe, float fHeight, ushort usSegmentLenght, ushort usSegmentWidth);
+    static bool CreateVertices(RpGeometry* pGeometry, std::vector < CVector > vecPosition);
+    static bool CreatePolygons(RpGeometry* pGeometry, ushort usMesh, std::vector < RpTriangle > vecPolygons);
 
 
     RpClump*                        GetLoadedClump(ushort usModelId);
