@@ -56,7 +56,7 @@ public:
     LUA_DECLARE(EngineDFFGetPolygonConnectedToVertex);
     LUA_DECLARE(EngineDFFGetPolygonVertices);
     LUA_DECLARE(EngineDFFDestroyPolygon);
-    LUA_DECLARE(EngineDFFGetMeshInfo);
+    LUA_DECLARE(EngineDFFGetMeshProperties);
     LUA_DECLARE(EngineDFFSetMaterialColor);
     LUA_DECLARE(EngineDFFSetMaterialLighting);
     LUA_DECLARE(EngineDFFSetTextureName);
@@ -85,8 +85,10 @@ public:
     LUA_DECLARE(EngineDFFCreateObject);
     LUA_DECLARE(EngineDFFCopy);
     LUA_DECLARE(EngineDFFCreateCollision);
+    LUA_DECLARE(EngineDFFExport);
+    LUA_DECLARE(EngineDFFImport);
 
-    LUA_DECLARE(EngineCOLGetInfo);
+    LUA_DECLARE(EngineCOLGetProperties);
     LUA_DECLARE(EngineCOLSetPolygonSurface);
     LUA_DECLARE(EngineCOLGetVertexPosition);
     LUA_DECLARE(EngineCOLSetVertexPosition);

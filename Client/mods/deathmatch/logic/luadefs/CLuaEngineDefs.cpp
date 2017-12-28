@@ -50,7 +50,7 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFDestroyPolygon", EngineDFFDestroyPolygon);
     CLuaCFunctions::AddFunction("engineDFFCreatePolygon", EngineDFFCreatePolygon);
     CLuaCFunctions::AddFunction("engineDFFCreateVertex", EngineDFFCreateVertex);
-    CLuaCFunctions::AddFunction("engineDFFGetMeshInfo", EngineDFFGetMeshInfo);
+    CLuaCFunctions::AddFunction("engineDFFGetMeshProperties", EngineDFFGetMeshProperties);
     CLuaCFunctions::AddFunction("engineDFFSelectVertices", EngineDFFSelectVertices);
     CLuaCFunctions::AddFunction("engineDFFCreateEmptyModel", EngineDFFCreateEmptyModel);
     CLuaCFunctions::AddFunction("engineDFFCreateObject", EngineDFFCreateObject);
@@ -59,14 +59,14 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFUsePolygonsTool", EngineDFFUsePolygonsTool);
     CLuaCFunctions::AddFunction("engineDFFTransformVertices", EngineDFFTransformVertices);
     CLuaCFunctions::AddFunction("engineDFFTransformPolygons", EngineDFFTransformPolygons);
-    CLuaCFunctions::AddFunction("engineDFFCopy", EngineDFFCopy);
+    //CLuaCFunctions::AddFunction("engineDFFCopy", EngineDFFCopy);
     //CLuaCFunctions::AddFunction("engineDFFCreateLight", EngineDFFCreateLight);
     //CLuaCFunctions::AddFunction("engineDFFCreateMesh", EngineDFFCreateMesh);
     //CLuaCFunctions::AddFunction("engineDFFGetFrameInfo", EngineDFFGetFrameInfo);
     //CLuaCFunctions::AddFunction("engineDFFSetInterpolation", EngineDFFSetInterpolation);
 
 
-    CLuaCFunctions::AddFunction("engineCOLGetInfo", EngineCOLGetInfo);
+    CLuaCFunctions::AddFunction("engineCOLGetProperties", EngineCOLGetProperties);
     CLuaCFunctions::AddFunction("engineCOLSetPolygonSurface", EngineCOLSetPolygonSurface);
     CLuaCFunctions::AddFunction("engineCOLSetPolygonLighting", EngineCOLSetPolygonLighting);
     CLuaCFunctions::AddFunction("engineCOLCreateEmptyCollision", EngineCOLCreateEmptyCollision);
@@ -811,6 +811,27 @@ int CLuaEngineDefs::EngineDFFCreateLight(lua_State* luaVM)
     return 1;
 }
 
+inline RwFrame * GetFrames(lua_State* luaVM, RwFrame * parent, ushort count = 0) {
+    RwFrame * ret = parent->child, *buf;
+    count++;
+    lua_pushnumber(luaVM, count);
+    lua_newtable(luaVM);
+    ushort i = 0;
+    while (ret != NULL) {
+        i++;
+        lua_pushnumber(luaVM, i);
+        lua_pushstring(luaVM, ret->szName);
+        lua_settable(luaVM, -3);
+        // recurse into the child
+        if (ret->child != NULL) {
+            buf = GetFrames(luaVM, ret, count);
+            if (buf != NULL) return buf;
+        }
+        ret = ret->next;
+    }
+    return NULL;
+}
+
 int CLuaEngineDefs::EngineDFFGetProperties(lua_State* luaVM)
 {
     CClientDFF* pDFF;
@@ -828,6 +849,7 @@ int CLuaEngineDefs::EngineDFFGetProperties(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RwFrame* pFrame = pAtomic->getFrame();
                 RpGeometry* pGeometry = pAtomic->geometry;
+
                 lua_newtable(luaVM);
 
                 lua_pushstring(luaVM, "verticesCount");
@@ -846,22 +868,25 @@ int CLuaEngineDefs::EngineDFFGetProperties(lua_State* luaVM)
                 lua_pushnumber(luaVM, pGeometry->morphTarget_size);
                 lua_settable(luaVM, -3);
 
-                /*lua_pushstring(luaVM, "meshCount");
+                lua_pushstring(luaVM, "meshCount");
                 lua_pushnumber(luaVM, pGeometry->header->numMeshes);
                 lua_settable(luaVM, -3);
-
-                */  // same what materialsCount
 
                 lua_pushstring(luaVM, "texCoordSetsCount");
                 lua_pushnumber(luaVM, pGeometry->texcoords_size);
                 lua_settable(luaVM, -3);
 
+                /*lua_pushstring(luaVM, "frames");
+                lua_newtable(luaVM);
+                GetFrames(luaVM, pFrame);
+                lua_settable(luaVM, -3);*/
+
                 /*lua_pushstring(luaVM, "framesCount");
                 ushort framesCount = 1;
                 while (pFrame->child != NULL)
                 {
-                    framesCount++;
-                    pFrame = pFrame->child;
+                framesCount++;
+                pFrame = pFrame->child;
                 }
                 lua_pushnumber(luaVM, framesCount);
                 lua_settable(luaVM, -3);
@@ -870,7 +895,7 @@ int CLuaEngineDefs::EngineDFFGetProperties(lua_State* luaVM)
                 lua_pushstring(luaVM, "geometryCount");
                 lua_pushnumber(luaVM, 2);
                 lua_settable(luaVM, -3);
-                
+
                 lua_pushstring(luaVM, "atomics");
                 lua_pushnumber(luaVM, CClientDFF::ClumpGetNumAtomics(pClump));
                 lua_settable(luaVM, -3);
@@ -1169,12 +1194,14 @@ int CLuaEngineDefs::EngineDFFSetTexture(lua_State* luaVM)
     ushort uiMaterialId = NULL;
     CClientTXD* pTXD = NULL;
     ushort textureId = NULL;
+    bool bResetColor;
     SString sName;
     CScriptArgReader argStream(luaVM);
     argStream.ReadUserData(pDFF);
     argStream.ReadNumber(uiMaterialId);
     argStream.ReadUserData(pTXD);
     argStream.ReadNumber(textureId);
+    argStream.ReadBool(bResetColor, false);
 
     if (!argStream.HasErrors())
     {
@@ -1199,7 +1226,7 @@ int CLuaEngineDefs::EngineDFFSetTexture(lua_State* luaVM)
                     material->texture = NULL;
                     material2->texture = NULL;
                     pTXD->RestreamModel(usModelID);
-                    lua_pushboolean(luaVM, true);
+                    lua_pushboolean(luaVM, false);
                     return 1;
                 }
                 else
@@ -1210,6 +1237,13 @@ int CLuaEngineDefs::EngineDFFSetTexture(lua_State* luaVM)
                         RwTexture* texture = textures.at(textureId);
                         material->texture = texture;
                         material2->texture = texture;
+                        if (bResetColor)
+                        {
+                            material->color.r = 255;
+                            material->color.g = 255;
+                            material->color.b = 255;
+                            material->color.a = 255;
+                        }
                         pTXD->RestreamModel(usModelID);
                         lua_pushboolean(luaVM, true);
                         return 1;
@@ -1702,7 +1736,7 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
     return 1;
 }
 
-int CLuaEngineDefs::EngineDFFGetMeshInfo(lua_State* luaVM)
+int CLuaEngineDefs::EngineDFFGetMeshProperties(lua_State* luaVM)
 {
     CClientDFF* pDFF;
     ushort uMeshId = NULL;
@@ -3420,7 +3454,7 @@ int CLuaEngineDefs::EngineGetVisibleTextureNames ( lua_State* luaVM )
 
 // COL Functions
 
-int CLuaEngineDefs::EngineCOLGetInfo(lua_State* luaVM)
+int CLuaEngineDefs::EngineCOLGetProperties(lua_State* luaVM)
 {
     CClientColModel* pCOL;
     CScriptArgReader argStream(luaVM);
