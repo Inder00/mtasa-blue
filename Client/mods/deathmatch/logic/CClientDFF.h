@@ -94,6 +94,8 @@ public:
     static bool CreateVertices(RpGeometry* pGeometry, std::vector < CVector > vecPosition);
     static bool CreatePolygons(RpGeometry* pGeometry, ushort usMesh, std::vector < RpTriangle > vecPolygons);
 
+    static bool IsValidPosition(CVector vecPosition);
+
 
     RpClump*                        GetLoadedClump(ushort usModelId);
 

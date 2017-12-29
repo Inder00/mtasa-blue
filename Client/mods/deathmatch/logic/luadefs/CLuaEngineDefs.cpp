@@ -1018,19 +1018,18 @@ int CLuaEngineDefs::EngineDFFSetMaterialColor(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
-                if (uiMaterialId > pGeometry->header->numMeshes-1) {
-                    lua_pushboolean(luaVM, false);
+                if (pGeometry->header->isValidMeshId(uiMaterialId))
+                {
+                    RpMesh* m = &pGeometry->header->getMeshes()[uiMaterialId];
+                    m->material->color.r = uiMaterialR;
+                    m->material->color.g = uiMaterialG;
+                    m->material->color.b = uiMaterialB;
+                    if (uiMaterialA != NULL) {
+                        m->material->color.a = uiMaterialA;
+                    }
+                    lua_pushboolean(luaVM, true);
                     return 1;
                 }
-                RpMesh* m = &pGeometry->header->getMeshes()[uiMaterialId]; // example textures 0-5 in mta are 1-6
-                m->material->color.r = uiMaterialR;
-                m->material->color.g = uiMaterialG;
-                m->material->color.b = uiMaterialB;
-                if (uiMaterialA!=NULL) {
-                    m->material->color.a = uiMaterialA;
-                }
-                lua_pushboolean(luaVM, true);
-                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -1068,34 +1067,30 @@ int CLuaEngineDefs::EngineDFFSetTextureProperties(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiTextureId--;
-                if (!pGeometry->header->isValidMeshId(uiTextureId)) {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
+                if (pGeometry->header->isValidMeshId(uiTextureId)) {
+                    RpMaterial* material = pGeometry->materials.materials[uiTextureId];
+                    if (material->texture != NULL)
+                    {
+                        if (sPropertiesName == "u")
+                        {
+                            material->texture->raster->u = uiValue;
+                        }
+                        else if (sPropertiesName == "v")
+                        {
+                            material->texture->raster->v = uiValue;
+                        }
+                        else if (sPropertiesName == "width")
+                        {
+                            material->texture->raster->width = uiValue;
+                        }
+                        else if (sPropertiesName == "height")
+                        {
+                            material->texture->raster->height = uiValue;
+                        }
+                        lua_pushboolean(luaVM, true);
+                        return 1;
+                    }
                 }
-                RpMaterial* material = pGeometry->materials.materials[uiTextureId];
-                if (material->texture == NULL)
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                if (sPropertiesName == "u")
-                {
-                    material->texture->raster->u = uiValue;
-                }
-                else if (sPropertiesName == "v")
-                {
-                    material->texture->raster->v = uiValue;
-                }
-                else if (sPropertiesName == "width")
-                {
-                    material->texture->raster->width = uiValue;
-                }
-                else if (sPropertiesName == "height")
-                {
-                    material->texture->raster->height = uiValue;
-                }
-                lua_pushboolean(luaVM, true);
-                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -1131,49 +1126,45 @@ int CLuaEngineDefs::EngineDFFGetTextureProperties(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiTextureId--;
-                if (!pGeometry->header->isValidMeshId(uiTextureId)) {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                RpMaterial* material = pGeometry->materials.materials[uiTextureId];
-                if (material->texture == NULL)
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                if (sPropertiesName == "u")
-                {
-                    lua_pushnumber(luaVM, material->texture->raster->u);
-                    return 1;
-                }
-                else if (sPropertiesName == "v")
-                {
-                    lua_pushnumber(luaVM, material->texture->raster->v);
-                    return 1;
-                }
-                else if (sPropertiesName == "width")
-                {
-                    lua_pushnumber(luaVM, material->texture->raster->width);
-                    return 1;
-                }
-                else if (sPropertiesName == "height")
-                {
-                    lua_pushnumber(luaVM, material->texture->raster->height);
-                    return 1;
-                }
-                else if (sPropertiesName == "format")
-                {
-                    lua_pushnumber(luaVM, material->texture->raster->format);
-                    return 1;
-                }
-                else if (sPropertiesName == "pixels")
-                {
-                    lua_pushstring(luaVM, (char *)material->texture->raster->pixels);
-                    return 1;
-                }
+                if (pGeometry->header->isValidMeshId(uiTextureId)) {
+                    RpMaterial* material = pGeometry->materials.materials[uiTextureId];
+                    if (material->texture != NULL)
+                    {
 
-                lua_pushboolean(luaVM, true);
-                return 1;
+                        if (sPropertiesName == "u")
+                        {
+                            lua_pushnumber(luaVM, material->texture->raster->u);
+                            return 1;
+                        }
+                        else if (sPropertiesName == "v")
+                        {
+                            lua_pushnumber(luaVM, material->texture->raster->v);
+                            return 1;
+                        }
+                        else if (sPropertiesName == "width")
+                        {
+                            lua_pushnumber(luaVM, material->texture->raster->width);
+                            return 1;
+                        }
+                        else if (sPropertiesName == "height")
+                        {
+                            lua_pushnumber(luaVM, material->texture->raster->height);
+                            return 1;
+                        }
+                        else if (sPropertiesName == "format")
+                        {
+                            lua_pushnumber(luaVM, material->texture->raster->format);
+                            return 1;
+                        }
+                        else if (sPropertiesName == "pixels")
+                        {
+                            lua_pushstring(luaVM, (char *)material->texture->raster->pixels);
+                            return 1;
+                        }
+                        lua_pushboolean(luaVM, true);
+                        return 1;
+                    }
+                }
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -1327,48 +1318,45 @@ int CLuaEngineDefs::EngineDFFGetMaterialProperties(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
-                if (!pGeometry->header->isValidMeshId(uiMaterialId)) {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                RpMesh m = pGeometry->header->getMeshes()[uiMaterialId];
-                RpMaterial* material = m.material;
-                lua_newtable(luaVM);
-                lua_pushstring(luaVM, "id");
-                lua_pushnumber(luaVM, material->id);
-                lua_settable(luaVM, -3);
-                lua_pushstring(luaVM, "refs");
-                lua_pushnumber(luaVM, material->refs);
-                lua_settable(luaVM, -3);
-                lua_pushstring(luaVM, "mat");
-                RpMaterial* asdf = pGeometry->materials.materials[uiMaterialId];
-                if (asdf->texture != nullptr)
-                {
-                    lua_pushstring(luaVM, asdf->texture->name);
+                if (pGeometry->header->isValidMeshId(uiMaterialId)) {
+                    RpMesh m = pGeometry->header->getMeshes()[uiMaterialId];
+                    RpMaterial* material = m.material;
+                    lua_newtable(luaVM);
+                    lua_pushstring(luaVM, "id");
+                    lua_pushnumber(luaVM, material->id);
                     lua_settable(luaVM, -3);
-                    lua_pushstring(luaVM, "raster");
-                    lua_pushboolean(luaVM, asdf->texture->raster!=NULL);
+                    lua_pushstring(luaVM, "refs");
+                    lua_pushnumber(luaVM, material->refs);
                     lua_settable(luaVM, -3);
-                }
-                else {
-                    lua_pushstring(luaVM, "NIE");
+                    lua_pushstring(luaVM, "mat");
+                    RpMaterial* asdf = pGeometry->materials.materials[uiMaterialId];
+                    if (asdf->texture != nullptr)
+                    {
+                        lua_pushstring(luaVM, asdf->texture->name);
+                        lua_settable(luaVM, -3);
+                        lua_pushstring(luaVM, "raster");
+                        lua_pushboolean(luaVM, asdf->texture->raster != NULL);
+                        lua_settable(luaVM, -3);
+                    }
+                    else {
+                        lua_pushstring(luaVM, "NIE");
+                        lua_settable(luaVM, -3);
+                    }
+                    lua_pushstring(luaVM, "texture");
+                    if (material->texture == nullptr)
+                    {
+                        lua_pushboolean(luaVM, false);
+                    }
+                    else
+                    {
+                        lua_pushstring(luaVM, material->texture->name);
+                    }
                     lua_settable(luaVM, -3);
-                }
-                lua_pushstring(luaVM, "texture");
-                if (material->texture == nullptr)
-                {
-                    lua_pushboolean(luaVM, false);
-                }
-                else
-                {
-                    lua_pushstring(luaVM, material->texture->name);
-                }
-                lua_settable(luaVM, -3);
-                lua_pushstring(luaVM, "polygons");
-                lua_pushnumber(luaVM, m.numIndices/3);
-                lua_settable(luaVM, -3);
-                lua_pushstring(luaVM, "lighting");
-                lua_newtable(luaVM);
+                    lua_pushstring(luaVM, "polygons");
+                    lua_pushnumber(luaVM, m.numIndices / 3);
+                    lua_settable(luaVM, -3);
+                    lua_pushstring(luaVM, "lighting");
+                    lua_newtable(luaVM);
                     lua_pushstring(luaVM, "ambient");
                     lua_pushnumber(luaVM, material->lighting.ambient);
                     lua_settable(luaVM, -3);
@@ -1378,9 +1366,9 @@ int CLuaEngineDefs::EngineDFFGetMaterialProperties(lua_State* luaVM)
                     lua_pushstring(luaVM, "specular");
                     lua_pushnumber(luaVM, material->lighting.specular);
                     lua_settable(luaVM, -3);
-                lua_settable(luaVM, -3);
-                lua_pushstring(luaVM, "color");
-                lua_newtable(luaVM);
+                    lua_settable(luaVM, -3);
+                    lua_pushstring(luaVM, "color");
+                    lua_newtable(luaVM);
                     lua_pushnumber(luaVM, 1);
                     lua_pushnumber(luaVM, material->color.r);
                     lua_settable(luaVM, -3);
@@ -1393,13 +1381,13 @@ int CLuaEngineDefs::EngineDFFGetMaterialProperties(lua_State* luaVM)
                     lua_pushnumber(luaVM, 4);
                     lua_pushnumber(luaVM, material->color.a);
                     lua_settable(luaVM, -3);
-                lua_settable(luaVM, -3);
-                lua_pushstring(luaVM, "asdf");
-                RwResEntry* fff = pGeometry->repEntry;
-                lua_pushnumber(luaVM, pGeometry->repEntry->size);
-                lua_settable(luaVM, -3);
-                abort();
-                return 1;
+                    lua_settable(luaVM, -3);
+                    lua_pushstring(luaVM, "asdf");
+                    RwResEntry* fff = pGeometry->repEntry;
+                    lua_pushnumber(luaVM, pGeometry->repEntry->size);
+                    lua_settable(luaVM, -3);
+                    return 1;
+                }
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -1440,16 +1428,14 @@ int CLuaEngineDefs::EngineDFFSetMaterialLighting(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
-                if (uiMaterialId > pGeometry->header->numMeshes - 1) {
-                    lua_pushboolean(luaVM, false);
+                if (pGeometry->header->isValidMeshId(uiMaterialId)) {
+                    RpMesh* m = &pGeometry->header->getMeshes()[uiMaterialId];
+                    m->material->lighting.ambient = ambient;
+                    m->material->lighting.diffuse = diffuse;
+                    m->material->lighting.specular = specular;
+                    lua_pushboolean(luaVM, true);
                     return 1;
                 }
-                RpMesh* m = &pGeometry->header->getMeshes()[uiMaterialId]; // example textures 0-5 in mta are 1-6
-                m->material->lighting.ambient = ambient;
-                m->material->lighting.diffuse = diffuse;
-                m->material->lighting.specular = specular;
-                lua_pushboolean(luaVM, true);
-                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -1485,19 +1471,17 @@ int CLuaEngineDefs::EngineDFFSetTextureName(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 uiMaterialId--;
-                if (uiMaterialId > pGeometry->header->numMeshes - 1) {
-                    lua_pushboolean(luaVM, false);
+                if (pGeometry->header->isValidMeshId(uiMaterialId)) {
+                    RpMesh* m = &pGeometry->header->getMeshes()[uiMaterialId];
+
+                    if (m->material->texture != nullptr)
+                    {
+                        strcpy(m->material->texture->name, name);
+                        strcpy(m->material->texture->mask, mask);
+                    }
+                    lua_pushboolean(luaVM, true);
                     return 1;
                 }
-                RpMesh* m = &pGeometry->header->getMeshes()[uiMaterialId];
-
-                if (m->material->texture != nullptr)
-                {
-                    strcpy(m->material->texture->name, name);
-                    strcpy(m->material->texture->mask, mask);
-                }
-                lua_pushboolean(luaVM, true);
-                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -1533,8 +1517,6 @@ int CLuaEngineDefs::EngineDFFSetGeometry(lua_State* luaVM)
                 lua_pushboolean(luaVM, true);
                 return 1;
             }
-            else
-                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
         }
         else
             argStream.SetCustomError("Expected valid model ID or name at argument 2");
@@ -1562,17 +1544,19 @@ int CLuaEngineDefs::EngineDFFSetCenter(lua_State* luaVM)
             RpClump* pClump = pDFF->GetLoadedClump(usModelID);
             if (pClump)
             {
-                RpAtomic* pAtomic = pClump->getAtomic();
-                //RpGeometry* pGeometry = pAtomic->geometry;
-                pAtomic->bsphereWorld.position.x = vNewCenter.fX;
-                pAtomic->bsphereWorld.position.y = vNewCenter.fY;
-                pAtomic->bsphereWorld.position.z = vNewCenter.fZ;
+                if (CClientDFF::IsValidPosition(vNewCenter))
+                {
+                    RpAtomic* pAtomic = pClump->getAtomic();
+                    pAtomic->bsphereWorld.position.x = vNewCenter.fX;
+                    pAtomic->bsphereWorld.position.y = vNewCenter.fY;
+                    pAtomic->bsphereWorld.position.z = vNewCenter.fZ;
 
-                pAtomic->bsphereLocal.position.x = vNewCenter.fX;
-                pAtomic->bsphereLocal.position.y = vNewCenter.fY;
-                pAtomic->bsphereLocal.position.z = vNewCenter.fZ;
-                lua_pushboolean(luaVM, true);
-                return 1;
+                    pAtomic->bsphereLocal.position.x = vNewCenter.fX;
+                    pAtomic->bsphereLocal.position.y = vNewCenter.fY;
+                    pAtomic->bsphereLocal.position.z = vNewCenter.fZ;
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -1614,14 +1598,13 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
                         lua_pushboolean(luaVM, false);
                         return 1;
                     }
-                    if (!pGeometry->header->isValidMeshId(usMeshId))
+                    usMeshId--;
+                    if (pGeometry->header->isValidMeshId(usMeshId))
                     {
-                        lua_pushboolean(luaVM, false);
+                        RpMesh* mesh = pGeometry->header->getMeshes();
+                        CClientDFF::GetVerticesInMesh(luaVM, &mesh[usMeshId]);
                         return 1;
-                    }
-                    RpMesh* mesh = pGeometry->header->getMeshes();
-                    CClientDFF::GetVerticesInMesh(luaVM, &mesh[usMeshId-1]);
-                    return 1;
+                    }            
                 }
                 else if (sSelectType == "*")
                 {
@@ -1640,8 +1623,18 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
                         lua_pushboolean(luaVM, false);
                         return 1;
                     }
-                    CClientDFF::GetVerticesInRange(luaVM, pGeometry, vecPosition, fRange);
-                    return 1;
+                    if (fRange > 0)
+                    {
+                        CClientDFF::GetVerticesInRange(luaVM, pGeometry, vecPosition, fRange);
+                        return 1;
+                    }
+                    else
+                    {
+                        argStream.SetCustomError("Range should be bigger then 0!");
+                        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
                 }
                 else if (sSelectType == "nearest3d")
                 {
@@ -1654,7 +1647,6 @@ int CLuaEngineDefs::EngineDFFSelectVertices(lua_State* luaVM)
                         return 1;
                     }
                     CClientDFF::GetVertexNeares3d(luaVM, pGeometry, vecPosition);
-
                     return 1;
                 }
                 else if (sSelectType == "betweenPosition2d")
@@ -1753,33 +1745,25 @@ int CLuaEngineDefs::EngineDFFGetMeshProperties(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (uMeshId != NULL && uMeshId <= pGeometry->header->numMeshes)
+                RpMesh* mesh = pGeometry->header->getMeshes();
+                ushort meshCount = pGeometry->header->numMeshes;
+                uMeshId--;
+                if (pGeometry->header->isValidMeshId(uMeshId))
                 {
-                    RpMesh* mesh = pGeometry->header->getMeshes();
-                    ushort meshCount = pGeometry->header->numMeshes;
-                    if (pGeometry->header->isValidMeshId(uMeshId))
-                    {
-                        lua_pushboolean(luaVM, false);
-                        return 1;
-                    }
-                    uMeshId--;
-                    RpMesh* myMesh = &mesh[uMeshId];
+                    RpMesh myMesh = mesh[uMeshId];
                     lua_newtable(luaVM);
                     lua_pushstring(luaVM, "materialId");
-                    lua_pushnumber(luaVM, myMesh->material->id);
-                    lua_settable(luaVM, -3);
-                    lua_pushstring(luaVM, "materialId2");
-                    lua_pushnumber(luaVM, (int)myMesh->material);
+                    lua_pushnumber(luaVM, myMesh.material->id);
                     lua_settable(luaVM, -3);
 
                     lua_pushstring(luaVM, "polygonsCounts");
-                    lua_pushnumber(luaVM, myMesh->numIndices/3);
+                    lua_pushnumber(luaVM, myMesh.numIndices / 3);
                     lua_settable(luaVM, -3);
 
-                    if (myMesh->material->texture != nullptr)
+                    if (myMesh.material->texture != nullptr)
                     {
                         lua_pushstring(luaVM, "texture");
-                        lua_pushstring(luaVM, myMesh->material->texture->name);
+                        lua_pushstring(luaVM, myMesh.material->texture->name);
                         lua_settable(luaVM, -3);
                     }
                     else
@@ -1788,11 +1772,8 @@ int CLuaEngineDefs::EngineDFFGetMeshProperties(lua_State* luaVM)
                         lua_pushboolean(luaVM, false);
                         lua_settable(luaVM, -3);
                     }
-                    
                     return 1;
                 }
-                else
-                    argStream.SetCustomError(SString("Triangle ID %s invalid", "asD"));
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -1864,21 +1845,19 @@ int CLuaEngineDefs::EngineDFFSetVertexUV(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 usVertexId--;
-                if (!pGeometry->isValidVertexId(usVertexId)) {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                RwTextureCoordinates* vVert = &pGeometry->texcoords[0][usVertexId];
+                if (pGeometry->isValidVertexId(usVertexId)) {
+                    RwTextureCoordinates* vVert = &pGeometry->texcoords[0][usVertexId];
 
-                if (vVert == NULL)
-                {
-                    lua_pushboolean(luaVM, false);
+                    if (vVert == NULL)
+                    {
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                    vVert->u = u;
+                    vVert->v = v;
+                    lua_pushboolean(luaVM, true);
                     return 1;
                 }
-                vVert->u = u;
-                vVert->v = v;
-                lua_pushboolean(luaVM, true);
-                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -1932,31 +1911,29 @@ int CLuaEngineDefs::EngineDFFSetVertexLight(lua_State* luaVM)
                     }
                 }
                 usVertex--;
-                if (!pGeometry->isValidVertexId(usVertex)) {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                RwColor* vertColor = &pGeometry->colors[usVertex];
+                if (pGeometry->isValidVertexId(usVertex)) {
+                    RwColor* vertColor = &pGeometry->colors[usVertex];
 
-                if (vertColor == NULL)
-                {
-                    lua_pushboolean(luaVM, false);
+                    if (vertColor == NULL)
+                    {
+                        lua_pushboolean(luaVM, false);
+                        return 1;
+                    }
+                    if (blend)
+                    {
+                        r += vertColor->r;
+                        g += vertColor->g;
+                        b += vertColor->b;
+                        a += vertColor->a;
+                    }
+
+                    vertColor->r = clamp(r, 0, 255);
+                    vertColor->g = clamp(g, 0, 255);
+                    vertColor->b = clamp(b, 0, 255);
+                    vertColor->a = clamp(a, 0, 255);
+                    lua_pushboolean(luaVM, true);
                     return 1;
                 }
-                if (blend)
-                {
-                    r += vertColor->r;
-                    g += vertColor->g;
-                    b += vertColor->b;
-                    a += vertColor->a;
-                }
-                
-                vertColor->r = clamp(r, 0, 255);
-                vertColor->g = clamp(g, 0, 255);
-                vertColor->b = clamp(b, 0, 255);
-                vertColor->a = clamp(a, 0, 255);
-                lua_pushboolean(luaVM, true);
-                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -1999,17 +1976,14 @@ int CLuaEngineDefs::EngineDFFGetVertexLight(lua_State* luaVM)
                 }
 
                 usVertex--;
-                if (!pGeometry->isValidVertexId(usVertex)) {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
+                if (pGeometry->isValidVertexId(usVertex)) {
+                    RwColor vertColor = pGeometry->colors[usVertex];
+                    lua_pushnumber(luaVM, vertColor.r);
+                    lua_pushnumber(luaVM, vertColor.g);
+                    lua_pushnumber(luaVM, vertColor.b);
+                    lua_pushnumber(luaVM, vertColor.a);
+                    return 4;
                 }
-                RwColor vertColor = pGeometry->colors[usVertex];
-
-                lua_pushnumber(luaVM, vertColor.r);
-                lua_pushnumber(luaVM, vertColor.g);
-                lua_pushnumber(luaVM, vertColor.b);
-                lua_pushnumber(luaVM, vertColor.a);
-                return 4;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2042,15 +2016,13 @@ int CLuaEngineDefs::EngineDFFGetVertexUV(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (!pGeometry->isValidVertexId(usVertexId)) {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
                 usVertexId--;
-                RwTextureCoordinates* vVert = &pGeometry->texcoords[0][usVertexId];
-                lua_pushnumber(luaVM, vVert->u);
-                lua_pushnumber(luaVM, vVert->v);
-                return 2;
+                if (pGeometry->isValidVertexId(usVertexId)) {
+                    RwTextureCoordinates* vVert = &pGeometry->texcoords[0][usVertexId];
+                    lua_pushnumber(luaVM, vVert->u);
+                    lua_pushnumber(luaVM, vVert->v);
+                    return 2;
+                }
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2086,16 +2058,14 @@ int CLuaEngineDefs::EngineDFFSetVertexPosition(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 usVertex--;
-                if (!pGeometry->isValidVertexId(usVertex)) {
-                    lua_pushboolean(luaVM, false);
+                if (pGeometry->isValidVertexId(usVertex)) {
+                    RwV3d* vVert = &pGeometry->morphTarget->verts[usVertex];
+                    vVert->x = pos.fX;
+                    vVert->y = pos.fY;
+                    vVert->z = pos.fZ;
+                    lua_pushboolean(luaVM, true);
                     return 1;
                 }
-                RwV3d* vVert = &pGeometry->morphTarget->verts[usVertex];
-                vVert->x = pos.fX;
-                vVert->y = pos.fY;
-                vVert->z = pos.fZ;
-                lua_pushboolean(luaVM, true);
-                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2128,16 +2098,14 @@ int CLuaEngineDefs::EngineDFFGetVertexPosition(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (!pGeometry->isValidVertexId(usVertex)) {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
                 usVertex--;
-                RwV3d* vVert = &pGeometry->morphTarget->verts[usVertex];
-                lua_pushnumber(luaVM, vVert->x);
-                lua_pushnumber(luaVM, vVert->y);
-                lua_pushnumber(luaVM, vVert->z);
-                return 3;
+                if (pGeometry->isValidVertexId(usVertex)) {
+                    RwV3d vVert = pGeometry->morphTarget->verts[usVertex];
+                    lua_pushnumber(luaVM, vVert.x);
+                    lua_pushnumber(luaVM, vVert.y);
+                    lua_pushnumber(luaVM, vVert.z);
+                    return 3;
+                }
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2173,15 +2141,13 @@ int CLuaEngineDefs::EngineDFFSetPolygonPosition(lua_State* luaVM)
 
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (!pGeometry->isValidTriangleId(uiPolygonId))
+                uiPolygonId--;
+                if (pGeometry->isValidTriangleId(uiPolygonId))
                 {
-                    lua_pushboolean(luaVM, false);
+                    CClientDFF::SetPolygonPosition(pGeometry, uiPolygonId, vNewPosition);
+                    lua_pushboolean(luaVM, true);
                     return 1;
                 }
-                uiPolygonId--;
-                CClientDFF::SetPolygonPosition(pGeometry, uiPolygonId, vNewPosition);
-                lua_pushboolean(luaVM, true);
-                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2214,17 +2180,15 @@ int CLuaEngineDefs::EngineDFFGetPolygonPosition(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (!pGeometry->isValidTriangleId(usPolygon))
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
                 usPolygon--;
-                CVector vecPosition = CClientDFF::GetPolygonPosition(pGeometry, usPolygon);
-                lua_pushnumber(luaVM, vecPosition.fX);
-                lua_pushnumber(luaVM, vecPosition.fY);
-                lua_pushnumber(luaVM, vecPosition.fZ);
-                return 3;
+                if (pGeometry->isValidTriangleId(usPolygon))
+                {
+                    CVector vecPosition = CClientDFF::GetPolygonPosition(pGeometry, usPolygon);
+                    lua_pushnumber(luaVM, vecPosition.fX);
+                    lua_pushnumber(luaVM, vecPosition.fY);
+                    lua_pushnumber(luaVM, vecPosition.fZ);
+                    return 3;
+                }
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2261,28 +2225,22 @@ int CLuaEngineDefs::EngineDFFSetPolygonVertices(lua_State* luaVM)
 
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (!pGeometry->isValidTriangleId(usPolygon))
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                if (vertex1 == vertex2 || vertex1 == vertex3 || vertex2 == vertex3) // prevent set vertices like 1,2,2 - this make no sens
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                if (!pGeometry->isValidVertexId(vertex1) || !pGeometry->isValidVertexId(vertex2) || !pGeometry->isValidVertexId(vertex3))
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
                 usPolygon--;
                 vertex1--;
                 vertex2--;
                 vertex3--;
-                bool result = CClientDFF::SetPolygonVertices(pGeometry, usPolygon, vertex1, vertex2, vertex3);
-                lua_pushboolean(luaVM, result);
-                return 1;
+                if (pGeometry->isValidTriangleId(usPolygon))
+                {
+                    if (pGeometry->isValidVertexId(vertex1) && pGeometry->isValidVertexId(vertex2) && pGeometry->isValidVertexId(vertex3))
+                    {
+                        if (vertex1 != vertex2 && vertex1 != vertex3 && vertex2 != vertex3)
+                        {
+                            bool result = CClientDFF::SetPolygonVertices(pGeometry, usPolygon, vertex1, vertex2, vertex3);
+                            lua_pushboolean(luaVM, result);
+                            return 1;
+                        }
+                    }
+                }
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2317,25 +2275,26 @@ int CLuaEngineDefs::EngineDFFSetPolygonMaterial(lua_State* luaVM)
             if (pClump)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
-                RpGeometry* pGeometry = pAtomic->geometry + pDFF->uiGeometry;
-                if (uiPolygon > pGeometry->triangles_size)
+                RpGeometry* pGeometry = pAtomic->geometry;
+                uiPolygon--;
+                uiMaterialId--;
+                if (pGeometry->isValidTriangleId(uiPolygon))
                 {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                RpMaterials pMaterials = pGeometry->materials;
-                if (uiMaterialId != NULL && uiMaterialId <= pMaterials.entries)
-                {
-                    RpMaterial* pMaterial = pMaterials.materials[uiMaterialId];
-                    if (pMaterial == NULL || pMaterial == nullptr || sizeof(pMaterial)!=4) {
-                        lua_pushboolean(luaVM, false);
+                    RpMaterials pMaterials = pGeometry->materials;
+                    /*if (pMaterials.)
+                    {
+                        RpMaterial* pMaterial = pMaterials.materials[uiMaterialId];
+                        if (pMaterial == NULL || pMaterial == nullptr || sizeof(pMaterial) != 4) {
+                            lua_pushboolean(luaVM, false);
+                            return 1;
+                        }
+                        RpTriangle* pTriangle = &pGeometry->triangles[uiPolygon];
+                        pGeometry = (RpGeometry*)pDFF->GeometryTriangleSetMaterialId(pGeometry, pTriangle, pMaterial);
+                        lua_pushboolean(luaVM, true);
                         return 1;
-                    }
-                    RpTriangle* pTriangle = &pGeometry->triangles[uiPolygon];
-                    pGeometry = (RpGeometry*)pDFF->GeometryTriangleSetMaterialId(pGeometry, pTriangle, pMaterial);
-                    lua_pushboolean(luaVM, true);
-                    return 1;
+                    }*/
                 }
+                
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2367,18 +2326,16 @@ int CLuaEngineDefs::EngineDFFGetPolygonMesh(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if ( !pGeometry->isValidTriangleId(uTriangleId) )
+                uTriangleId--;
+                if ( pGeometry->isValidTriangleId(uTriangleId) )
                 {
-                    lua_pushboolean(luaVM, false);
+                    ushort meshId = CClientDFF::GetMeshIdFromPolygonId(pGeometry, uTriangleId);
+                    if (meshId == -1)
+                        lua_pushboolean(luaVM, false);
+                    else
+                        lua_pushnumber(luaVM, meshId + 1);
                     return 1;
                 }
-                uTriangleId--;
-                ushort meshId = CClientDFF::GetMeshIdFromPolygonId(pGeometry, uTriangleId);
-                if(meshId==-1)
-                    lua_pushboolean(luaVM, false);
-                else
-                    lua_pushnumber(luaVM, meshId+1);
-                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2410,17 +2367,15 @@ int CLuaEngineDefs::EngineDFFGetPolygonVertices(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (!pGeometry->isValidTriangleId(uTriangleId))
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
                 uTriangleId--;
-                RpTriangle pTriangle = pGeometry->triangles[uTriangleId];
-                lua_pushnumber(luaVM, pTriangle.v[0]);
-                lua_pushnumber(luaVM, pTriangle.v[1]);
-                lua_pushnumber(luaVM, pTriangle.v[2]);
-                return 3;
+                if (pGeometry->isValidTriangleId(uTriangleId))
+                {
+                    RpTriangle pTriangle = pGeometry->triangles[uTriangleId];
+                    lua_pushnumber(luaVM, pTriangle.v[0]);
+                    lua_pushnumber(luaVM, pTriangle.v[1]);
+                    lua_pushnumber(luaVM, pTriangle.v[2]);
+                    return 3;
+                }
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2454,17 +2409,15 @@ int CLuaEngineDefs::EngineDFFSetPolygonMesh(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (!pGeometry->isValidTriangleId(usTriangle))
+                usTriangle--;
+                if (pGeometry->isValidTriangleId(usTriangle))
                 {
-                    lua_pushboolean(luaVM, false);
+                    RpTriangle pTriangle = pGeometry->triangles[usTriangle];
+                    CClientDFF::GeometryDestroyPolygon(pGeometry, usTriangle);
+                    CClientDFF::CreatePolygon(pGeometry, pTriangle.v[2], pTriangle.v[1], pTriangle.v[0], usMesh);
+                    lua_pushboolean(luaVM, true);
                     return 1;
                 }
-                usTriangle--;
-                RpTriangle pTriangle = pGeometry->triangles[usTriangle];
-                CClientDFF::GeometryDestroyPolygon(pGeometry, usTriangle);
-                CClientDFF::CreatePolygon(pGeometry, pTriangle.v[2], pTriangle.v[1], pTriangle.v[0], usMesh);
-                lua_pushboolean(luaVM, true);
-                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2496,15 +2449,13 @@ int CLuaEngineDefs::EngineDFFDestroyPolygon(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (!pGeometry->isValidTriangleId(uiTriangleId))
+                uiTriangleId--;
+                if (pGeometry->isValidTriangleId(uiTriangleId))
                 {
-                    lua_pushboolean(luaVM, false);
+                    bool ret = CClientDFF::GeometryDestroyPolygon(pGeometry, uiTriangleId);
+                    lua_pushboolean(luaVM, ret);
                     return 1;
                 }
-                uiTriangleId--;
-                bool ret = CClientDFF::GeometryDestroyPolygon(pGeometry, uiTriangleId);
-                lua_pushboolean(luaVM, ret);
-                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2578,28 +2529,27 @@ int CLuaEngineDefs::EngineDFFCreatePolygon(lua_State* luaVM)
             {
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
-                if (vertex1 == vertex2 || vertex1 == vertex3 || vertex2 == vertex3)
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                if (!pGeometry->isValidVertexId(vertex1) || !pGeometry->isValidVertexId(vertex2) || !pGeometry->isValidVertexId(vertex3))
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
                 vertex1--;
                 vertex2--;
                 vertex3--;
                 usMesh--;
-                bool result = CClientDFF::CreatePolygon(pGeometry, vertex1, vertex2, vertex3, usMesh);
+                if (pGeometry->header->isValidMeshId(usMesh))
+                {
+                    if (pGeometry->isValidVertexId(vertex1) && pGeometry->isValidVertexId(vertex2) && pGeometry->isValidVertexId(vertex3))
+                    {
+                        if (vertex1 != vertex2 && vertex1 != vertex3 && vertex2 != vertex3)
+                        {
+                            bool result = CClientDFF::CreatePolygon(pGeometry, vertex1, vertex2, vertex3, usMesh);
 
-                if (result)
-                    lua_pushnumber(luaVM, pGeometry->triangles_size);
-                else
-                    lua_pushboolean(luaVM, false);
+                            if (result)
+                                lua_pushnumber(luaVM, pGeometry->triangles_size);
+                            else
+                                lua_pushboolean(luaVM, false);
 
-                return 1;
+                            return 1;
+                        }
+                    }
+                }
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2633,13 +2583,11 @@ int CLuaEngineDefs::EngineDFFDestroyVertex(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 usVertex--;
-                if ( !pGeometry->isValidVertexId(usVertex) ) {
-                    lua_pushboolean(luaVM, false);
+                if ( pGeometry->isValidVertexId(usVertex) ) {
+                    CClientDFF::GeometryDestroyVertex(pGeometry, usVertex);
+                    lua_pushboolean(luaVM, true);
                     return 1;
                 }
-                CClientDFF::GeometryDestroyVertex(pGeometry, usVertex);
-                lua_pushboolean(luaVM, true);
-                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));
@@ -2673,19 +2621,16 @@ int CLuaEngineDefs::EngineDFFGetPolygonConnectedToVertex(lua_State* luaVM)
                 RpAtomic* pAtomic = pClump->getAtomic();
                 RpGeometry* pGeometry = pAtomic->geometry;
                 usVertex--;
-                if (!pGeometry->isValidVertexId(usVertex)) {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                std::vector < ushort > vecPolygons = CClientDFF::GetPolygonsUsedByVertex(pGeometry, usVertex);
-                lua_newtable(luaVM);
-                for (ushort i = 0; i < vecPolygons.size(); i++)
-                {
+                if (pGeometry->isValidVertexId(usVertex)) {
+                    std::vector < ushort > vecPolygons = CClientDFF::GetPolygonsUsedByVertex(pGeometry, usVertex);
+                    lua_newtable(luaVM);
+                    for (ushort i = 0; i < vecPolygons.size(); i++)
+                    {
                         lua_pushnumber(luaVM, i + 1);
-                        lua_pushnumber(luaVM, vecPolygons.at(i) );
+                        lua_pushnumber(luaVM, vecPolygons.at(i));
                         lua_settable(luaVM, -3);
+                    }
                 }
-                return 1;
             }
             else
                 argStream.SetCustomError(SString("Model ID %d failed", usModelID));

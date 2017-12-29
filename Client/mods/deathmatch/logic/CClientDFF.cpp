@@ -609,9 +609,11 @@ bool CClientDFF::CreatePolygons(RpGeometry* pGeometry, ushort usMesh, std::vecto
     ushort numIndices = myMesh->numIndices;
     ushort lastPolygon = pGeometry->triangles_size;
     ushort* newPolygons1 = reinterpret_cast<ushort*>(malloc((numIndices + vecSize * 3) * sizeof(ushort)));
-    RpTriangle* newPolygons2 = reinterpret_cast<RpTriangle*>(malloc((lastPolygon + vecSize) * sizeof(RpTriangle)));
+    if (!newPolygons1) return false;
 
-    
+    RpTriangle* newPolygons2 = reinterpret_cast<RpTriangle*>(malloc((lastPolygon + vecSize) * sizeof(RpTriangle)));
+    if (!newPolygons2) return false;
+
     pGeometry->triangles_size += vecSize;
     myMesh->numIndices += (vecSize * 3);
     pGeometry->header->totalIndicesInMesh += (vecSize * 3);
@@ -624,13 +626,25 @@ bool CClientDFF::CreatePolygons(RpGeometry* pGeometry, ushort usMesh, std::vecto
     {
         newPolygons2[i] = pGeometry->triangles[i];
     }
+    ushort next = 0;
     for (ushort i = 0; i < vecSize; i++)
     {
-        RpTriangle triangle = vecPolygons.at(i);
-        newPolygons2[lastPolygon + i] = triangle;
-        newPolygons1[numIndices + (i * 3)] = triangle.v[2];
-        newPolygons1[numIndices + (i * 3) + 1] = triangle.v[1];
-        newPolygons1[numIndices + (i * 3) + 2] = triangle.v[0];
+        if (pGeometry->triangles_size < 32768)
+        {
+            RpTriangle triangle = vecPolygons.at(i);
+            if (pGeometry->isValidVertexId(triangle.v[0]) && pGeometry->isValidVertexId(triangle.v[1]) && pGeometry->isValidVertexId(triangle.v[2]))
+            {
+                newPolygons2[lastPolygon + next] = triangle;
+                newPolygons1[numIndices + (next * 3)] = triangle.v[2];
+                newPolygons1[numIndices + (next * 3) + 1] = triangle.v[1];
+                newPolygons1[numIndices + (next * 3) + 2] = triangle.v[0];
+                next++;
+            }
+        }
+        else
+        {
+            break;
+        }
     }
     
     free(myMesh->indices);  //crash
@@ -1187,4 +1201,9 @@ void CClientDFF::CreateCollision(RpGeometry* pGeometry, CClientColModel* pCol)
         pCol->CreatePolygon(polygon.v[0], polygon.v[1], polygon.v[2]);
     }
     pCol->UpdateBoundingBox();
+}
+
+bool CClientDFF::IsValidPosition(CVector vecPosition)
+{
+    return (vecPosition.fX <= 256 && vecPosition.fY <= 256 && vecPosition.fZ <= 256) && (vecPosition.fX >= -256 && vecPosition.fY >= -256 && vecPosition.fZ >= -256);
 }

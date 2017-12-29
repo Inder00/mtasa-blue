@@ -336,7 +336,7 @@ struct RpMesh
     RpMaterial    *material;
     bool isValidIndices(unsigned short usIndices)
     {
-        return (numIndices > usIndices && usIndices >= 0);
+        return (numIndices >= 0 && numIndices > usIndices);
     }
 };
 
@@ -649,15 +649,15 @@ struct RpGeometry
 
     bool isValidTriangleId(int triangleId)
     {
-        return (triangleId != NULL && triangles_size >= triangleId);
+        return (triangles_size >= 0 && triangles_size > triangleId);
     }
     bool isValidVertexId(int vertexId)
     {
-        return (vertexId != NULL && vertices_size >= vertexId);
+        return (vertices_size >= 0 && vertices_size > vertexId);
     }
     bool isValidTexCoordsId(int textCoordId)
     {
-        return (textCoordId != NULL && texcoords_size >= textCoordId);
+        return (texcoords_size >= 0 && texcoords_size > textCoordId);
     }
     inline bool isFlag(RpGeometryFlag flag)
     {
