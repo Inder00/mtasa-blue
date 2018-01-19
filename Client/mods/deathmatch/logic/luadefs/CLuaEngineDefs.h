@@ -87,6 +87,7 @@ public:
     LUA_DECLARE(EngineDFFCreateCollision);
     LUA_DECLARE(EngineDFFExport);
     LUA_DECLARE(EngineDFFImport);
+    LUA_DECLARE(EngineDFFRayTracer);
 
     LUA_DECLARE(EngineCOLGetProperties);
     LUA_DECLARE(EngineCOLSetPolygonSurface);

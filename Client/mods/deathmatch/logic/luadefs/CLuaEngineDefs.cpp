@@ -59,6 +59,7 @@ void CLuaEngineDefs::LoadFunctions ( void )
     CLuaCFunctions::AddFunction("engineDFFUsePolygonsTool", EngineDFFUsePolygonsTool);
     CLuaCFunctions::AddFunction("engineDFFTransformVertices", EngineDFFTransformVertices);
     CLuaCFunctions::AddFunction("engineDFFTransformPolygons", EngineDFFTransformPolygons);
+    CLuaCFunctions::AddFunction("engineDFFRayTracer", EngineDFFRayTracer);
     //CLuaCFunctions::AddFunction("engineDFFCopy", EngineDFFCopy);
     //CLuaCFunctions::AddFunction("engineDFFCreateLight", EngineDFFCreateLight);
     //CLuaCFunctions::AddFunction("engineDFFCreateMesh", EngineDFFCreateMesh);
@@ -1919,18 +1920,23 @@ int CLuaEngineDefs::EngineDFFSetVertexLight(lua_State* luaVM)
                         lua_pushboolean(luaVM, false);
                         return 1;
                     }
+
                     if (blend)
                     {
                         r += vertColor->r;
                         g += vertColor->g;
                         b += vertColor->b;
-                        a += vertColor->a;
                     }
 
-                    vertColor->r = clamp(r, 0, 255);
-                    vertColor->g = clamp(g, 0, 255);
-                    vertColor->b = clamp(b, 0, 255);
-                    vertColor->a = clamp(a, 0, 255);
+                    r = clamp(r, 0, 255);
+                    g = clamp(g, 0, 255);
+                    b = clamp(b, 0, 255);
+                    a = clamp(a, 0, 255);
+
+                    vertColor->r = r;// *(a / 255);
+                    vertColor->g = g;// *(a / 255);
+                    vertColor->b = b;// *(a / 255);
+                    vertColor->a = a;
                     lua_pushboolean(luaVM, true);
                     return 1;
                 }
@@ -1981,7 +1987,7 @@ int CLuaEngineDefs::EngineDFFGetVertexLight(lua_State* luaVM)
                     lua_pushnumber(luaVM, vertColor.r);
                     lua_pushnumber(luaVM, vertColor.g);
                     lua_pushnumber(luaVM, vertColor.b);
-                    lua_pushnumber(luaVM, vertColor.a);
+                    lua_pushnumber(luaVM, vertColor.a / 255);
                     return 4;
                 }
             }
@@ -2371,9 +2377,9 @@ int CLuaEngineDefs::EngineDFFGetPolygonVertices(lua_State* luaVM)
                 if (pGeometry->isValidTriangleId(uTriangleId))
                 {
                     RpTriangle pTriangle = pGeometry->triangles[uTriangleId];
-                    lua_pushnumber(luaVM, pTriangle.v[0]);
-                    lua_pushnumber(luaVM, pTriangle.v[1]);
-                    lua_pushnumber(luaVM, pTriangle.v[2]);
+                    lua_pushnumber(luaVM, pTriangle.v[0] + 1);
+                    lua_pushnumber(luaVM, pTriangle.v[1] + 1);
+                    lua_pushnumber(luaVM, pTriangle.v[2] + 1);
                     return 3;
                 }
             }
@@ -2627,9 +2633,10 @@ int CLuaEngineDefs::EngineDFFGetPolygonConnectedToVertex(lua_State* luaVM)
                     for (ushort i = 0; i < vecPolygons.size(); i++)
                     {
                         lua_pushnumber(luaVM, i + 1);
-                        lua_pushnumber(luaVM, vecPolygons.at(i));
+                        lua_pushnumber(luaVM, vecPolygons.at(i) + 1);
                         lua_settable(luaVM, -3);
                     }
+                    return 1;
                 }
             }
             else
@@ -2980,6 +2987,7 @@ int CLuaEngineDefs::EngineDFFCreateObject(lua_State* luaVM)
     lua_pushboolean(luaVM, false);
     return 1;
 }
+
 int CLuaEngineDefs::EngineDFFTransformPolygons(lua_State* luaVM)
 {
     CClientDFF* pDFF;
@@ -3006,6 +3014,135 @@ int CLuaEngineDefs::EngineDFFTransformPolygons(lua_State* luaVM)
                 }
 
                 lua_pushboolean(luaVM, false);
+                return 1;
+            }
+            else
+                argStream.SetCustomError(SString("Model ID %d failed", usModelID));
+        }
+        else
+            argStream.SetCustomError("Dff model ID not set. Check 2 argument in engineLoadDFF");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+inline CVector crossProduct(CVector u, CVector v)
+{
+    CVector w;
+
+    w.fX = u.fY * v.fZ - u.fZ * v.fY;
+    w.fY = u.fZ * v.fX - u.fX * v.fZ;
+    w.fZ = u.fX * v.fY - u.fY * v.fX;
+
+    return w;
+}
+// https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+
+const float EPSILON2 = 0.0000001;
+bool RayIntersectsTriangle(CVector rayOrigin,
+    CVector rayVector,
+    CVector vertex0,
+    CVector vertex1,
+    CVector vertex2,
+    CVector& outIntersectionPoint,
+    CVector& normal,
+    float& u, float& v)
+{
+    CVector edge1, edge2, s, q;
+    float a, f;
+    edge1 = vertex1 - vertex0;
+    edge2 = vertex2 - vertex0;
+    normal = crossProduct(rayVector,edge2);
+    a = edge1.DotProduct(&normal);
+    if (a > -EPSILON2 && a < EPSILON2)
+        return false;
+    f = 1 / a;
+    s = rayOrigin - vertex0;
+    u = f * (s.DotProduct(&normal));
+    if (u < 0.0 || u > 1.0)
+        return false;
+    q = crossProduct(s,edge1);
+    v = f * rayVector.DotProduct(&q);
+    if (v < 0.0 || u + v > 1.0)
+        return false;
+    float t = f * edge2.DotProduct(&q);
+    if (t > EPSILON2) // ray intersection
+    {
+        outIntersectionPoint = rayOrigin + rayVector * t;
+        return true;
+    }
+    else
+        return false;
+}
+
+int CLuaEngineDefs::EngineDFFRayTracer(lua_State* luaVM)
+{
+    CClientDFF* pDFF;
+    CVector vecOrigin, vecTarget;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pDFF);
+    argStream.ReadVector3D(vecOrigin);
+    argStream.ReadVector3D(vecTarget);
+    std::vector< ushort > triangles;
+    argStream.ReadNumberTable(triangles);
+    if (!argStream.HasErrors())
+    {
+        ushort usModelID = pDFF->uimodel;
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            RpClump* pClump = pDFF->GetLoadedClump(usModelID);
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                RpGeometry* pGeometry = pAtomic->geometry;
+                ushort uTriangleId;
+                if (triangles.size() == 0)
+                {
+                    for (ushort i = 0; i < pGeometry->triangles_size; i++)
+                    {
+                        triangles.push_back(i + 1);
+                    }
+                }
+                lua_newtable(luaVM);
+                vecTarget = vecTarget - vecOrigin;
+                for (ushort i = 0; i < triangles.size(); i++)
+                {
+                    uTriangleId = triangles.at(i);
+                    uTriangleId--;
+                    if (pGeometry->isValidTriangleId(uTriangleId))
+                    {
+                        RpTriangle pTriangle = pGeometry->triangles[uTriangleId];
+                        CVector vertex0 = pGeometry->morphTarget->verts[pTriangle.v[0]].getVector();
+                        CVector vertex1 = pGeometry->morphTarget->verts[pTriangle.v[1]].getVector();
+                        CVector vertex2 = pGeometry->morphTarget->verts[pTriangle.v[2]].getVector();
+                        CVector outIntersectionPoint;
+                        CVector normal;
+                        float u, v;
+                        bool result = RayIntersectsTriangle(vecOrigin, vecTarget, vertex0, vertex1, vertex2, outIntersectionPoint, normal, u, v);
+                        if (result)
+                        {
+                            lua_pushnumber(luaVM, uTriangleId + 1);
+                            lua_newtable(luaVM);
+                            lua_pushstring(luaVM, "hit");
+                            lua_pushvector(luaVM, outIntersectionPoint);
+                            lua_settable(luaVM, -3);
+                            lua_pushstring(luaVM, "normal");
+                            lua_pushvector(luaVM, normal);
+                            lua_settable(luaVM, -3);
+                            lua_pushstring(luaVM, "u");
+                            lua_pushnumber(luaVM, u);
+                            lua_settable(luaVM, -3);
+                            lua_pushstring(luaVM, "v");
+                            lua_pushnumber(luaVM, v);
+                            lua_settable(luaVM, -3);
+                            lua_settable(luaVM, -3);
+
+                        }
+                    }
+                }
                 return 1;
             }
             else

@@ -647,8 +647,8 @@ bool CClientDFF::CreatePolygons(RpGeometry* pGeometry, ushort usMesh, std::vecto
         }
     }
     
-    free(myMesh->indices);  //crash
-    free(pGeometry->triangles);
+    //free(myMesh->indices);  //crash
+    //free(pGeometry->triangles);
     myMesh->indices = newPolygons1;
     pGeometry->triangles = newPolygons2;
     return true;
@@ -823,9 +823,9 @@ bool CClientDFF::EnableVerticesLighting(RpGeometry* pGeometry)
         {
             RwColor col;
             col.a = 0;
-            col.r = 32;
-            col.g = 32;
-            col.b = 32;
+            col.r = 0;
+            col.g = 0;
+            col.b = 0;
             colors[i] = col;
         }
         pGeometry->colors = colors;
@@ -840,12 +840,8 @@ std::vector < ushort > CClientDFF::GetPolygonsUsedByVertex(RpGeometry* pGeometry
     for (ushort i = 0; i < pGeometry->triangles_size; i++)
     {
         RpTriangle pTriangle = pGeometry->triangles[i];
-        if (pTriangle.v[0] == usVertex ||
-            pTriangle.v[1] == usVertex ||
-            pTriangle.v[2] == usVertex)
-        {
+        if (pTriangle.v[0] == usVertex || pTriangle.v[1] == usVertex || pTriangle.v[2] == usVertex)
             vecPolygons.push_back(i);
-        }
     }
     return vecPolygons;
 }
@@ -885,7 +881,6 @@ bool CClientDFF::CreateVertex(RpGeometry* pGeometry, CVector vecPosition)
     return true;
 }
 
-
 bool CClientDFF::CreateVertices(RpGeometry* pGeometry, std::vector < CVector > vecPosition)
 {
     RwV3d* newVerts = reinterpret_cast<RwV3d *>(malloc((pGeometry->vertices_size + vecPosition.size()) * sizeof(RwV3d)));
@@ -923,9 +918,9 @@ bool CClientDFF::CreateVertices(RpGeometry* pGeometry, std::vector < CVector > v
 
             RwColor color;
             color.a = 0;
-            color.r = 32;
-            color.g = 32;
-            color.b = 32;
+            color.r = 0;
+            color.g = 0;
+            color.b = 0;
             for (ushort i = 0; i < vecPosition.size(); i++)
             {
                 newColors[lastVertex + i] = color;
