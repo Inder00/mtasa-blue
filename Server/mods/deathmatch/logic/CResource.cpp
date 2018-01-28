@@ -1669,7 +1669,46 @@ bool CResource::ReadIncludedFiles ( CXMLNode * root )
             }
             else
             {
-                CLogger::LogPrintf ( "WARNING: Missing 'src' attribute from 'file' node of 'meta.xml' for resource '%s', ignoring\n", m_strResourceName.c_str () );
+                src = attributes->Find("directory");
+                if (src) {
+                    SString strAbsPath;
+                    SString strMetaPath;
+                    string strDirectoryName = src->GetValue();
+                    CResource* thisResource = this;
+                    if (CResourceManager::ParseResourcePathInput(strDirectoryName + "*", thisResource, &strAbsPath, &strMetaPath))
+                    {
+                        std::vector < SString > itemList;
+                        itemList = FindFiles(strAbsPath, true, false);
+                        if (itemList.size() > 0)
+                        {
+                            for (uint i = 0; i < itemList.size(); i++)
+                            {
+                                SString strFilename = itemList[i];
+                                string strFullFilename;
+                                ReplaceSlashes(strFilename);
+                                GetFilePath(strFilename.c_str(), strFullFilename);
+                                if (IsFilenameUsed(strFilename, true))
+                                {
+                                    CLogger::LogPrintf("WARNING: Ignoring duplicate client file in resource '%s': '%s'\n", m_strResourceName.c_str(), strFilename.c_str());
+                                    continue;
+                                }
+                                m_resourceFiles.push_back(new CResourceClientFileItem(this, (strDirectoryName + strFilename).c_str(), (strDirectoryName + strFullFilename).c_str(), attributes, true));
+                            }
+                        }
+                        else
+                        {
+                            CLogger::LogPrintf("WARNING: Ignoring empty or not existing directory in resource '%s', directory '%s'\n", m_strResourceName.c_str(), strDirectoryName.c_str());
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                    }
+                }
+                else
+                {
+                    CLogger::LogPrintf("WARNING: Missing 'src' or 'directory' attribute from 'file' node of 'meta.xml' for resource '%s', ignoring\n", m_strResourceName.c_str());
+                }
             }
         }
     }
