@@ -23,8 +23,8 @@ public:
     LUA_DECLARE ( TeaDecode );
     LUA_DECLARE ( Base64encode );
     LUA_DECLARE ( Base64decode );
-    LUA_DECLARE(PasswordHash);
-    LUA_DECLARE(PasswordVerify);
+    LUA_DECLARE ( PasswordHash );
+    LUA_DECLARE ( PasswordVerify );
     LUA_DECLARE ( EncodeString );
     LUA_DECLARE ( DecodeString );
 };
