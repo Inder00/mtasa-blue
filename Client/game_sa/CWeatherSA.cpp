@@ -10,7 +10,6 @@
  *****************************************************************************/
 
 #include "StdInc.h"
-
 unsigned char* CWeatherSA::VAR_CurrentWeather;
 unsigned char* CWeatherSA::VAR_CurrentWeather_b;
 unsigned char* CWeatherSA::VAR_CurrentWeather_c;
@@ -18,6 +17,20 @@ float*         CWeatherSA::VAR_AmountOfRain;
 
 unsigned long CWeatherSA::FUNC_IsRaining;
 
+short* pWeatherRegion = (short*)0xC81314;
+
+void HOOK_Weather(CVector pos);
+
+CWeatherSA::CWeatherSA()
+{
+    InstallHooks();
+}
+
+void CWeatherSA::InstallHooks(void)
+{
+    //g_pCore->GetConsole()->Printf("ASDF");
+    HookInstall(0x72A640, (DWORD)HOOK_Weather, 6);
+}
 unsigned char CWeatherSA::Get(void)
 {
     DEBUG_TRACE("unsigned char CWeatherSA::Get ( void )");
@@ -111,4 +124,9 @@ void CWeatherSA::ResetAmountOfRain(void)
     MemCpy((LPVOID)0x72BC72, &originalMov, 5);
     MemCpy((LPVOID)0x72BC92, &originalFstp1, 6);
     MemCpy((LPVOID)0x72C686, &originalFstp2, 6);
+}
+
+void _declspec(naked) HOOK_Weather(CVector pos)
+{
+    *pWeatherRegion = 0;
 }

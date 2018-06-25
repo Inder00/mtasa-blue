@@ -850,6 +850,15 @@ enum eWeather
     WEATHER_INSIDE
 };
 
+enum eWeatherRegion
+{
+    WEATHER_REGION_DEFAULT = 0,
+    WEATHER_REGION_LA = 1,
+    WEATHER_REGION_SF = 2,
+    WEATHER_REGION_VEGAS = 3,
+    WEATHER_REGION_DESERT = 4,
+};
+
 enum e3DMarkerType
 {
     MARKER3D_ARROW,

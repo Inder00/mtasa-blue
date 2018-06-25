@@ -1911,3 +1911,23 @@ int CLuaFunctionDefs::FetchRemote(lua_State* luaVM)
     lua_pushboolean(luaVM, false);
     return 1;
 }
+
+int CLuaFunctionDefs::GetWeatherRegion(lua_State* luaVM)
+{
+    CVector pos;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadVector3D(pos);
+
+    if (!argStream.HasErrors())
+    {
+        using CWeather__UpdateWeatherRegion_t = void(__cdecl *)(class CVector *);
+        auto CWeather__UpdateWeatherRegion = (CWeather__UpdateWeatherRegion_t)0x72A640;
+        CWeather__UpdateWeatherRegion(&pos );
+        short* pWeatherRegion = (short *)0xC81314;
+        lua_pushnumber(luaVM, *pWeatherRegion);
+        return 1;
+    }
+    lua_pushboolean(luaVM, false);
+    return 1;
+}

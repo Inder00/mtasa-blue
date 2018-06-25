@@ -28,6 +28,7 @@ public:
     static void Initialize(class CLuaManager* pLuaManager, class CScriptDebugging* pScriptDebugging, class CClientGame* pClientGame);
 
     // Event functions
+    LUA_DECLARE(asdf);
     LUA_DECLARE(AddEvent);
     LUA_DECLARE(AddEventHandler);
     LUA_DECLARE(RemoveEventHandler);
@@ -179,6 +180,7 @@ public:
     LUA_DECLARE(SetFPSLimit);
     LUA_DECLARE(GetFPSLimit);
     LUA_DECLARE(FetchRemote);
+    LUA_DECLARE(GetWeatherRegion);
 
     // Input functions
     LUA_DECLARE(BindKey);

@@ -20,6 +20,10 @@ class CWeatherSA : public CWeather
     friend class COffsets;
 
 public:
+    CWeatherSA();
+
+    void          InstallHooks();
+
     unsigned char Get(void);
     void          Set(unsigned char primary, unsigned char secondary);
     void          SetPrimary(unsigned char weather);
