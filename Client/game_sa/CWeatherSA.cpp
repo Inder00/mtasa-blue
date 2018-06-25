@@ -20,16 +20,17 @@ unsigned long CWeatherSA::FUNC_IsRaining;
 short* pWeatherRegion = (short*)0xC81314;
 
 void HOOK_Weather(CVector pos);
-
+//extern CCoreInterface* g_pCore;
 CWeatherSA::CWeatherSA()
 {
+
+    //g_pCore->GetConsole()->Print("InstallHooks CWeatherSA");
     InstallHooks();
 }
 
 void CWeatherSA::InstallHooks(void)
 {
-    //g_pCore->GetConsole()->Printf("ASDF");
-    HookInstall(0x72A640, (DWORD)HOOK_Weather, 6);
+    HookInstall(0x72A640, (DWORD)HOOK_Weather, 5);
 }
 unsigned char CWeatherSA::Get(void)
 {
