@@ -489,8 +489,8 @@ void CRenderWareSA::ReplaceAllAtomicsInModel(RpClump* pNew, unsigned short usMod
     if (pModelInfo)
     {
         RpAtomic* pOldAtomic = (RpAtomic*)pModelInfo->GetRwObject();
-        if (!DoContainTheSameGeometry(pNew, NULL, pOldAtomic))
-        {
+        //if (!DoContainTheSameGeometry(pNew, NULL, pOldAtomic))
+        //{
             // Clone the clump that's to be replaced (FUNC_AtomicsReplacer removes the atomics from the source clump)
             RpClump* pCopy = RpClumpClone(pNew);
 
@@ -504,7 +504,7 @@ void CRenderWareSA::ReplaceAllAtomicsInModel(RpClump* pNew, unsigned short usMod
 
             // Get rid of the now empty copied clump
             RpClumpDestroy(pCopy);
-        }
+        //}
     }
 }
 

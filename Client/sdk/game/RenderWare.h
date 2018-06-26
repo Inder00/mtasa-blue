@@ -97,6 +97,41 @@ struct RwMatrix
 };
 
 // RenderWare enumerations
+enum RpGeometryFlag
+{
+    rpGEOMETRYTRISTRIP = 0x00000001, /**<This geometry's meshes can be
+                                     rendered as strips.
+                                     \ref RpMeshSetTriStripMethod is
+                                     used to change this method.*/
+    rpGEOMETRYPOSITIONS = 0x00000002, /**<This geometry has positions */
+    rpGEOMETRYTEXTURED = 0x00000004, /**<This geometry has only one set of
+                                     texture coordinates. Texture
+                                     coordinates are specified on a per
+                                     vertex basis */
+    rpGEOMETRYPRELIT = 0x00000008, /**<This geometry has pre-light colors */
+    rpGEOMETRYNORMALS = 0x00000010, /**<This geometry has vertex normals */
+    rpGEOMETRYLIGHT = 0x00000020, /**<This geometry will be lit */
+    rpGEOMETRYMODULATEMATERIALCOLOR = 0x00000040, /**<Modulate material color
+                                                  with vertex colors
+                                                  (pre-lit + lit) */
+
+    rpGEOMETRYTEXTURED2 = 0x00000080, /**<This geometry has at least 2 sets of
+                                      texture coordinates. */
+
+                                      /*
+                                      * These above flags were stored in the flags field in an RwObject, they
+                                      * are now stored in the flags file of the RpGeometry.
+                                      */
+
+    rpGEOMETRYNATIVE = 0x01000000,
+    rpGEOMETRYNATIVEINSTANCE = 0x02000000,
+
+    rpGEOMETRYFLAGSMASK = 0x000000FF,
+    rpGEOMETRYNATIVEFLAGSMASK = 0x0F000000,
+
+    rpGEOMETRYFLAGFORCEENUMSIZEINT = RW_STRUCT_ALIGN
+};
+
 enum RwPrimitiveType
 {
     PRIMITIVE_NULL = 0,
@@ -395,6 +430,22 @@ struct RpGeometry
     RpMeshHeader*         header;
     void*                 info;
     RpMorphTarget*        morphTarget;
+    bool isValidTriangleId(int triangleId)
+    {
+        return (triangles_size >= 0 && triangles_size > triangleId);
+    }
+    bool isValidVertexId(int vertexId)
+    {
+        return (vertices_size >= 0 && vertices_size > vertexId);
+    }
+    bool isValidTexCoordsId(int textCoordId)
+    {
+        return (texcoords_size >= 0 && texcoords_size > textCoordId);
+    }
+    inline bool isFlag(RpGeometryFlag flag)
+    {
+        return (flags & flag) == flag;
+    }
 };
 
 /*****************************************************************************/

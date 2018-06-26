@@ -45,6 +45,8 @@ public:
     LUA_DECLARE(EngineGetModelTextureNames);
     LUA_DECLARE(EngineGetVisibleTextureNames);
     LUA_DECLARE(EngineGetDFFProperties);
+    LUA_DECLARE(EngineSetDFFVertexPosition);
+    LUA_DECLARE(EngineGetDFFVertexPosition);
 
 private:
     static void AddEngineColClass(lua_State* luaVM);

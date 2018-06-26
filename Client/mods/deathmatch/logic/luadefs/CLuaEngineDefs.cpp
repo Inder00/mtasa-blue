@@ -35,6 +35,8 @@ void CLuaEngineDefs::LoadFunctions(void)
     CLuaCFunctions::AddFunction("engineGetVisibleTextureNames", EngineGetVisibleTextureNames);
 
     CLuaCFunctions::AddFunction("engineGetDFFProperties", EngineGetDFFProperties);
+    CLuaCFunctions::AddFunction("EngineGetDFFVertexPosition", EngineGetDFFVertexPosition);
+    CLuaCFunctions::AddFunction("EngineSetDFFVertexPosition", EngineSetDFFVertexPosition);
 
     // CLuaCFunctions::AddFunction ( "engineReplaceMatchingAtomics", EngineReplaceMatchingAtomics );
     // CLuaCFunctions::AddFunction ( "engineReplaceWheelAtomics", EngineReplaceWheelAtomics );
@@ -1054,6 +1056,76 @@ int CLuaEngineDefs::EngineGetDFFProperties(lua_State* luaVM)
                 lua_settable(luaVM, -3);
 
                 return 1;
+            }
+        }
+        else
+            argStream.SetCustomError("Expected DFF or valid model ID or name at argument 1");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+
+int CLuaEngineDefs::EngineGetDFFVertexPosition(lua_State* luaVM)
+{
+    return 1;
+}
+int CLuaEngineDefs::EngineSetDFFVertexPosition(lua_State* luaVM)
+{
+    CScriptArgReader argStream(luaVM);
+    RpClump*         pClump;
+    ushort           usModelID;
+    ushort           usVertexID;
+    CVector          vecPosition;
+    if (argStream.NextIsNumber())
+    {
+        argStream.ReadNumber(usModelID);
+        pClump = CClientDFFManager::GetClumpFromModelId(usModelID);
+    }
+    else
+    {
+        if (argStream.NextIsUserData())
+        {
+            CClientDFF* pDFF;
+            argStream.ReadUserData(pDFF);
+            usModelID = pDFF->GetModelID();
+            pClump = pDFF->GetLoadedClump(usModelID);
+        }
+    }
+    argStream.ReadNumber(usVertexID);
+    argStream.ReadVector3D(vecPosition);
+    if (!argStream.HasErrors())
+    {
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            if (pClump)
+            {
+                RpAtomic* pAtomic = pClump->getAtomic();
+                if (!pAtomic)
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                RpGeometry* pGeometry = pAtomic->geometry;
+                if (!pGeometry)
+                {
+                    lua_pushboolean(luaVM, false);
+                    return 1;
+                }
+                
+                usVertexID--;
+                if (pGeometry->isValidVertexId(usVertexID)) {
+                    RwV3d* vVert = &pGeometry->morphTarget->verts[usVertexID];
+                    vVert->x = vecPosition.fX;
+                    vVert->y = vecPosition.fY;
+                    vVert->z = vecPosition.fZ;
+
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
             }
         }
         else
