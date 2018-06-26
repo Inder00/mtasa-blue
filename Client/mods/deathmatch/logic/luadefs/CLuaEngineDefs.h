@@ -47,6 +47,7 @@ public:
     LUA_DECLARE(EngineGetDFFProperties);
     LUA_DECLARE(EngineSetDFFVertexPosition);
     LUA_DECLARE(EngineGetDFFVertexPosition);
+    LUA_DECLARE(EngineUpdateDFFDisplay);
 
 private:
     static void AddEngineColClass(lua_State* luaVM);

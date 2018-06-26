@@ -35,8 +35,9 @@ void CLuaEngineDefs::LoadFunctions(void)
     CLuaCFunctions::AddFunction("engineGetVisibleTextureNames", EngineGetVisibleTextureNames);
 
     CLuaCFunctions::AddFunction("engineGetDFFProperties", EngineGetDFFProperties);
-    CLuaCFunctions::AddFunction("EngineGetDFFVertexPosition", EngineGetDFFVertexPosition);
-    CLuaCFunctions::AddFunction("EngineSetDFFVertexPosition", EngineSetDFFVertexPosition);
+    CLuaCFunctions::AddFunction("engineGetDFFVertexPosition", EngineGetDFFVertexPosition);
+    CLuaCFunctions::AddFunction("engineSetDFFVertexPosition", EngineSetDFFVertexPosition);
+    CLuaCFunctions::AddFunction("engineUpdateDFFDisplay", EngineUpdateDFFDisplay);
 
     // CLuaCFunctions::AddFunction ( "engineReplaceMatchingAtomics", EngineReplaceMatchingAtomics );
     // CLuaCFunctions::AddFunction ( "engineReplaceWheelAtomics", EngineReplaceWheelAtomics );
@@ -1068,11 +1069,16 @@ int CLuaEngineDefs::EngineGetDFFProperties(lua_State* luaVM)
     return 1;
 }
 
-
 int CLuaEngineDefs::EngineGetDFFVertexPosition(lua_State* luaVM)
 {
     return 1;
 }
+
+int CLuaEngineDefs::EngineUpdateDFFDisplay(lua_State* luaVM)
+{
+    return 1;
+}
+
 int CLuaEngineDefs::EngineSetDFFVertexPosition(lua_State* luaVM)
 {
     CScriptArgReader argStream(luaVM);
@@ -1080,21 +1086,10 @@ int CLuaEngineDefs::EngineSetDFFVertexPosition(lua_State* luaVM)
     ushort           usModelID;
     ushort           usVertexID;
     CVector          vecPosition;
-    if (argStream.NextIsNumber())
-    {
-        argStream.ReadNumber(usModelID);
-        pClump = CClientDFFManager::GetClumpFromModelId(usModelID);
-    }
-    else
-    {
-        if (argStream.NextIsUserData())
-        {
-            CClientDFF* pDFF;
-            argStream.ReadUserData(pDFF);
-            usModelID = pDFF->GetModelID();
-            pClump = pDFF->GetLoadedClump(usModelID);
-        }
-    }
+    CClientDFF* pDFF;
+    argStream.ReadUserData(pDFF);
+    usModelID = pDFF->GetModelID();
+    pClump = pDFF->GetLoadedClump(usModelID);
     argStream.ReadNumber(usVertexID);
     argStream.ReadVector3D(vecPosition);
     if (!argStream.HasErrors())

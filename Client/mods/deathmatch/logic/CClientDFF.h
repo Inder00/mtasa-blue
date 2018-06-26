@@ -37,7 +37,7 @@ public:
     bool LoadDFF(const SString& strFile, bool bIsRawData);
 
     bool ReplaceModel(unsigned short usModel, bool bAlphaTransparency);
-
+    
     bool HasReplaced(unsigned short usModel);
 
     void RestoreModel(unsigned short usModel);

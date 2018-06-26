@@ -151,7 +151,6 @@ static bool ReplaceAllCB(RpAtomic* atomic, void* pData)
             RpClumpRemoveAtomic(data->pClump, atomic);
         }
     }
-
     return true;
 }
 
