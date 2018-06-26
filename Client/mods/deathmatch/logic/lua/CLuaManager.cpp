@@ -304,6 +304,7 @@ void CLuaManager::LoadCFunctions(void)
     CLuaCFunctions::AddFunction("getFPSLimit", CLuaFunctionDefs::GetFPSLimit);
     CLuaCFunctions::AddFunction("fetchRemote", CLuaFunctionDefs::FetchRemote);
     CLuaCFunctions::AddFunction("getWeatherRegion", CLuaFunctionDefs::GetWeatherRegion);
+    CLuaCFunctions::AddFunction("setWeatherRegion", CLuaFunctionDefs::SetWeatherRegion);
 
     // World set funcs
     CLuaCFunctions::AddFunction("setTime", CLuaFunctionDefs::SetTime);

@@ -15,6 +15,8 @@
 #define MIN_CLIENT_REQ_CALLREMOTE_OPTIONS_TABLE             "1.5.4-9.11342"
 #define MIN_CLIENT_REQ_CALLREMOTE_OPTIONS_FORMFIELDS        "1.5.4-9.11413"
 
+using CWeather__UpdateWeatherRegion_t = void(__cdecl *)(class CVector *);
+auto CWeather__UpdateWeatherRegion = (CWeather__UpdateWeatherRegion_t)0x72A640;
 int CLuaFunctionDefs::CreateExplosion(lua_State* luaVM)
 {
     //  bool createExplosion ( float x, float y, float z, int type [, bool makeSound = true, float camShake = -1.0, bool damaging = true ] )
@@ -1917,15 +1919,32 @@ int CLuaFunctionDefs::GetWeatherRegion(lua_State* luaVM)
     CVector pos;
 
     CScriptArgReader argStream(luaVM);
-    argStream.ReadVector3D(pos);
-
+    if (argStream.NextIsVector3D())
+    {
+        argStream.ReadVector3D(pos);
+    }
     if (!argStream.HasErrors())
     {
-        using CWeather__UpdateWeatherRegion_t = void(__cdecl *)(class CVector *);
-        auto CWeather__UpdateWeatherRegion = (CWeather__UpdateWeatherRegion_t)0x72A640;
-        CWeather__UpdateWeatherRegion(&pos );
-        short* pWeatherRegion = (short *)0xC81314;
-        lua_pushnumber(luaVM, *pWeatherRegion);
+        if (&pos)
+        {
+            CWeather__UpdateWeatherRegion(&pos);
+        }
+        lua_pushnumber(luaVM, g_pGame->GetWeather()->GetWeatherRegion());
+        return 1;
+    }
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaFunctionDefs::SetWeatherRegion(lua_State* luaVM)
+{
+    CScriptArgReader argStream(luaVM);
+    short sWeatherRegion;
+    argStream.ReadNumber(sWeatherRegion);
+    if (!argStream.HasErrors())
+    {
+        g_pGame->GetWeather()->SetWeatherRegion(sWeatherRegion);
+        lua_pushboolean(luaVM, true);
         return 1;
     }
     lua_pushboolean(luaVM, false);

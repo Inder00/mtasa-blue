@@ -19,18 +19,18 @@ unsigned long CWeatherSA::FUNC_IsRaining;
 
 short* pWeatherRegion = (short*)0xC81314;
 
-void HOOK_Weather(CVector pos);
-//extern CCoreInterface* g_pCore;
+void HOOK_Weather();
+extern CCoreInterface* g_pCore;
 CWeatherSA::CWeatherSA()
 {
-
-    //g_pCore->GetConsole()->Print("InstallHooks CWeatherSA");
+    if(g_pCore)
+        g_pCore->GetConsole()->Print("InstallHooks CWeatherSA");
     InstallHooks();
 }
 
 void CWeatherSA::InstallHooks(void)
 {
-    HookInstall(0x72A640, (DWORD)HOOK_Weather, 5);
+    //HookInstall(0x72A640, (DWORD)HOOK_Weather, 5);
 }
 unsigned char CWeatherSA::Get(void)
 {
@@ -127,7 +127,33 @@ void CWeatherSA::ResetAmountOfRain(void)
     MemCpy((LPVOID)0x72C686, &originalFstp2, 6);
 }
 
-void _declspec(naked) HOOK_Weather(CVector pos)
+void CWeatherSA::SetWeatherRegion(short sWeatherRegion)
 {
-    *pWeatherRegion = 0;
+    m_sWeatherRegion = sWeatherRegion;
+    *pWeatherRegion = sWeatherRegion;
+}
+
+DWORD RETURN_CWeather_UpdateWeatherRegion_NORMALFLOW = 0x0072A645;
+
+// We'll skip (not execute) the code inside the function by returning to the last instruction
+DWORD RETURN_CWeather_UpdateWeatherRegion_SkipFunction = 0x0072A6B4;
+DWORD TheCamera_Placeable_pMatrix = 0x00B6F03C;
+
+void __cdecl CWeather_UpdateWeatherRegion(CVector pos)
+{
+    // Your code here, you can write anything here, this is outside of the hook,
+    // so be worry free
+    //*pWeatherRegion = 0;
+}
+
+void _declspec(naked) HOOK_Weather()
+{
+    // Save the registers by pushing them on stack before executing any code, 
+    // so you can recover them when you return
+    _asm
+    {
+        mov eax, TheCamera_Placeable_pMatrix
+        jmp RETURN_CWeather_UpdateWeatherRegion_NORMALFLOW
+    }
+
 }

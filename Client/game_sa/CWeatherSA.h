@@ -19,6 +19,8 @@ class CWeatherSA : public CWeather
 {
     friend class COffsets;
 
+private:
+    short m_sWeatherRegion = 0;
 public:
     CWeatherSA();
 
@@ -37,6 +39,8 @@ public:
     float GetAmountOfRain(void);
     void  SetAmountOfRain(float fAmount);
     void  ResetAmountOfRain(void);
+    const short & GetWeatherRegion(void) { return m_sWeatherRegion; };
+    void          SetWeatherRegion(short sWeatherRegion);
 
 private:
     static unsigned char* VAR_CurrentWeather;

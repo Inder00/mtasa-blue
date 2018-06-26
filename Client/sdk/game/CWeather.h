@@ -30,6 +30,8 @@ public:
     virtual float GetAmountOfRain(void) = 0;
     virtual void  SetAmountOfRain(float fAmount) = 0;
     virtual void  ResetAmountOfRain(void) = 0;
+    virtual const short & GetWeatherRegion(void) = 0;
+    virtual void          SetWeatherRegion(short sWeatherRegion) = 0;
 };
 
 #endif
