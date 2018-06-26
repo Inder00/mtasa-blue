@@ -132,6 +132,8 @@ void CLuaVehicleDefs::LoadFunctions(void)
     CLuaCFunctions::AddFunction("setVehicleWindowOpen", SetVehicleWindowOpen);
     CLuaCFunctions::AddFunction("setVehicleModelExhaustFumesPosition", SetVehicleModelExhaustFumesPosition);
     CLuaCFunctions::AddFunction("getVehicleModelExhaustFumesPosition", GetVehicleModelExhaustFumesPosition);
+
+    CLuaCFunctions::AddFunction("fireVehicleFromWaterCannon", FireVehicleFromWaterCannon);
 }
 
 void CLuaVehicleDefs::AddClass(lua_State* luaVM)
@@ -3791,3 +3793,46 @@ int CLuaVehicleDefs::GetVehicleModelExhaustFumesPosition(lua_State* luaVM)
     lua_pushboolean(luaVM, false);
     return 1;
 }
+
+
+int CLuaVehicleDefs::FireVehicleFromWaterCannon(lua_State* luaVM)
+{
+    // CWaterCannons = CWaterCannons::UpdateOne(uint, CVector *, CVector *)	00728CB0
+    //int = CWaterCannon::Update_NewInput(CVector *, CVector *).text	00728C20
+    // int = CWaterCannons::Render(void)	00729B30
+    //CWaterCannons::Update(void)	0072A3C0	00000038	00000008	00000000	R	.	.	.	.	.	.
+
+    using fireFromWaterCanon_t = void(__cdecl *)(CVehicleSAInterface*, class CVector *, class CVector *);
+    auto fireFromWaterCanon = (fireFromWaterCanon_t)0x728CB0;
+
+    //using newInput_t = void(__cdecl *)( class CVector *, class CVector *);
+    //auto newInput = (newInput_t)0x728C20;
+    using waterCanonRender_t = void(__cdecl *)( void );
+    auto waterCanonRender = (waterCanonRender_t)0x729B30;
+    using waterCanonUpdate_t = void(__cdecl *)( void );
+    auto waterCanonUpdate = (waterCanonUpdate_t)0x72A3C0;
+
+    CClientVehicle* pVehicle;
+    CVector           from;
+    CVector           to;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pVehicle);
+    argStream.ReadVector3D(from);
+    argStream.ReadVector3D(to);
+
+    if (!argStream.HasErrors())
+    {
+        CVehicleSAInterface* pVehicleInterface = ((CVehicle)pVehicleSA)->GetVehicleInterface();
+        fireFromWaterCanon(pVehicleInterface, &from, &to);
+        waterCanonRender();
+        lua_pushboolean(luaVM, true);
+        return 1;
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+

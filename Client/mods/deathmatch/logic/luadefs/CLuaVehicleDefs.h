@@ -138,6 +138,7 @@ public:
 
     LUA_DECLARE(SetVehicleModelExhaustFumesPosition);
     LUA_DECLARE(GetVehicleModelExhaustFumesPosition);
+    LUA_DECLARE(FireVehicleFromWaterCannon);
 
     // Components
     LUA_DECLARE(SetVehicleComponentPosition);
