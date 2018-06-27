@@ -3823,7 +3823,8 @@ int CLuaVehicleDefs::FireVehicleFromWaterCannon(lua_State* luaVM)
 
     if (!argStream.HasErrors())
     {
-        CVehicleSAInterface* pVehicleInterface = ((CVehicle)pVehicleSA)->GetVehicleInterface();
+        CVehicle* asdf = (CVehicle*)pVehicle;
+        CVehicleSAInterface* pVehicleInterface = asdf->GetVehicleInterface();
         fireFromWaterCanon(pVehicleInterface, &from, &to);
         waterCanonRender();
         lua_pushboolean(luaVM, true);
