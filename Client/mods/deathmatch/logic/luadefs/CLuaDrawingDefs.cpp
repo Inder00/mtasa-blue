@@ -50,6 +50,7 @@ void CLuaDrawingDefs::LoadFunctions(void)
     CLuaCFunctions::AddFunction("dxSetAspectRatioAdjustmentEnabled", DxSetAspectRatioAdjustmentEnabled);
     CLuaCFunctions::AddFunction("dxIsAspectRatioAdjustmentEnabled", DxIsAspectRatioAdjustmentEnabled);
     CLuaCFunctions::AddFunction("dxSetTextureEdge", DxSetTextureEdge);
+    CLuaCFunctions::AddFunction("dxDrawPrimitive", DxDrawPrimitive);
 }
 
 void CLuaDrawingDefs::AddClass(lua_State* luaVM)
@@ -186,6 +187,108 @@ int CLuaDrawingDefs::DxDrawLine3D(lua_State* luaVM)
     {
         g_pCore->GetGraphics()->DrawLine3DQueued(vecBegin, vecEnd, fWidth, color, bPostGUI);
         lua_pushboolean(luaVM, true);
+        return 1;
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    // Failed
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+struct RxObjSpace3dVertex
+{
+    RwV3d        pos;
+    RwV3d        objVertex;
+    RwV3d        objNormal;
+    unsigned int color;
+    float        u;
+    float        v;
+};
+
+using RwIm3DEnd_t = int (__cdecl *)( void );
+auto RwIm3DEnd = (RwIm3DEnd_t)0x7EF520;
+
+using RwIm3DRenderPrimitive_t = signed int (__cdecl *)( int );
+auto RwIm3DRenderPrimitive = (RwIm3DRenderPrimitive_t)0x7EF6B0;
+
+// vertices, transform, flags
+using RwIm3DTransform_t = RxObjSpace3dVertex*(__cdecl *)(RxObjSpace3dVertex *, signed int, RwMatrix *, unsigned int);
+auto RwIm3DTransform = (RwIm3DTransform_t)0x7EF450;
+
+enum RwRenderState
+{
+    rwRENDERSTATENARENDERSTATE = 0,
+    rwRENDERSTATETEXTURERASTER = 1,
+    rwRENDERSTATETEXTUREADDRESS = 2,
+    rwRENDERSTATETEXTUREADDRESSU = 3,
+    rwRENDERSTATETEXTUREADDRESSV = 4,
+    rwRENDERSTATETEXTUREPERSPECTIVE = 5,
+    rwRENDERSTATEZTESTENABLE = 6,
+    rwRENDERSTATESHADEMODE = 7,
+    rwRENDERSTATEZWRITEENABLE = 8,
+    rwRENDERSTATETEXTUREFILTER = 9,
+    rwRENDERSTATESRCBLEND = 0xA,
+    rwRENDERSTATEDESTBLEND = 0xB,
+    rwRENDERSTATEVERTEXALPHAENABLE = 0xC,
+    rwRENDERSTATEBORDERCOLOR = 0xD,
+    rwRENDERSTATEFOGENABLE = 0xE,
+    rwRENDERSTATEFOGCOLOR = 0xF,
+    rwRENDERSTATEFOGTYPE = 0x10,
+    rwRENDERSTATEFOGDENSITY = 0x11,
+    rwRENDERSTATECULLMODE = 0x14,
+    rwRENDERSTATESTENCILENABLE = 0x15,
+    rwRENDERSTATESTENCILFAIL = 0x16,
+    rwRENDERSTATESTENCILZFAIL = 0x17,
+    rwRENDERSTATESTENCILPASS = 0x18,
+    rwRENDERSTATESTENCILFUNCTION = 0x19,
+    rwRENDERSTATESTENCILFUNCTIONREF = 0x1A,
+    rwRENDERSTATESTENCILFUNCTIONMASK = 0x1B,
+    rwRENDERSTATESTENCILFUNCTIONWRITEMASK = 0x1C,
+    rwRENDERSTATEALPHATESTFUNCTION = 0x1D,
+    rwRENDERSTATEALPHATESTFUNCTIONREF = 0x1E,
+};
+
+using fpRenderStateSet_t = void(__cdecl *)(RwRenderState, unsigned int);
+auto fpRenderStateSet = (fpRenderStateSet_t)(0xC97B24 + 0x20);
+
+int CLuaDrawingDefs::DxDrawPrimitive(lua_State* luaVM)
+{
+    //  bool DxDrawPrimitive ( float startX, float startY, float startZ, float endX, float endY, float endZ, int color[, int width, bool postGUI ] )
+    RxObjSpace3dVertex vertexBuffer[3];
+    CScriptArgReader argStream(luaVM);
+    if (!argStream.HasErrors())
+    {
+        vertexBuffer[0].pos.x = 0;
+        vertexBuffer[0].pos.y = -10;
+        vertexBuffer[0].pos.z = 5;
+        vertexBuffer[0].color = 0xff00ff00;
+
+        vertexBuffer[1].pos.x = 10;
+        vertexBuffer[1].pos.y = 0;
+        vertexBuffer[1].pos.z = 5;
+        vertexBuffer[1].color = 0x00ff00ff;
+
+        vertexBuffer[2].pos.x = 10;
+        vertexBuffer[2].pos.y = 10;
+        vertexBuffer[2].pos.z = 5;
+        vertexBuffer[2].color = 0xffffffff;
+
+        /*fpRenderStateSet(rwRENDERSTATEZWRITEENABLE, 0);
+        fpRenderStateSet(rwRENDERSTATEZTESTENABLE, 1u);
+        fpRenderStateSet(rwRENDERSTATEVERTEXALPHAENABLE, 1u);
+        fpRenderStateSet(rwRENDERSTATEFOGENABLE, 0);
+        fpRenderStateSet(rwRENDERSTATEALPHATESTFUNCTIONREF, 0);
+        fpRenderStateSet(rwRENDERSTATETEXTUREFILTER, 2u);*/
+        if (RwIm3DTransform(vertexBuffer, 3, NULL, 0x10u))
+        {
+            RwIm3DRenderPrimitive(3);
+            RwIm3DEnd();
+            lua_pushnumber(luaVM, 1);
+            return 1;
+        }
+        lua_pushnumber(luaVM, 2);
         return 1;
     }
     else
