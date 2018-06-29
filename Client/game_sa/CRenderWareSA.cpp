@@ -479,7 +479,19 @@ bool AtomicsReplacer(RpAtomic* pAtomic, void* data)
     ((void (*)(RpAtomic*, void*))FUNC_AtomicsReplacer)(pAtomic, pData->pClump);
     // The above function adds a reference to the model's TXD. Remove it again.
     CTxdStore_RemoveRef(pData->usTxdID);
+    g_pCore->GetConsole()->Printf("replace model! AtomicsReplacer");
     return true;
+}
+
+void RecoverOriginalBytes()
+{
+    unsigned char OriginalBytes[4] = { 0x3B, 0xC7, 0x74, 0x1E };
+    memcpy((void *)0x00749B7E, OriginalBytes, sizeof(OriginalBytes));
+}
+
+void RemoveCondition()
+{
+    memset((void *)0x00749B7E, 0x90, 4);
 }
 
 void CRenderWareSA::ReplaceAllAtomicsInModel(RpClump* pNew, unsigned short usModelID)
@@ -499,7 +511,10 @@ void CRenderWareSA::ReplaceAllAtomicsInModel(RpClump* pNew, unsigned short usMod
             data.pClump = pCopy;
 
             MemPutFast<DWORD>((DWORD*)DWORD_AtomicsReplacerModelID, usModelID);
+            //RemoveCondition();
             RpClumpForAllAtomics(pCopy, AtomicsReplacer, &data);
+            RecoverOriginalBytes();
+            g_pCore->GetConsole()->Printf("replace usModelID %us", usModelID);
 
             // Get rid of the now empty copied clump
             RpClumpDestroy(pCopy);

@@ -1118,6 +1118,7 @@ int CLuaEngineDefs::EngineSetDFFVertexPosition(lua_State* luaVM)
                     vVert->y = vecPosition.fY;
                     vVert->z = vecPosition.fZ;
 
+
                     lua_pushboolean(luaVM, true);
                     return 1;
                 }
