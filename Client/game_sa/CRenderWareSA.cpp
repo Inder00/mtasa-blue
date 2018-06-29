@@ -486,7 +486,7 @@ bool AtomicsReplacer(RpAtomic* pAtomic, void* data)
 void RecoverOriginalBytes()
 {
     unsigned char OriginalBytes[4] = { 0x3B, 0xC7, 0x74, 0x1E };
-    memcpy((void *)0x00749B7E, OriginalBytes, sizeof(OriginalBytes));
+    memcpy((void *)0x00349B7E, OriginalBytes, sizeof(OriginalBytes));
 }
 
 void RemoveCondition()
@@ -499,6 +499,7 @@ void CRenderWareSA::ReplaceAllAtomicsInModel(RpClump* pNew, unsigned short usMod
     CModelInfo* pModelInfo = pGame->GetModelInfo(usModelID);
     if (pModelInfo)
     {
+        CMultiplayer;
         RpAtomic* pOldAtomic = (RpAtomic*)pModelInfo->GetRwObject();
         //if (!DoContainTheSameGeometry(pNew, NULL, pOldAtomic))
         //{
@@ -511,9 +512,7 @@ void CRenderWareSA::ReplaceAllAtomicsInModel(RpClump* pNew, unsigned short usMod
             data.pClump = pCopy;
 
             MemPutFast<DWORD>((DWORD*)DWORD_AtomicsReplacerModelID, usModelID);
-            //RemoveCondition();
             RpClumpForAllAtomics(pCopy, AtomicsReplacer, &data);
-            RecoverOriginalBytes();
             g_pCore->GetConsole()->Printf("replace usModelID %us", usModelID);
 
             // Get rid of the now empty copied clump

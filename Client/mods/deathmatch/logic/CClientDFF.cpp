@@ -289,6 +289,7 @@ bool CClientDFF::ReplaceObjectModel(RpClump* pClump, ushort usModel, bool bAlpha
     // Remember that we've replaced that object model
     m_Replaced.push_back(usModel);
 
+
     // Success
     return true;
 }
@@ -361,4 +362,30 @@ bool CClientDFF::ReplaceVehicleModel(RpClump* pClump, ushort usModel, bool bAlph
 bool CClientDFF::IsDFFData(const SString& strData)
 {
     return strData.length() > 32 && memcmp(strData, "\x10\x00\x00\x00", 4) == 0;
+}
+
+bool CClientDFF::SetVertexPosition(ushort usModel, ushort usVertexID, CVector vecPosition)
+{
+    SLoadedClumpInfo* pInfo = MapFind(m_LoadedClumpInfoMap, usModel);
+    RpClump*         pClump = pInfo->pClump;
+    RpAtomic* pAtomic = pClump->getAtomic();
+    if (!pAtomic)
+    {
+        return false;
+    }
+    RpGeometry* pGeometry = pAtomic->geometry;
+    if (!pGeometry)
+    {
+        return false;
+    }
+
+    usVertexID--;
+    if (pGeometry->isValidVertexId(usVertexID))
+    {
+        RwV3d* vVert = &pGeometry->morphTarget->verts[usVertexID];
+        vVert->x = vecPosition.fX;
+        vVert->y = vecPosition.fY;
+        vVert->z = vecPosition.fZ;
+    }
+
 }

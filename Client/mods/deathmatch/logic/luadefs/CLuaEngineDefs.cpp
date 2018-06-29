@@ -1098,30 +1098,8 @@ int CLuaEngineDefs::EngineSetDFFVertexPosition(lua_State* luaVM)
         {
             if (pClump)
             {
-                RpAtomic* pAtomic = pClump->getAtomic();
-                if (!pAtomic)
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                RpGeometry* pGeometry = pAtomic->geometry;
-                if (!pGeometry)
-                {
-                    lua_pushboolean(luaVM, false);
-                    return 1;
-                }
-                
-                usVertexID--;
-                if (pGeometry->isValidVertexId(usVertexID)) {
-                    RwV3d* vVert = &pGeometry->morphTarget->verts[usVertexID];
-                    vVert->x = vecPosition.fX;
-                    vVert->y = vecPosition.fY;
-                    vVert->z = vecPosition.fZ;
-
-
-                    lua_pushboolean(luaVM, true);
-                    return 1;
-                }
+                lua_pushboolean(luaVM, pDFF->DoSomething(usModelID, usVertexID, vecPosition));
+                return 1;
             }
         }
         else

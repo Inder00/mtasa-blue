@@ -57,6 +57,9 @@ public:
     const SString & GetModelName(void) { return m_strModelName; };
     void            SetModelName(const SString& strModelName) { m_strModelName = strModelName; };
 
+    bool SetVertexPosition(ushort usModel, ushort usVertexID, CVector vecPos);
+
+
     RpClump* GetLoadedClump(ushort usModelId);
 
 protected:
