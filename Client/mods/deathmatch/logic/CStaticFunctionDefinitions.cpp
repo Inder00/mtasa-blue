@@ -3405,6 +3405,12 @@ bool CStaticFunctionDefinitions::GetHeliBladeCollisionsEnabled(CClientVehicle& V
     return Vehicle.AreHeliBladeCollisionsEnabled();
 }
 
+bool CStaticFunctionDefinitions::GetVehicleEngineRPM(CClientVehicle& Vehicle, int& fRPM)
+{
+    fRPM = Vehicle.GetEngineSpeed();
+    return true;
+}
+
 bool CStaticFunctionDefinitions::SetVehicleWindowOpen(CClientVehicle& Vehicle, uchar ucWindow, bool bOpen)
 {
     return Vehicle.SetWindowOpen(ucWindow, bOpen);

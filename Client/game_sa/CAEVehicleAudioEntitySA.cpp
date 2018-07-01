@@ -65,3 +65,28 @@ void CAEVehicleAudioEntitySA::StopVehicleEngineSound(unsigned char ucSlot)
         }
     }
 }
+
+#include "CAudioEngineSA.h"
+int CAEVehicleAudioEntitySA::GetVehicleEngineRPM()
+{
+
+    tVehicleSound* pVehicleSound = &m_pInterface->m_aEngineSounds[m_pInterface->m_wEngineAccelerateSoundBankId];
+    if (pVehicleSound)
+    {
+        CAESound* sound = pVehicleSound->m_pSound;
+        if (sound || true)
+        {
+            g_pCore->GetConsole()->Printf("sound %i", pVehicleSound->m_dwIndex);
+            return 0;
+            //return (int)sound->m_fSpeed;
+        }
+        else
+        {
+            return 0.0f;
+        }
+    }
+    else
+    {
+        return 0.0f;
+    }
+}

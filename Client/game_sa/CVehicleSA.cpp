@@ -2731,3 +2731,8 @@ bool CVehicleSA::SetWindowOpenFlagState(unsigned char ucWindow, bool bState)
     }
     return bReturn;
 }
+
+int CVehicleSA::GetEngineSpeed()
+{
+    return GetVehicleAudioEntity()->GetVehicleEngineRPM();
+}

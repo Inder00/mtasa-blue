@@ -487,6 +487,8 @@ public:
     static void    SetModelExhaustFumesPosition(unsigned short modelID, const CVector& position);
     static CVector GetModelExhaustFumesPosition(unsigned short modelID);
 
+    int GetEngineSpeed();
+
     bool OnVehicleFallThroughMap();
 
 protected:

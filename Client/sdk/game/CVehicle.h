@@ -315,6 +315,7 @@ public:
     virtual bool                              SetPlateText(const SString& strText) = 0;
     virtual bool                              SetWindowOpenFlagState(unsigned char ucWindow, bool bState) = 0;
     virtual CAEVehicleAudioEntity*            GetVehicleAudioEntity(void) = 0;
+    virtual int                               GetEngineSpeed() = 0;
 };
 
 #endif

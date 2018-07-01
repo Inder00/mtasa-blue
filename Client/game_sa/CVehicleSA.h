@@ -794,6 +794,7 @@ public:
     std::map<SString, SVehicleFrame>& GetComponentMap(void) { return m_ExtraFrames; }
     bool                              SetPlateText(const SString& strText);
     bool                              SetWindowOpenFlagState(unsigned char ucWindow, bool bState);
+    int                               GetEngineSpeed();
 
     void UpdateLandingGearPosition();
 

@@ -132,6 +132,7 @@ void CLuaVehicleDefs::LoadFunctions(void)
     CLuaCFunctions::AddFunction("setVehicleWindowOpen", SetVehicleWindowOpen);
     CLuaCFunctions::AddFunction("setVehicleModelExhaustFumesPosition", SetVehicleModelExhaustFumesPosition);
     CLuaCFunctions::AddFunction("getVehicleModelExhaustFumesPosition", GetVehicleModelExhaustFumesPosition);
+    CLuaCFunctions::AddFunction("getVehicleEngineRPM", GetVehicleEngineRPM);
 }
 
 void CLuaVehicleDefs::AddClass(lua_State* luaVM)
@@ -3784,6 +3785,31 @@ int CLuaVehicleDefs::GetVehicleModelExhaustFumesPosition(lua_State* luaVM)
         lua_pushnumber(luaVM, position.fY);
         lua_pushnumber(luaVM, position.fZ);
         return 3;
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaVehicleDefs::GetVehicleEngineRPM(lua_State* luaVM)
+{
+    // float GetVehicleEngineRPM( vehicle theVehicle)
+
+    CClientVehicle* pVehicle;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pVehicle);
+
+    if (!argStream.HasErrors())
+    {
+        int rpm;
+        if (CStaticFunctionDefinitions::GetVehicleEngineRPM(*pVehicle, rpm))
+        {
+            lua_pushnumber(luaVM, rpm);
+            return 1;
+        }
     }
     else
         m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());

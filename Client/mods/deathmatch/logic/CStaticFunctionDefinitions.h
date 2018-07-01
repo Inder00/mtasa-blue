@@ -217,6 +217,7 @@ public:
     static bool            GetVehicleNitroCount(CClientVehicle& Vehicle, char& cCount);
     static bool            GetVehicleNitroLevel(CClientVehicle& Vehicle, float& fLevel);
     static bool            GetHeliBladeCollisionsEnabled(CClientVehicle& Vehicle);
+    static bool            GetVehicleEngineRPM(CClientVehicle& Vehicle, int& fRPM);
     static bool            IsVehicleWindowOpen(CClientVehicle& Vehicle, uchar ucWindow);
 
     // Vehicle set functions

@@ -255,7 +255,7 @@ public:
     void JustGotOutOfVehicleAsDriver(void);
     void TurnOnRadioForVehicle(void);
     void StopVehicleEngineSound(unsigned char ucSlot);
-
+    int GetVehicleEngineRPM(void);
 private:
     CAEVehicleAudioEntitySAInterface* m_pInterface;
 };

@@ -4840,3 +4840,13 @@ bool CClientVehicle::IsWindowOpen(uchar ucWindow)
     }
     return false;
 }
+
+int CClientVehicle::GetEngineSpeed()
+{
+    if (m_pVehicle)
+    {
+        return m_pVehicle->GetEngineSpeed();
+    }
+    return 0;
+      
+}
