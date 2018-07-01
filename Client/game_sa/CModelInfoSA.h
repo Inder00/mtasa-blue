@@ -345,6 +345,7 @@ public:
 
     // Custom collision related functions
     void SetCustomModel(RpClump* pClump);
+    void SetCustomModel_(RpClump* pClump);
     void RestoreOriginalModel(void);
     void SetColModel(CColModel* pColModel);
     void RestoreColModel(void);

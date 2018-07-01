@@ -483,17 +483,6 @@ bool AtomicsReplacer(RpAtomic* pAtomic, void* data)
     return true;
 }
 
-void RecoverOriginalBytes()
-{
-    unsigned char OriginalBytes[4] = { 0x3B, 0xC7, 0x74, 0x1E };
-    memcpy((void *)0x00349B7E, OriginalBytes, sizeof(OriginalBytes));
-}
-
-void RemoveCondition()
-{
-    memset((void *)0x00749B7E, 0x90, 4);
-}
-
 void CRenderWareSA::ReplaceAllAtomicsInModel(RpClump* pNew, unsigned short usModelID)
 {
     CModelInfo* pModelInfo = pGame->GetModelInfo(usModelID);

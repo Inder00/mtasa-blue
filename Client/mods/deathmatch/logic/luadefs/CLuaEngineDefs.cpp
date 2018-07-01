@@ -1076,6 +1076,30 @@ int CLuaEngineDefs::EngineGetDFFVertexPosition(lua_State* luaVM)
 
 int CLuaEngineDefs::EngineUpdateDFFDisplay(lua_State* luaVM)
 {
+    CScriptArgReader argStream(luaVM);
+    RpClump*         pClump;
+    ushort           usModelID;
+    CClientDFF* pDFF;
+    argStream.ReadUserData(pDFF);
+    usModelID = pDFF->GetModelID();
+    pClump = pDFF->GetLoadedClump(usModelID);
+    if (!argStream.HasErrors())
+    {
+        if (usModelID != INVALID_MODEL_ID)
+        {
+            if (pClump)
+            {
+                lua_pushboolean(luaVM, pDFF->UpdateDisplay(usModelID));
+                return 1;
+            }
+        }
+        else
+            argStream.SetCustomError("Expected DFF or valid model ID or name at argument 1");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
     return 1;
 }
 
@@ -1098,7 +1122,7 @@ int CLuaEngineDefs::EngineSetDFFVertexPosition(lua_State* luaVM)
         {
             if (pClump)
             {
-                lua_pushboolean(luaVM, pDFF->DoSomething(usModelID, usVertexID, vecPosition));
+                lua_pushboolean(luaVM, pDFF->SetVertexPosition(usModelID, usVertexID, vecPosition));
                 return 1;
             }
         }

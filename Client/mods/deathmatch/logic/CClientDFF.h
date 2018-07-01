@@ -61,7 +61,7 @@ public:
 
 
     RpClump* GetLoadedClump(ushort usModelId);
-
+    bool UpdateDisplay(ushort usModel);
 protected:
     bool DoReplaceModel(unsigned short usModel, bool bAlphaTransparency);
     void UnloadDFF(void);

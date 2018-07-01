@@ -954,6 +954,18 @@ void CModelInfoSA::ResetAllVehicleExhaustFumes()
     ms_ModelDefaultVehicleFumesPosition.clear();
 }
 
+void CModelInfoSA::SetCustomModel_(RpClump* pClump)
+{
+    // Error
+    if (pClump == NULL)
+        return;
+
+    // Store the custom clump
+    m_pCustomClump = pClump;
+
+}
+
+
 void CModelInfoSA::SetCustomModel(RpClump* pClump)
 {
     // Error

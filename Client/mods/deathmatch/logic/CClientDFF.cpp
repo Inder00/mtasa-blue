@@ -364,28 +364,65 @@ bool CClientDFF::IsDFFData(const SString& strData)
     return strData.length() > 32 && memcmp(strData, "\x10\x00\x00\x00", 4) == 0;
 }
 
+typedef long RwPluginRegistry;
+bool CClientDFF::UpdateDisplay(ushort usModel)
+{
+    RwPluginRegistry* registry = (RwPluginRegistry *)0x8D6264;
+
+    void(*__rwPluginRegistryDeInitObject)(RwPluginRegistry*, RpClump*);
+    __rwPluginRegistryDeInitObject = (void(*)(RwPluginRegistry*, RpClump*))0x808740;
+    __rwPluginRegistryDeInitObject(registry, GetLoadedClump(usModel));
+
+    void(*__rwPluginRegistryInitObject)(RwPluginRegistry*, RpClump*);
+    __rwPluginRegistryInitObject = (void(*)(RwPluginRegistry*, RpClump*))0x808740;
+    __rwPluginRegistryInitObject(registry, GetLoadedClump(usModel));
+
+    g_pGame->GetModelInfo(usModel)->ForceUnload();
+    void(*myfunc1)(int);
+    myfunc1 = (void(*)(int))0x4089A0; // CStreaming::RemoveModel(int)
+    myfunc1(usModel);
+
+    void(*myfunc2)(int, int);
+    myfunc2 = (void(*)(int, int))0x4087E0; // CStreaming::RequestModel(int,int)
+    myfunc2(usModel, usModel);
+
+    void(*myfunc3)(void);
+    myfunc3 = (void(*)(void))0x4090A0;  // CStreaming::DeleteAllRwObjects(void)
+    myfunc3();
+
+    m_pManager->GetObjectManager()->RestreamObjects(usModel);
+    g_pGame->GetModelInfo(usModel)->RestreamIPL();
+    g_pGame->FlushPendingRestreamIPL();
+    return true;
+}
+
 bool CClientDFF::SetVertexPosition(ushort usModel, ushort usVertexID, CVector vecPosition)
 {
     SLoadedClumpInfo* pInfo = MapFind(m_LoadedClumpInfoMap, usModel);
     RpClump*         pClump = pInfo->pClump;
     RpAtomic* pAtomic = pClump->getAtomic();
     if (!pAtomic)
-    {
         return false;
-    }
+
     RpGeometry* pGeometry = pAtomic->geometry;
     if (!pGeometry)
-    {
         return false;
-    }
 
     usVertexID--;
-    if (pGeometry->isValidVertexId(usVertexID))
+    if (!pGeometry->isValidVertexId(usVertexID))
+        return false;
+
+    RwV3d* vVert = &pGeometry->morphTarget->verts[usVertexID];
+    vVert->x = vecPosition.fX;
+    vVert->y = vecPosition.fY;
+    vVert->z = vecPosition.fZ;
+    CModelInfo* pModelInfo = g_pGame->GetModelInfo(usModel);
+    if (pModelInfo)
     {
-        RwV3d* vVert = &pGeometry->morphTarget->verts[usVertexID];
-        vVert->x = vecPosition.fX;
-        vVert->y = vecPosition.fY;
-        vVert->z = vecPosition.fZ;
+        RpClump* pOldAtomic = (RpClump*)pModelInfo->GetRwObject();
+        pOldAtomic = pClump;
+        g_pCore->GetConsole()->Printf("update vertex position");
     }
+    return true;
 
 }
