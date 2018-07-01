@@ -99,6 +99,7 @@ public:
     virtual bool IsCursorForcedVisible(void) = 0;
     virtual bool IsCursorControlsToggled(void) = 0;
     virtual void CallSetCursorPos(int X, int Y) = 0;
+    virtual bool ClearChat(void) = 0;
 
     virtual void SetConnected(bool bConnected) = 0;
     virtual void SetOfflineMod(bool bOffline) = 0;

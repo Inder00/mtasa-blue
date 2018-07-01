@@ -318,6 +318,17 @@ void CCore::SaveConfig(bool bWaitUntilFinished)
     }
 }
 
+bool CCore::ClearChat()
+{
+    CChat* pChat = m_pLocalGUI->GetChat();
+    if (pChat)
+    {
+        pChat->Clear();
+        return true;
+    }
+    return false;
+}
+
 void CCore::ChatEcho(const char* szText, bool bColorCoded)
 {
     CChat* pChat = m_pLocalGUI->GetChat();

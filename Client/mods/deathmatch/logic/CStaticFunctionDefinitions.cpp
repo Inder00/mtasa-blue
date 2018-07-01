@@ -253,6 +253,11 @@ bool CStaticFunctionDefinitions::OutputChatBox(const char* szText, unsigned char
     return false;
 }
 
+bool CStaticFunctionDefinitions::ClearChatBox()
+{
+    return m_pCore->ClearChat();
+}
+
 bool CStaticFunctionDefinitions::SetClipboard(SString& strText)
 {
     std::wstring strUTF = MbUTF8ToUTF16(strText);
