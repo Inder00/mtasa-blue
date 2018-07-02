@@ -9,6 +9,7 @@
  *****************************************************************************/
 
 #include "StdInc.h"
+#include "BezierEasing.h"
 
 void CLuaUtilDefs::LoadFunctions(void)
 {
@@ -29,6 +30,7 @@ void CLuaUtilDefs::LoadFunctions(void)
     CLuaCFunctions::AddFunction("getDistanceBetweenPoints3D", GetDistanceBetweenPoints3D);
     CLuaCFunctions::AddFunction("getEasingValue", GetEasingValue);
     CLuaCFunctions::AddFunction("interpolateBetween", InterpolateBetween);
+    CLuaCFunctions::AddFunction("bezirCurve", BezirCurveFunc);
 
     // JSON funcs
     CLuaCFunctions::AddFunction("toJSON", toJSON);
@@ -405,6 +407,30 @@ int CLuaUtilDefs::InterpolateBetween(lua_State* luaVM)
     lua_pushnumber(luaVM, vecResult.fZ);
     return 3;
 }
+
+int CLuaUtilDefs::BezirCurveFunc(lua_State* luaVM)
+{
+    //  float BezirCurve ( float progress, float x1, float y1, float x2, float y2 ),
+    CVector2D           vecA;
+    CVector2D           vecB;
+    float               fProgress;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadNumber(fProgress);
+    argStream.ReadVector2D(vecA);
+    argStream.ReadVector2D(vecB);
+
+    if (argStream.HasErrors())
+    {
+        BezierEasing bezier = BezierEasing({ vecA.fX, vecA.fY }, { vecB.fX, vecB.fY });
+        lua_pushnumber(luaVM, bezier.GetEasingProgress(fProgress));
+        return 1;
+    }
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
 
 int CLuaUtilDefs::toJSON(lua_State* luaVM)
 {

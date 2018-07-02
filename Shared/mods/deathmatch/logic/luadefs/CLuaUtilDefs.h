@@ -36,6 +36,7 @@ public:
     LUA_DECLARE(GetDistanceBetweenPoints3D);
     LUA_DECLARE(GetEasingValue);
     LUA_DECLARE(InterpolateBetween);
+    LUA_DECLARE(BezirCurveFunc);
 
     // JSON funcs
     LUA_DECLARE(toJSON);
