@@ -2086,6 +2086,10 @@ CPed* CStaticFunctionDefinitions::CreatePed(CResource* pResource, unsigned short
                 Packet.Add(pPed);
                 m_pPlayerManager->BroadcastOnlyJoined(Packet);
             }
+
+            CLuaArguments Arguments;
+            pPed->CallEvent("onElementCreate", Arguments);
+
             return pPed;
         }
     }
@@ -4741,6 +4745,10 @@ CVehicle* CStaticFunctionDefinitions::CreateVehicle(CResource* pResource, unsign
                 Packet.Add(pVehicle);
                 m_pPlayerManager->BroadcastOnlyJoined(Packet);
             }
+
+            CLuaArguments Arguments;
+            pVehicle->CallEvent("onElementCreate", Arguments);
+
             return pVehicle;
         }
     }
@@ -7522,6 +7530,10 @@ CMarker* CStaticFunctionDefinitions::CreateMarker(CResource* pResource, const CV
             // Tell everyone about it
             if (pResource->HasStarted())
                 pMarker->Sync(true);
+
+            CLuaArguments Arguments;
+            pMarker->CallEvent("onElementCreate", Arguments);
+
             return pMarker;
         }
     }
@@ -7709,6 +7721,10 @@ CBlip* CStaticFunctionDefinitions::CreateBlip(CResource* pResource, const CVecto
             // Tell everyone about it
             if (pResource->HasStarted())
                 pBlip->Sync(true);
+
+            CLuaArguments Arguments;
+            pBlip->CallEvent("onElementCreate", Arguments);
+
             return pBlip;
         }
     }
@@ -7949,6 +7965,9 @@ CObject* CStaticFunctionDefinitions::CreateObject(CResource* pResource, unsigned
             m_pPlayerManager->BroadcastOnlyJoined(Packet);
         }
 
+        CLuaArguments Arguments;
+        pObject->CallEvent("onElementCreate", Arguments);
+
         return pObject;
     }
 
@@ -8148,6 +8167,10 @@ CRadarArea* CStaticFunctionDefinitions::CreateRadarArea(CResource* pResource, co
         // Tell all the players
         if (pResource->HasStarted())
             pRadarArea->Sync(true);
+
+        CLuaArguments Arguments;
+        pRadarArea->CallEvent("onElementCreate", Arguments);
+
         return pRadarArea;
     }
 
@@ -8321,6 +8344,9 @@ CPickup* CStaticFunctionDefinitions::CreatePickup(CResource* pResource, const CV
             Packet.Add(pPickup);
             m_pPlayerManager->BroadcastOnlyJoined(Packet);
         }
+
+        CLuaArguments Arguments;
+        pPickup->CallEvent("onElementCreate", Arguments);
     }
 
     return pPickup;
@@ -8924,6 +8950,9 @@ CTeam* CStaticFunctionDefinitions::CreateTeam(CResource* pResource, const char* 
         m_pPlayerManager->BroadcastOnlyJoined(Packet);
     }
 
+    CLuaArguments Arguments;
+    pTeam->CallEvent("onElementCreate", Arguments);
+
     return pTeam;
 }
 
@@ -9217,6 +9246,9 @@ CColCircle* CStaticFunctionDefinitions::CreateColCircle(CResource* pResource, co
         m_pPlayerManager->BroadcastOnlyJoined(Packet);
     }
 
+    CLuaArguments Arguments;
+    pColShape->CallEvent("onElementCreate", Arguments);
+
     return pColShape;
 }
 
@@ -9235,6 +9267,9 @@ CColCuboid* CStaticFunctionDefinitions::CreateColCuboid(CResource* pResource, co
         Packet.Add(pColShape);
         m_pPlayerManager->BroadcastOnlyJoined(Packet);
     }
+
+    CLuaArguments Arguments;
+    pColShape->CallEvent("onElementCreate", Arguments);
 
     return pColShape;
 }
@@ -9255,6 +9290,9 @@ CColSphere* CStaticFunctionDefinitions::CreateColSphere(CResource* pResource, co
         m_pPlayerManager->BroadcastOnlyJoined(Packet);
     }
 
+    CLuaArguments Arguments;
+    pColShape->CallEvent("onElementCreate", Arguments);
+
     return pColShape;
 }
 
@@ -9273,6 +9311,9 @@ CColRectangle* CStaticFunctionDefinitions::CreateColRectangle(CResource* pResour
         Packet.Add(pColShape);
         m_pPlayerManager->BroadcastOnlyJoined(Packet);
     }
+
+    CLuaArguments Arguments;
+    pColShape->CallEvent("onElementCreate", Arguments);
 
     return pColShape;
 }
@@ -9301,6 +9342,9 @@ CColPolygon* CStaticFunctionDefinitions::CreateColPolygon(CResource* pResource, 
         m_pPlayerManager->BroadcastOnlyJoined(Packet);
     }
 
+    CLuaArguments Arguments;
+    pColShape->CallEvent("onElementCreate", Arguments);
+
     return pColShape;
 }
 
@@ -9319,6 +9363,9 @@ CColTube* CStaticFunctionDefinitions::CreateColTube(CResource* pResource, const 
         Packet.Add(pColShape);
         m_pPlayerManager->BroadcastOnlyJoined(Packet);
     }
+
+    CLuaArguments Arguments;
+    pColShape->CallEvent("onElementCreate", Arguments);
 
     return pColShape;
 }

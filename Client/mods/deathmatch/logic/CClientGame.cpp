@@ -2740,6 +2740,8 @@ void CClientGame::AddBuiltInEvents(void)
     m_Events.AddEvent("onClientElementStreamIn", "", NULL, false);
     m_Events.AddEvent("onClientElementStreamOut", "", NULL, false);
     m_Events.AddEvent("onClientElementDestroy", "", NULL, false);
+    m_Events.AddEvent("onClientElementCreate", "", NULL, false);
+
 
     // Player events
     m_Events.AddEvent("onClientPlayerJoin", "", NULL, false);
@@ -5566,6 +5568,9 @@ void CClientGame::ResetMapInfo(void)
 
     // Vehicles LOD distance
     g_pGame->GetSettings()->ResetVehiclesLODDistance();
+
+    // Peds LOD distance
+    g_pGame->GetSettings()->ResetPedsLODDistance();
 
     // Sun color
     g_pMultiplayer->ResetSunColor();
