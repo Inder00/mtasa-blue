@@ -641,7 +641,7 @@ int CLuaDrawingDefs::DxCreateTexture(lua_State* luaVM)
     ETextureAddress textureAddress;
     ETextureType    textureType;
     int             depth = 1;
-
+    CLuaFunctionRef luaFunctionRef;
     CScriptArgReader argStream(luaVM);
     if (!argStream.NextIsNumber())
     {
@@ -676,6 +676,11 @@ int CLuaDrawingDefs::DxCreateTexture(lua_State* luaVM)
         if (textureType == TTYPE_VOLUMETEXTURE)
             argStream.ReadNumber(depth);
     }
+    if (argStream.NextIsFunction())
+    {
+        argStream.ReadFunction(luaFunctionRef);
+        argStream.ReadFunctionComplete();
+    }
 
     if (!argStream.HasErrors())
     {
@@ -693,16 +698,50 @@ int CLuaDrawingDefs::DxCreateTexture(lua_State* luaVM)
                 {
                     if (FileExists(strPath))
                     {
-                        CClientTexture* pTexture = g_pClientGame->GetManager()->GetRenderElementManager()->CreateTexture(
-                            strPath, NULL, bMipMaps, RDEFAULT, RDEFAULT, renderFormat, textureAddress);
-                        if (pTexture)
+                        if (luaFunctionRef == CLuaFunctionRef{})    // sync
                         {
-                            // Make it a child of the resource's file root ** CHECK  Should parent be pFileResource, and element added to pParentResource's
-                            // ElementGroup? **
-                            pTexture->SetParent(pParentResource->GetResourceDynamicEntity());
+                            CClientTexture* pTexture = g_pClientGame->GetManager()->GetRenderElementManager()->CreateTexture(
+                                strPath, NULL, bMipMaps, RDEFAULT, RDEFAULT, renderFormat, textureAddress);
+                            if (pTexture)
+                            {
+                                // Make it a child of the resource's file root ** CHECK  Should parent be pFileResource, and element added to pParentResource's
+                                // ElementGroup? **
+                                pTexture->SetParent(pParentResource->GetResourceDynamicEntity());
+                            }
+                            lua_pushelement(luaVM, pTexture);
+                            return 1;
                         }
-                        lua_pushelement(luaVM, pTexture);
-                        return 1;
+                        else
+                        {
+                            CLuaMain* pLuaMain = m_pLuaManager->GetVirtualMachine(luaVM);
+                            if (pLuaMain)
+                            {
+                                CLuaShared::GetAsyncTaskScheduler()->PushTask<CClientTexture*>(
+                                    [strPath, bMipMaps, renderFormat, textureAddress, pParentResource]{
+                                        // Execute time-consuming task
+                                        CClientTexture* pTexture = g_pClientGame->GetManager()->GetRenderElementManager()->CreateTexture(
+                                            strPath, NULL, bMipMaps, RDEFAULT, RDEFAULT, renderFormat, textureAddress);
+                                        if (pTexture)
+                                        {
+                                            pTexture->SetParent(pParentResource->GetResourceDynamicEntity());
+                                        }
+                                        return pTexture;
+                                    },
+                                    [luaFunctionRef](const CClientTexture* pTexture) {
+                                        CLuaMain* pLuaMain = m_pLuaManager->GetVirtualMachine(luaFunctionRef.GetLuaVM());
+                                        if (pLuaMain)
+                                        {
+                                            CLuaArguments arguments;
+                                            arguments.PushElement((CClientEntity *)pTexture);
+                                            arguments.Call(pLuaMain, luaFunctionRef);
+                                        }
+                                    }
+                                );
+
+                                lua_pushboolean(luaVM, true);
+                                return 1;
+                            }
+                        }
                     }
                     else
                         argStream.SetCustomError(strFilePath, "File not found");
