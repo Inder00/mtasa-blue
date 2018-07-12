@@ -37,6 +37,7 @@ static CClientCamera*            m_pCamera;
 static CClientExplosionManager*  m_pExplosionManager;
 static CClientProjectileManager* m_pProjectileManager;
 static CClientSoundManager*      m_pSoundManager;
+static CClientTerrainManager*    m_pTerrainManager;
 
 // Used to run a function on all the children of the elements too
 #define RUN_CHILDREN( func ) \
@@ -6777,6 +6778,13 @@ CClientColTube* CStaticFunctionDefinitions::CreateColTube(CResource& Resource, c
     pShape->SetParent(Resource.GetResourceDynamicEntity());
     // CStaticFunctionDefinitions::RefreshColShapeColliders ( pShape );   ** Not applied to maintain compatibility with existing scrips **
     return pShape;
+}
+
+CClientTerrain* CStaticFunctionDefinitions::CreateTerrain(CResource& Resource)
+{
+    CClientTerrain* pTerrain = new CClientTerrain(m_pTerrainManager, INVALID_ELEMENT_ID);
+    pTerrain->SetParent(Resource.GetResourceDynamicEntity());
+    return pTerrain;
 }
 
 // Make sure all colliders for a colshape are up to date

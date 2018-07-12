@@ -98,6 +98,7 @@ void CRPCFunctions::AddHandlers(void)
     CWeaponRPCs::LoadFunctions();
     CWaterRPCs::LoadFunctions();
     CWorldRPCs::LoadFunctions();
+    CLuaTerrainDefs::LoadFunctions();
 }
 
 void CRPCFunctions::AddHandler(unsigned char ucID, pfnRPCHandler Callback, const char* szName)

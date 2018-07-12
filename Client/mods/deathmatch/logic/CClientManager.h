@@ -43,6 +43,7 @@ class CClientManager;
 #include "CClientWeaponManager.h"
 #include "CClientEffectManager.h"
 #include "CClientPointLightsManager.h"
+#include "CClientTerrainManager.h"
 
 class CClientProjectileManager;
 class CClientExplosionManager;
@@ -87,6 +88,7 @@ public:
     CClientPedManager*           GetPedManager(void) { return m_pPedManager; }
     CResourceManager*            GetResourceManager(void) { return m_pResourceManager; }
     CClientColManager*           GetColManager(void) { return m_pColManager; }
+    CClientTerrainManager*       GetTerrainManager(void) { return m_pTerrainManager; }
     CClientGroups*               GetGroups(void) { return m_pGroups; }
     CClientProjectileManager*    GetProjectileManager(void) { return m_pProjectileManager; }
     CClientExplosionManager*     GetExplosionManager(void) { return m_pExplosionManager; }
@@ -141,6 +143,7 @@ private:
     CClientWaterManager*         m_pWaterManager;
     CResourceManager*            m_pResourceManager;
     CClientColManager*           m_pColManager;
+    CClientTerrainManager*       m_pTerrainManager;
     CClientGroups*               m_pGroups;
     CClientProjectileManager*    m_pProjectileManager;
     CClientExplosionManager*     m_pExplosionManager;

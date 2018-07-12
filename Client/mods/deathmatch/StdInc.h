@@ -73,6 +73,7 @@
 #include <CClientPlayerVoice.h>
 #include <CClientPointLights.h>
 #include <CClientProjectileManager.h>
+#include <CClientTerrainManager.h>
 #include <CClientStreamSector.h>
 #include <CClientStreamSectorRow.h>
 #include <CClientTask.h>
@@ -89,6 +90,7 @@
 #include <CClientWebBrowser.h>
 #include <CClientSearchLight.h>
 #include <CClientEffect.h>
+#include <CClientTerrain.h>
 #include <CCustomData.h>
 #include <CElementArray.h>
 #include <CLogger.h>
@@ -135,6 +137,7 @@
 #include <luadefs/CLuaVehicleDefs.h>
 #include <luadefs/CLuaWaterDefs.h>
 #include <luadefs/CLuaWeaponDefs.h>
+#include <luadefs/CLuaTerrainDefs.h>
 #include <CRemoteCalls.h>
 
 // Shared includes
