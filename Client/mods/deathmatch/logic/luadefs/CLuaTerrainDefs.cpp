@@ -14,10 +14,13 @@
 void CLuaTerrainDefs::LoadFunctions(void)
 {
     CLuaCFunctions::AddFunction("createTerrain", CreateTerrain);
+    //CLuaCFunctions::AddFunction("terrainSelect", TerrainDeform);
     //CLuaCFunctions::AddFunction("terrainDeform", TerrainDeform);
     //CLuaCFunctions::AddFunction("terrainPaint", TerrainPaint);
+    //CLuaCFunctions::AddFunction("terrainLightPaint", TerrainPaint);
     //CLuaCFunctions::AddFunction("terrainBuild", TerrainBuild);
     //CLuaCFunctions::AddFunction("terrainGetPreview", TerrainGetPreview);
+    //CLuaCFunctions::AddFunction("terrainGetProperties", TerrainGetPreview);
 }
 
 void CLuaTerrainDefs::AddClass(lua_State* luaVM)
@@ -54,7 +57,7 @@ int CLuaTerrainDefs::CreateTerrain(lua_State* luaVM)
             {
                 // Create it and return it
                 CClientTerrain* pTerrain = CStaticFunctionDefinitions::CreateTerrain(*pResource);
-                /*if (pTerrain)
+                if (pTerrain)
                 {
                     CElementGroup* pGroup = pResource->GetElementGroup();
                     if (pGroup)
@@ -63,7 +66,7 @@ int CLuaTerrainDefs::CreateTerrain(lua_State* luaVM)
                     }
                     lua_pushelement(luaVM, pTerrain);
                     return 1;
-                }*/
+                }
             }
         }
     }

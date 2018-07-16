@@ -17,11 +17,28 @@ class CClientTerrain;
 
 class CClientTerrain : public CClientEntity
 {
-    DECLARE_CLASS(CClientTerrain, CClientEntity)
 
 public:
 
-    CClientTerrain(class CClientTerrainManager* pManager, ElementID ID);
+    struct TerrainVertex {
+        float position[3];
+        char texture[24];
+        char textureMask[24];
+        char lightPower;
+        char lightColor[3];
+        float u, v;
+    };
+
+    struct TerrainPolygon {
+        TerrainVertex vertex[3];
+    };
+
+    struct TerrainSelect {
+        TerrainVertex vertex;
+        float power;
+    };
+
+    CClientTerrain(class CClientManager* pManager, ElementID ID);
     ~CClientTerrain(void);
 
     eClientEntityType GetType(void) const { return CCLIENTTERRAIN; }
@@ -31,14 +48,23 @@ public:
     void GetPosition(CVector& vecPosition) const { vecPosition = m_vecPosition; }
     void SetPosition(const CVector& vecPosition) { m_vecPosition = vecPosition; }
 
+    void GetSize(CVector2D& vecSize) const { vecSize = m_vecSize; }
+    void SetSize(const CVector2D& vecSize) { m_vecSize = vecSize; }
+
+    void SetDensity(ushort& sDensity) const { sDensity = m_sMeshDensity; }
+    void GetDensity(const ushort& sDensity) { m_sMeshDensity = sDensity; }
+
+
 protected:
 
 private:
 
     class CClientTerrainManager*  m_pTerrainManager;
-    CVector     m_vecPosition;
-    CVector2D   m_vecSize;
-    ushort      m_sMeshDensity;
+    CVector                       m_vecPosition;
+    CVector2D                     m_vecSize;
+    ushort                        m_sMeshDensity;
+    std::vector<TerrainPolygon*>  vecMesh;
+    std::vector<TerrainSelect*>   vecSelected;
 };
 
 #endif

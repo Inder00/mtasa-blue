@@ -10,17 +10,15 @@
 
 #include "StdInc.h"
 
-using std::list;
-
-CClientTerrain::CClientTerrain(CClientTerrainManager* pManager, ElementID ID) : ClassInit(this), CClientEntity(ID)
+CClientTerrain::CClientTerrain(CClientManager* pManager, ElementID ID) : CClientEntity(ID)
 {
     // Init
-    m_pTerrainManager = pManager;
+    m_pManager = pManager;
 
     SetTypeName("terrain");
 
     // Add it to our manager's list
-    m_pTerrainManager->AddToList(this);
+    //m_pManager->AddToList(this);
 }
 
 CClientTerrain::~CClientTerrain(void)
@@ -30,5 +28,5 @@ CClientTerrain::~CClientTerrain(void)
 
 void CClientTerrain::Unlink(void)
 {
-    m_pTerrainManager->RemoveFromList(this);
+    //m_pManager->RemoveFromList(this);
 }

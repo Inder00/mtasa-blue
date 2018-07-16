@@ -6782,7 +6782,8 @@ CClientColTube* CStaticFunctionDefinitions::CreateColTube(CResource& Resource, c
 
 CClientTerrain* CStaticFunctionDefinitions::CreateTerrain(CResource& Resource)
 {
-    CClientTerrain* pTerrain = new CClientTerrain(m_pTerrainManager, INVALID_ELEMENT_ID);
+    CClientTerrain* pTerrain = new CClientTerrain(m_pManager, INVALID_ELEMENT_ID);
+
     pTerrain->SetParent(Resource.GetResourceDynamicEntity());
     return pTerrain;
 }
