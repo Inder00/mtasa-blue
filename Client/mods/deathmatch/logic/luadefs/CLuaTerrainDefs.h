@@ -19,8 +19,6 @@ public:
     static void AddClass(lua_State* luaVM);
 
     LUA_DECLARE(CreateTerrain);
-    LUA_DECLARE(TerrainDeform);
-    LUA_DECLARE(TerrainPaint);
-    LUA_DECLARE(TerrainBuild);
+    LUA_DECLARE(DrawPreview);
     LUA_DECLARE(TerrainGetPreview);
 };
