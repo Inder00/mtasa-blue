@@ -18,6 +18,23 @@ enum eMeshType {
     MESH_DIAMOND,
 };
 
+enum eSelectType {
+    SELECT_TYPE_SET,
+    SELECT_TYPE_ADD,
+    SELECT_TYPE_SUBSTRACT,
+    SELECT_TYPE_UNSET,
+};
+
+enum eSelectTool {
+    SELECT_TOOL_BYVERTEXID,
+    SELECT_TOOL_BYPOLYGONID,
+    SELECT_TOOL_NEAREST,
+    SELECT_TOOL_INRANGE,
+    SELECT_TOOL_INRANGESOFT,
+    SELECT_TOOL_GROW,
+    SELECT_TOOL_SHRINK,
+};
+
 struct TerrainVertex {
     CVector position;
     float lightPower;
@@ -31,8 +48,8 @@ struct TerrainPolygon {
     char textureMask[24];
 };
 
-struct TerrainSelect {
-    TerrainVertex vertex;
+struct TerrainSelection {
+    TerrainVertex* vertex;
     float power;
 };
 
@@ -62,25 +79,29 @@ public:
     void    SetMeshType(SString meshType) { m_meshType = meshType; }
     SString GetMeshType(void) { return m_meshType;  }
 
+    std::vector<TerrainVertex*>  GetVertices(void) { return m_vecMeshVertices;  }
+    std::vector<TerrainPolygon*> GetPolygons(void) { return m_vecMeshPolygons;  }
+
     void BuildMesh(void);
     char AddTexture(SString textureName);
     char SetDefaultTexture(SString textureName);
-    void DrawPreview(bool bDrawVertexIds);
+    void DrawPreview(float fDrawDistance, bool bDrawVertices, bool bDrawPolygons, bool bDrawVerticesId);
+    void Select(lua_State* luaVM);
 
 protected:
 
 private:
 
-    class CClientTerrainManager*  m_pTerrainManager;
-    CVector                       m_vecPosition;
-    CVector2D                     m_vecSize;
-    CVector2D                     m_vecMeshDensity;
-    SString                       m_meshType;
-    std::vector<TerrainVertex*>   m_vecMeshVertices;
-    std::vector<TerrainPolygon*>  m_vecMeshPolygons;
-    std::vector<TerrainSelect*>   m_vecSelected;
-    std::vector<SString>          m_vecTextures;
-    SString                       m_strDefaultTexture;
+    class CClientTerrainManager*   m_pTerrainManager;
+    CVector                        m_vecPosition;
+    CVector2D                      m_vecSize;
+    CVector2D                      m_vecMeshDensity;
+    SString                        m_meshType;
+    std::vector<TerrainVertex*>    m_vecMeshVertices;
+    std::vector<TerrainPolygon*>   m_vecMeshPolygons;
+    std::vector<TerrainSelection*> m_vecSelected;
+    std::vector<SString>           m_vecTextures;
+    SString                        m_strDefaultTexture;
 };
 
 #endif

@@ -20,5 +20,6 @@ public:
 
     LUA_DECLARE(CreateTerrain);
     LUA_DECLARE(DrawPreview);
-    LUA_DECLARE(TerrainGetPreview);
+    LUA_DECLARE(TerrainGetProperties);
+    LUA_DECLARE(TerrainSelect);
 };

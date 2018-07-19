@@ -49,6 +49,9 @@ DECLARE_ENUM(eWebBrowserMouseButton);
 DECLARE_ENUM(eTrayIconType)
 DECLARE_ENUM(eCursorType)
 DECLARE_ENUM(eWheelPosition)
+DECLARE_ENUM(eSelectTool)
+DECLARE_ENUM(eSelectType)
+DECLARE_ENUM(eMeshType)
 
 enum eDXHorizontalAlign
 {
@@ -367,6 +370,18 @@ inline SString GetClassTypeName(CLuaVector4D*)
 inline SString GetClassTypeName(CLuaMatrix*)
 {
     return "matrix";
+}
+inline SString GetClassTypeName(eSelectTool*)
+{
+    return "select-tool";
+}
+inline SString GetClassTypeName(eSelectType*)
+{
+    return "select-type";
+}
+inline SString GetClassTypeName(eMeshType*)
+{
+    return "mesh-type";
 }
 
 //
