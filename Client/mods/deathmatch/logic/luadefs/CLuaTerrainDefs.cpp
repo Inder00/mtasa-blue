@@ -208,7 +208,6 @@ int CLuaTerrainDefs::TerrainSelect(lua_State* luaVM)
                             if (outList.size() == 2)
                             {
                                 int vertexId = (int)outList.at(0);
-                                float power = outList.at(0);
                                 if (vertexId <= 0 || vertexId >= vecVertices.size())
                                 {
                                     lua_pushnumber(luaVM, 3);
@@ -218,7 +217,7 @@ int CLuaTerrainDefs::TerrainSelect(lua_State* luaVM)
                                 else
                                 {
                                     TerrainSelection* pSelect = new TerrainSelection;
-                                    pSelect->power = 100;
+                                    pSelect->power = outList.at(1);
                                     pSelect->vertex = vecVertices.at(vertexId - 1);
                                     tempSelectedVertices.push_back(pSelect);
                                 }
