@@ -50,6 +50,12 @@ public:
     void GetPosition(CVector& vecPosition) const {};
     void SetPosition(const CVector& vecPosition){};
 
+    static uint CreateVertex(RpGeometry* pGeometry, CVector vecPosition);
+    static bool CreatePolygon(RpGeometry* pGeometry, ushort vertex1, ushort vertex2, ushort vertex3, ushort usMesh);
+
+
+    ushort m_usModel;
+    RpClump* GetClump() { return GetLoadedClump(m_usModel); }
 protected:
     bool DoReplaceModel(unsigned short usModel, bool bAlphaTransparency);
     void UnloadDFF(void);

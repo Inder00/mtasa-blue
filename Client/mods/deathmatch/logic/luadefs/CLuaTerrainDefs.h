@@ -22,4 +22,5 @@ public:
     LUA_DECLARE(DrawPreview);
     LUA_DECLARE(TerrainGetProperties);
     LUA_DECLARE(TerrainSelect);
+    LUA_DECLARE(TerrainBuild);
 };

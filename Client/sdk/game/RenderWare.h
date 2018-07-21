@@ -85,6 +85,41 @@ struct RwMatrix
     unsigned int pad3;             // 60
 };
 
+enum RpGeometryFlag
+{
+    rpGEOMETRYTRISTRIP = 0x00000001, /**<This geometry's meshes can be
+                                     rendered as strips.
+                                     \ref RpMeshSetTriStripMethod is
+                                     used to change this method.*/
+    rpGEOMETRYPOSITIONS = 0x00000002, /**<This geometry has positions */
+    rpGEOMETRYTEXTURED = 0x00000004, /**<This geometry has only one set of
+                                     texture coordinates. Texture
+                                     coordinates are specified on a per
+                                     vertex basis */
+    rpGEOMETRYPRELIT = 0x00000008, /**<This geometry has pre-light colors */
+    rpGEOMETRYNORMALS = 0x00000010, /**<This geometry has vertex normals */
+    rpGEOMETRYLIGHT = 0x00000020, /**<This geometry will be lit */
+    rpGEOMETRYMODULATEMATERIALCOLOR = 0x00000040, /**<Modulate material color
+                                                  with vertex colors
+                                                  (pre-lit + lit) */
+
+    rpGEOMETRYTEXTURED2 = 0x00000080, /**<This geometry has at least 2 sets of
+                                      texture coordinates. */
+
+                                      /*
+                                      * These above flags were stored in the flags field in an RwObject, they
+                                      * are now stored in the flags file of the RpGeometry.
+                                      */
+
+    rpGEOMETRYNATIVE = 0x01000000,
+    rpGEOMETRYNATIVEINSTANCE = 0x02000000,
+
+    rpGEOMETRYFLAGSMASK = 0x000000FF,
+    rpGEOMETRYNATIVEFLAGSMASK = 0x0F000000,
+
+    rpGEOMETRYFLAGFORCEENUMSIZEINT = RW_STRUCT_ALIGN
+};
+
 // RenderWare enumerations
 enum RwPrimitiveType
 {
@@ -167,6 +202,32 @@ struct RwList
 {
     RwListEntry root;
 };
+
+struct RpMesh
+{
+    unsigned short *indices;
+    unsigned int   numIndices;
+    RpMaterial    *material;
+    bool isValidIndices(unsigned short usIndices)
+    {
+        return (numIndices >= 0 && numIndices > usIndices);
+    }
+};
+
+struct RpMeshHeader
+{
+    unsigned int   flags;
+    unsigned short numMeshes;
+    unsigned short serialNum;
+    unsigned int   totalIndicesInMesh;
+    unsigned int   firstMeshOffset;
+    RpMesh *getMeshes(void) { return (RpMesh*)(this + 1); }
+    bool isValidMeshId(int meshId)
+    {
+        return (meshId >= 0 && numMeshes > meshId);
+    }
+};
+
 struct RwFrame
 {
     RwObject        object;                 // 0
@@ -312,6 +373,10 @@ struct RpClump
     RwList          cameras;
     RwListEntry     globalClumps;
     RpClumpCallback callback;
+    RpAtomic* getAtomic()
+    {
+        return (RpAtomic*)((this->atomics.root.next) - 0x8);
+    }
 };
 struct RpMaterialLighting
 {
@@ -334,9 +399,18 @@ struct RpMaterials
 };
 struct RpTriangle
 {
-    unsigned short v1, v2, v3;
-    unsigned short materialId;
+    unsigned short v[3];
+    unsigned short matId;
 };
+
+struct RpMorphTarget
+{
+    RpGeometry   *parentGeom;
+    RwSphere      boundingSphere;
+    RwV3d        *verts;
+    RwV3d        *normals;
+};
+
 struct RpGeometry
 {
     RwObject       object;
@@ -346,16 +420,32 @@ struct RpGeometry
 
     int triangles_size;
     int vertices_size;
-    int unknown_size;
+    int morphTarget_size;
     int texcoords_size;
 
     RpMaterials           materials;
     RpTriangle*           triangles;
     RwColor*              colors;
     RwTextureCoordinates* texcoords[RW_MAX_TEXTURE_COORDS];
-    void*                 unknown2;
+    RpMeshHeader          *header;
     void*                 info;
-    void*                 unknown3;
+    RpMorphTarget      *morphTarget;
+    bool isValidTriangleId(int triangleId)
+    {
+        return (triangles_size >= 0 && triangles_size > triangleId);
+    }
+    bool isValidVertexId(int vertexId)
+    {
+        return (vertices_size >= 0 && vertices_size > vertexId);
+    }
+    bool isValidTexCoordsId(int textCoordId)
+    {
+        return (texcoords_size >= 0 && texcoords_size > textCoordId);
+    }
+    inline bool isFlag(RpGeometryFlag flag)
+    {
+        return (flags & flag) == flag;
+    }
 };
 
 /*****************************************************************************/

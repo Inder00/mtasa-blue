@@ -362,3 +362,82 @@ bool CClientDFF::IsDFFData(const SString& strData)
 {
     return strData.length() > 32 && memcmp(strData, "\x10\x00\x00\x00", 4) == 0;
 }
+
+uint CClientDFF::CreateVertex(RpGeometry* pGeometry, CVector vecPosition)
+{
+    ushort lastVertex = pGeometry->vertices_size;
+    pGeometry->vertices_size++;
+    RwV3d* verts = pGeometry->morphTarget->verts;
+    RwV3d* newVerts = reinterpret_cast<RwV3d *>(malloc(pGeometry->vertices_size * sizeof(RwV3d)));
+    for (ushort i = 0; i < lastVertex; i++)
+    {
+        newVerts[i] = verts[i];
+    }
+    RwV3d vVert;
+    vVert.x = vecPosition.fX;
+    vVert.y = vecPosition.fY;
+    vVert.z = vecPosition.fZ;
+    newVerts[lastVertex] = vVert;
+    free(pGeometry->morphTarget->verts);
+    pGeometry->morphTarget->verts = (RwV3d *)newVerts;
+    if (pGeometry->isFlag(RpGeometryFlag::rpGEOMETRYPRELIT))
+    {
+        RwColor* newColors = reinterpret_cast<RwColor*>(malloc(pGeometry->vertices_size * sizeof(RwColor)));
+        for (ushort i = 0; i < lastVertex; i++)
+        {
+            newColors[i] = pGeometry->colors[i];
+        }
+        RwColor color;
+        color.a = 128;
+        color.r = 32;
+        color.g = 32;
+        color.b = 32;
+        newColors[lastVertex] = color;
+        pGeometry->colors = newColors;
+    }
+    return lastVertex;
+}
+
+bool CClientDFF::CreatePolygon(RpGeometry* pGeometry, ushort vertex1, ushort vertex2, ushort vertex3, ushort usMesh)
+{
+
+    if (!pGeometry->header->isValidMeshId(usMesh))
+        return false;
+
+    if (!pGeometry->isValidVertexId(vertex1) || !pGeometry->isValidVertexId(vertex2) || !pGeometry->isValidVertexId(vertex3))
+        return false;
+
+    vertex1--;
+    vertex2--;
+    vertex3--;
+    RpMesh* mesh = pGeometry->header->getMeshes();
+    RpMesh* myMesh = &mesh[usMesh];
+    ushort lastPolygon = pGeometry->triangles_size;
+    pGeometry->triangles_size++;
+    myMesh->numIndices += 3;
+    pGeometry->header->totalIndicesInMesh += 3;
+    ushort numIndices = myMesh->numIndices;
+    ushort* polygons = myMesh->indices;
+    ushort* newPolygons1 = reinterpret_cast<ushort*>(malloc(numIndices + 3));
+    RpTriangle* newPolygons2 = reinterpret_cast<RpTriangle*>(malloc(sizeof(RpTriangle) * pGeometry->triangles_size));
+    for (int i = 0; i < numIndices - 3; i++)
+    {
+        newPolygons1[i] = polygons[i];
+    }
+    for (int i = 0; i < lastPolygon; i++)
+    {
+        newPolygons2[i] = pGeometry->triangles[i];
+    }
+    newPolygons1[numIndices - 1] = vertex1;
+    newPolygons1[numIndices - 2] = vertex2;
+    newPolygons1[numIndices - 3] = vertex3;
+    newPolygons2[lastPolygon].matId = 0;
+    newPolygons2[lastPolygon].v[0] = vertex1;
+    newPolygons2[lastPolygon].v[1] = vertex2;
+    newPolygons2[lastPolygon].v[2] = vertex3;
+    //free(myMesh->indices);  //crash
+    //free(pGeometry->triangles);
+    myMesh->indices = newPolygons1;
+    pGeometry->triangles = newPolygons2;
+    return true;
+}
