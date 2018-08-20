@@ -18,6 +18,8 @@
 
 #include <windows.h>
 #include "CColModel.h"
+#include "d:\mtablue\mtasa-blue\Client\game_sa\CColModelSA.h"
+
 class CPedModelInfo;
 
 class CBoundingBox
@@ -168,6 +170,8 @@ public:
     // Call this to make sure the custom vehicle models are being used after a load.
     virtual void      MakeCustomModel(void) = 0;
     virtual RwObject* GetRwObject(void) = 0;
+
+    virtual CColModelSAInterface* GetColData(void) = 0;
 
     virtual SVehicleSupportedUpgrades GetVehicleSupportedUpgrades(void) = 0;
     virtual void                      ResetSupportedUpgrades(void) = 0;

@@ -352,7 +352,8 @@ public:
 
     void SetModelID(DWORD dwModelID) { m_dwModelID = dwModelID; }
 
-    RwObject* GetRwObject(void) { return m_pInterface ? m_pInterface->pRwObject : NULL; }
+    RwObject*             GetRwObject(void) { return m_pInterface ? m_pInterface->pRwObject : NULL; }
+    CColModelSAInterface* GetColData(void) { return m_pInterface ? m_pInterface->pColModel : NULL; }
 
     // CModelInfoSA methods
     void MakePedModel(char* szTexture);

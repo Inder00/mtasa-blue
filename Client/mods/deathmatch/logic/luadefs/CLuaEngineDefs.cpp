@@ -33,6 +33,7 @@ void CLuaEngineDefs::LoadFunctions(void)
     CLuaCFunctions::AddFunction("engineGetModelIDFromName", EngineGetModelIDFromName);
     CLuaCFunctions::AddFunction("engineGetModelTextureNames", EngineGetModelTextureNames);
     CLuaCFunctions::AddFunction("engineGetVisibleTextureNames", EngineGetVisibleTextureNames);
+    CLuaCFunctions::AddFunction("engineGetCollisions", EngineGetCollisions);
 
     // CLuaCFunctions::AddFunction ( "engineReplaceMatchingAtomics", EngineReplaceMatchingAtomics );
     // CLuaCFunctions::AddFunction ( "engineReplaceWheelAtomics", EngineReplaceWheelAtomics );
@@ -896,6 +897,110 @@ int CLuaEngineDefs::EngineGetVisibleTextureNames(lua_State* luaVM)
             return 1;
         }
         argStream.SetCustomError("Expected valid model ID or name at argument 1");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    // We failed
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+#include "d:\mtablue\mtasa-blue\Client\game_sa\CEntitySA.h"
+#include "d:\mtablue\mtasa-blue\Client\sdk\game\CModelInfo.h"
+#include "d:\mtablue\mtasa-blue\Client\game_sa\CColModelSA.h"
+#include <list>
+class CMatrixLink : public CMatrix
+{
+public:
+    class CPlaceable  *m_pOwner;
+    class CMatrixLink *m_pPrev;
+    class CMatrixLink *m_pNext;
+
+    CMatrixLink();
+    ~CMatrixLink();
+    void Insert(CMatrixLink *matrixLink);
+    void Remove();
+};
+
+
+using std::list;
+
+int CLuaEngineDefs::EngineGetCollisions(lua_State* luaVM)
+{
+    //  table1, table2, table3, table4 = engineGetCollisions ( float x, float y, float z [, float radius = 10.0f ] )
+    CVector vecPosition;
+    float   fRadius;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadVector3D(vecPosition);
+    argStream.ReadNumber(fRadius, 10.0f);
+
+    if (!argStream.HasErrors())
+    {
+        if ( fRadius > 0 )
+        {
+            CClientStreamer* pObjectManager = m_pManager->GetObjectStreamer();
+            CClientStreamElement* pElement;
+            CClientObject* pClientObject;
+            CModelInfo*    pModelInfo;
+            CColModelSAInterface* pColModelInterface;
+            CObjectSAInterface* pObjectInterface;
+            CColDataSA* pCol;
+            CVector vecElementPos;
+            list<CClientStreamElement*>::const_iterator iter = pObjectManager->ActiveElementsBegin();
+            int i = 0;
+            for (; iter != pObjectManager->ActiveElementsEnd(); ++iter)
+            {
+                i++;
+                pElement = *iter;
+                switch (pElement->GetType())
+                {
+                    case CCLIENTOBJECT:
+                        pClientObject = static_cast<CClientObject*>(pElement);
+                        if (pClientObject->IsCollisionEnabled())
+                        {
+                            pModelInfo = g_pGame->GetModelInfo(pClientObject->GetModel());
+                            if (pModelInfo)
+                            {
+                                pColModelInterface = pModelInfo->GetColData();
+                                if (pColModelInterface)
+                                {
+                                    pCol = pColModelInterface->pColData;
+                                    // check bounding box
+                                    pClientObject->GetPosition(vecElementPos);
+                                    if (DistanceBetweenPoints3D(vecPosition, vecElementPos) <= fRadius + pColModelInterface->boundingBox.fRadius)
+                                    {
+                                        g_pCore->GetConsole()->Printf("pCol: %i %i %i", pCol->numColSpheres, pCol->numColBoxes, pCol->numColTriangles);
+                                    }
+                                }
+                            }
+                        }
+                    break;
+                }
+            }
+            /*
+            CEntity **& ms_aVisibleEntityPtrs = *(CEntity ***)0x553944;
+            int& ms_nNoOfVisibleEntities = *(int*)0xB76844;
+            for (int i = 0; i < ms_nNoOfVisibleEntities; i++)
+            {
+                CEntity* pEntity = ms_aVisibleEntityPtrs[i];
+                if (!pEntity) continue;
+                //CMatrix* matrix;
+                CMatrix* matrix = ((CMatrixLink *(__thiscall *)(CEntity *))0x411990)(pEntity);
+                if (!matrix) continue;
+                CModelInfo* pModelInfo = g_pGame->GetModelInfo(pEntity->GetModelIndex());
+                if (!pModelInfo) continue;
+                CColDataSA* pColData = pModelInfo->GetColData();
+                if (!pColData) continue;
+
+                lua_pushnumber(luaVM, pEntity->GetModelIndex());
+                return 1;
+            }*/
+            lua_pushboolean(luaVM, true);
+            return 1;
+        }
+        argStream.SetCustomError("Radius need to be greater then 0");
     }
     if (argStream.HasErrors())
         m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
