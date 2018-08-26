@@ -30,4 +30,5 @@ public:
     LUA_DECLARE(GetResourceState);
     LUA_DECLARE(LoadString);
     LUA_DECLARE(Load);
+    LUA_DECLARE(LoadStringInResource);
 };

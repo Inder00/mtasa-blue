@@ -63,6 +63,7 @@ void CLuaResourceDefs::LoadFunctions(void)
     CLuaCFunctions::AddFunction("getResourceACLRequests", getResourceACLRequests);
     CLuaCFunctions::AddFunction("updateResourceACLRequest", updateResourceACLRequest, true);
     CLuaCFunctions::AddFunction("loadstring", LoadString);
+    CLuaCFunctions::AddFunction("loadStringInResource", LoadStringInResource);
     CLuaCFunctions::AddFunction("load", Load);
 }
 
@@ -1316,6 +1317,63 @@ int CLuaResourceDefs::LoadString(lua_State* luaVM)
                 lua_pushnil(luaVM);
                 lua_insert(luaVM, -2); /* put before error message */
                 return 2;              /* return nil plus error message */
+            }
+        }
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+int CLuaResourceDefs::LoadStringInResource(lua_State* luaVM)
+{
+    //  success,err loadStringInResource( resource theResource, string text[, string name] )
+    SString     strInput;
+    SString     strName;
+    CResource*  pResource;
+
+    CScriptArgReader argStream(luaVM);
+
+    argStream.ReadUserData(pResource);
+    argStream.ReadString(strInput);
+    argStream.ReadString(strName, "");
+
+    if (!argStream.HasErrors())
+    {
+        if (pResource) {
+            const char* szChunkname = strName.empty() ? *strInput : *strName;
+            const char* cpInBuffer = strInput;
+            uint        uiInSize = strInput.length();
+
+            // Deobfuscate if required
+            const char* cpBuffer;
+            uint        uiSize;
+            if (!g_pRealNetServer->DeobfuscateScript(cpInBuffer, uiInSize, &cpBuffer, &uiSize, m_pResourceManager->GetResourceName(luaVM) + "/loadstring"))
+            {
+                SString strMessage("argument 2 is invalid. Please re-compile at http://luac.mtasa.com/", 0);
+                argStream.SetCustomError(strMessage);
+                cpBuffer = NULL;
+            }
+
+            if (!argStream.HasErrors())
+            {
+                CLuaShared::CheckUTF8BOMAndUpdate(&cpBuffer, &uiSize);
+                lua_State* targetLuaVM = pResource->GetVirtualMachine()->GetVM();
+
+                CLuaMain* amain = m_pLuaManager->GetVirtualMachine(luaVM);
+                if (amain)
+                {
+                    CResource* thisResource = amain->GetResource();
+                    lua_pushresource(targetLuaVM, thisResource);
+                    lua_setglobal(targetLuaVM, "sourceLoadstring");
+                }
+
+                luaL_loadstring(targetLuaVM, cpBuffer);
+                lua_pcall(targetLuaVM, 0, LUA_MULTRET, 0);
+                lua_pushboolean(luaVM, true);
+                return 1;
+
             }
         }
     }
