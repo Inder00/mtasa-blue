@@ -875,6 +875,34 @@ bool CResource::Start(list<CResource*>* dependents, bool bStartedManually, bool 
         m_bActive = true;
         CLogger::LogPrintf(LOGLEVEL_LOW, "Starting %s\n", m_strResourceName.c_str());
 
+        // Load queued loadstrings
+        lua_State* pLuaVM = this->GetVirtualMachine()->GetVM();
+        std::list<SString>::iterator iterCode = m_queueLoadstring.begin();
+        for (; iterCode != m_queueLoadstring.end(); iterCode++)
+        {
+            luaL_loadstring(pLuaVM, *iterCode);
+            lua_pcall(pLuaVM, 0, LUA_MULTRET, 0);
+        }
+
+        lua_newtable(pLuaVM);
+
+        // Remove duplicated resources
+        m_queueLoadstringSourceResources.erase(std::unique(m_queueLoadstringSourceResources.begin(), m_queueLoadstringSourceResources.end()), m_queueLoadstringSourceResources.end());
+
+        uint uiIndex = 0;
+        std::list<CResource*>::iterator iterSource = m_queueLoadstringSourceResources.begin();
+        for (; iterSource != m_queueLoadstringSourceResources.end(); iterSource++)
+        {
+            lua_pushinteger(pLuaVM, ++uiIndex);
+            lua_pushresource(pLuaVM, *iterSource);
+            lua_settable(pLuaVM, -3);
+        }
+        lua_setglobal(pLuaVM, "sourceLoadstring");
+
+        // Clear if used, and don't load again if resource was restarted.
+        m_queueLoadstring.clear();
+        m_queueLoadstringSourceResources.clear();
+
         // Remember the time we started
         time(&m_timeStarted);
 

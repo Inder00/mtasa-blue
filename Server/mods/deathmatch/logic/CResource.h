@@ -163,8 +163,9 @@ private:
     list<CResourceFile*>      m_resourceFiles;
     list<CResource*>          m_dependents;            // resources that have "included" or loaded this one
     list<CExportedFunction>   m_exportedFunctions;
-    list<CResource*>          m_temporaryIncludes;            // started by startResource script command
-    list<const char*>         m_queueLoadstring;            // for loadstringInResource if resource doesn't started yet.
+    list<CResource*>          m_temporaryIncludes;                 // started by startResource script command
+    list<SString>             m_queueLoadstring;                   // for loadstringInResource if resource doesn't started yet. Code
+    list<CResource*>          m_queueLoadstringSourceResources;    // for loadstringInResource if resource doesn't started yet. source resource
 
     CElementGroup* m_pDefaultElementGroup;            // stores elements created by scripts in this resource
 
@@ -301,7 +302,8 @@ public:
     list<CIncludedResources*>::iterator GetIncludedResourcesBegin(void) { return m_includedResources.begin(); };
     list<CIncludedResources*>::iterator GetIncludedResourcesEnd(void) { return m_includedResources.end(); };
     int                                 GetIncludedResourcesCount(void) { return m_includedResources.size(); };
-    void                                AddQueuedLoadString(const char* cCode) { m_queueLoadstring.push_back(cCode); };
+    void                                AddQueuedLoadString(SString cCode) { m_queueLoadstring.push_back(cCode); };
+    void                                AddQueuedLoadStringSourceResource(CResource* pResource) { m_queueLoadstringSourceResources.push_back(pResource); };
     bool                                GetInfoValue(const char* szKey, std::string& strValue);
     void                                SetInfoValue(const char* szKey, const char* szValue, bool bSave = true);
     unsigned int                        GetVersionMajor(void) { return m_uiVersionMajor; }

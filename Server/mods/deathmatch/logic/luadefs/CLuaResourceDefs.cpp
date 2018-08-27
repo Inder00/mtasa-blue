@@ -1360,12 +1360,12 @@ int CLuaResourceDefs::LoadStringInResource(lua_State* luaVM)
             {
                 CLuaShared::CheckUTF8BOMAndUpdate(&cpBuffer, &uiSize);
                 CLuaMain* pLuaMain = pResource->GetVirtualMachine();
-                CLuaMain* pMain = m_pLuaManager->GetVirtualMachine(luaVM);
+                CResource* pThisResource = m_pLuaManager->GetVirtualMachine(luaVM)->GetResource();
                 if (pLuaMain) // do resource started? if not, load code in queue.
                 {
                     lua_State* targetLuaVM = pLuaMain->GetVM();
 
-                    lua_pushresource(targetLuaVM, pMain->GetResource());
+                    lua_pushresource(targetLuaVM, pThisResource);
                     lua_setglobal(targetLuaVM, "sourceLoadstring");
 
                     luaL_loadstring(targetLuaVM, cpBuffer);
@@ -1376,7 +1376,7 @@ int CLuaResourceDefs::LoadStringInResource(lua_State* luaVM)
                 else
                 {
                     pResource->AddQueuedLoadString(cpBuffer);
-                    pResource->AddQueuedLoadStringSourceResource(cpBuffer);
+                    pResource->AddQueuedLoadStringSourceResource(pResource);
                     lua_pushboolean(luaVM, true);
                     return 1;
 
