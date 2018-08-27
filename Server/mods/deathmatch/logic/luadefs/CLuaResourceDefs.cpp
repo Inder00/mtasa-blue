@@ -1359,20 +1359,28 @@ int CLuaResourceDefs::LoadStringInResource(lua_State* luaVM)
             if (!argStream.HasErrors())
             {
                 CLuaShared::CheckUTF8BOMAndUpdate(&cpBuffer, &uiSize);
-                lua_State* targetLuaVM = pResource->GetVirtualMachine()->GetVM();
-
-                CLuaMain* amain = m_pLuaManager->GetVirtualMachine(luaVM);
-                if (amain)
+                CLuaMain* pLuaMain = pResource->GetVirtualMachine();
+                CLuaMain* pMain = m_pLuaManager->GetVirtualMachine(luaVM);
+                if (pLuaMain) // do resource started? if not, load code in queue.
                 {
-                    CResource* thisResource = amain->GetResource();
-                    lua_pushresource(targetLuaVM, thisResource);
-                    lua_setglobal(targetLuaVM, "sourceLoadstring");
-                }
+                    lua_State* targetLuaVM = pLuaMain->GetVM();
 
-                luaL_loadstring(targetLuaVM, cpBuffer);
-                lua_pcall(targetLuaVM, 0, LUA_MULTRET, 0);
-                lua_pushboolean(luaVM, true);
-                return 1;
+                    lua_pushresource(targetLuaVM, pMain->GetResource());
+                    lua_setglobal(targetLuaVM, "sourceLoadstring");
+
+                    luaL_loadstring(targetLuaVM, cpBuffer);
+                    lua_pcall(targetLuaVM, 0, LUA_MULTRET, 0);
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                else
+                {
+                    pResource->AddQueuedLoadString(cpBuffer);
+                    pResource->AddQueuedLoadStringSourceResource(cpBuffer);
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+
+                }
 
             }
         }
