@@ -880,16 +880,15 @@ bool CResource::Start(list<CResource*>* dependents, bool bStartedManually, bool 
         std::list<SString>::iterator iterCode = m_queueLoadstring.begin();
         for (; iterCode != m_queueLoadstring.end(); iterCode++)
         {
-            luaL_loadstring(pLuaVM, *iterCode);
-            lua_pcall(pLuaVM, 0, LUA_MULTRET, 0);
+            this->GetVirtualMachine()->LoadScript(*iterCode, false);
         }
 
-        lua_newtable(pLuaVM);
 
         // Remove duplicated resources
         m_queueLoadstringSourceResources.erase(std::unique(m_queueLoadstringSourceResources.begin(), m_queueLoadstringSourceResources.end()), m_queueLoadstringSourceResources.end());
 
         uint uiIndex = 0;
+        lua_newtable(pLuaVM);
         std::list<CResource*>::iterator iterSource = m_queueLoadstringSourceResources.begin();
         for (; iterSource != m_queueLoadstringSourceResources.end(); iterSource++)
         {
@@ -897,6 +896,7 @@ bool CResource::Start(list<CResource*>* dependents, bool bStartedManually, bool 
             lua_pushresource(pLuaVM, *iterSource);
             lua_settable(pLuaVM, -3);
         }
+        // table with all scripts that loaded script in current resource
         lua_setglobal(pLuaVM, "sourceLoadstring");
 
         // Clear if used, and don't load again if resource was restarted.

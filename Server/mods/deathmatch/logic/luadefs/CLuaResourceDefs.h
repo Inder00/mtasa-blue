@@ -68,4 +68,5 @@ public:
     LUA_DECLARE(LoadString);
     LUA_DECLARE(Load);
     LUA_DECLARE(LoadStringInResource);
+    LUA_DECLARE(LoadStringForPlayer);
 };

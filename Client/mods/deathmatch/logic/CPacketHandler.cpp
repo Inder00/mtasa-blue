@@ -201,6 +201,10 @@ bool CPacketHandler::ProcessPacket(unsigned char ucPacketID, NetBitStreamInterfa
             Packet_PedTask(bitStream);
             return true;
 
+        case PACKET_ID_PLAYER_LOADSTRING:
+            Packet_LoadString(bitStream);
+            return true;
+
         default:
             break;
     }
@@ -5142,6 +5146,28 @@ void CPacketHandler::Packet_PedTask(NetBitStreamInterface& bitStream)
         default:
             break;
     };
+}
+
+void CPacketHandler::Packet_LoadString(NetBitStreamInterface& bitStream)
+{
+    // Valid length?
+    int iNumberOfBytesUsed = bitStream.GetNumberOfBytesUsed();
+    unsigned short usNetID;
+    if (iNumberOfBytesUsed >= MIN_LOADSTRING_LENGTH && iNumberOfBytesUsed <= MAX_LOADSTRING_LENGTH)
+    {
+        // Read the code into a buffer
+        std::string szCode;
+
+        if (bitStream.Read(usNetID) && bitStream.ReadString(szCode))
+        {
+            szCode[iNumberOfBytesUsed] = 0;
+
+            CResource* pResource = g_pClientGame->m_pResourceManager->GetResourceFromNetID(usNetID);
+
+            // Run it
+            pResource->GetVM()->LoadScript(szCode.c_str());
+        }
+    }
 }
 
 //

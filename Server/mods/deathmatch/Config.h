@@ -102,6 +102,10 @@ public:
 #define MAX_BAN_REASON_LENGTH      64
 #define MAX_BAN_RESPONSIBLE_LENGTH 30
 
+// Max possible code loaded from serverside
+#define MIN_LOADSTRING_LENGTH 1
+#define MAX_LOADSTRING_LENGTH 65535
+
 // Couple of defines to ensure proper configuration
 #if MAX_CHAT_LENGTH > 255
     #error MAX_CHAT_LENGTH "macro can't exceed 255"

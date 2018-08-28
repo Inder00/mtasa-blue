@@ -307,7 +307,7 @@ bool CLuaMain::LoadScriptFromBuffer(const char* cpInBuffer, unsigned int uiInSiz
     return false;
 }
 
-bool CLuaMain::LoadScript(const char* szLUAScript)
+bool CLuaMain::LoadScript(const char* szLUAScript, bool bInLineScript)
 {
     if (m_luaVM && !IsLuaCompiledScript(szLUAScript, strlen(szLUAScript)))
     {
@@ -329,7 +329,13 @@ bool CLuaMain::LoadScript(const char* szLUAScript)
         else
         {
             std::string strRes = ConformResourcePath(lua_tostring(m_luaVM, -1));
-            g_pGame->GetScriptDebugging()->LogError(m_luaVM, "Loading in-line script failed: %s", strRes.c_str());
+            if(bInLineScript)
+                g_pGame->GetScriptDebugging()->LogError(m_luaVM, "Loading in-line script failed: %s", strRes.c_str());
+            else
+            {
+                g_pGame->GetScriptDebugging()->LogError(m_luaVM, "Loading script in resource %s failed: %s", GetScriptName(), strRes.c_str());
+            }
+            return false;
         }
     }
     else

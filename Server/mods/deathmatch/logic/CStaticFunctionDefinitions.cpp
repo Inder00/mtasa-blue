@@ -11852,6 +11852,22 @@ bool CStaticFunctionDefinitions::RemoveResourceFile(CResource* pResource, const 
     return false;
 }
 
+bool CStaticFunctionDefinitions::LoadStringForPlayer(const char* szText, unsigned short usNetID, CElement* pElement)
+{
+    assert(pElement);
+    assert(szText);
+    RUN_CHILDREN(LoadStringForPlayer(szText, usNetID, *iter))
+
+        if (IS_PLAYER(pElement))
+        {
+            CPlayer* pPlayer = static_cast<CPlayer*>(pElement);
+            pPlayer->Send(CLoadStringPacket(szText, usNetID));
+            return true;
+        }
+
+    return false;
+}
+
 /** Version functions **/
 unsigned long CStaticFunctionDefinitions::GetVersion()
 {

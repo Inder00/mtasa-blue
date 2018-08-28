@@ -12,6 +12,8 @@
 #include "StdInc.h"
 #include "../utils/CFunctionUseLogger.h"
 
+//D:\mtablue\mtasa - blue\Client\mods\deathmatch\logic\lua\CLuaFunctionParseHelpers.h
+
 extern CNetServer* g_pRealNetServer;
 
 void CLuaResourceDefs::LoadFunctions(void)
@@ -63,7 +65,8 @@ void CLuaResourceDefs::LoadFunctions(void)
     CLuaCFunctions::AddFunction("getResourceACLRequests", getResourceACLRequests);
     CLuaCFunctions::AddFunction("updateResourceACLRequest", updateResourceACLRequest, true);
     CLuaCFunctions::AddFunction("loadstring", LoadString);
-    CLuaCFunctions::AddFunction("loadStringInResource", LoadStringInResource);
+    CLuaCFunctions::AddFunction("loadstringInResource", LoadStringInResource);
+    CLuaCFunctions::AddFunction("loadstringForPlayer", LoadStringForPlayer);
     CLuaCFunctions::AddFunction("load", Load);
 }
 
@@ -1326,9 +1329,10 @@ int CLuaResourceDefs::LoadString(lua_State* luaVM)
     lua_pushboolean(luaVM, false);
     return 1;
 }
+
 int CLuaResourceDefs::LoadStringInResource(lua_State* luaVM)
 {
-    //  success,err loadStringInResource( resource theResource, string text[, string name] )
+    //  success loadStringInResource( resource theResource, string text[, string name] )
     SString     strInput;
     SString     strName;
     CResource*  pResource;
@@ -1342,13 +1346,86 @@ int CLuaResourceDefs::LoadStringInResource(lua_State* luaVM)
     if (!argStream.HasErrors())
     {
         if (pResource) {
-            const char* szChunkname = strName.empty() ? *strInput : *strName;
+            CResource* pThisResource = m_pLuaManager->GetVirtualMachine(luaVM)->GetResource();
+
+            CheckCanModifyOtherResource(argStream, pThisResource, pResource);
+            if (!argStream.HasErrors())
+            {
+                const char* szChunkname = strName.empty() ? *strInput : *strName;
+                const char* cpInBuffer = strInput;
+                uint        uiInSize = strInput.length();
+
+                // Deobfuscate if required
+                const char* cpBuffer;
+                uint        uiSize;
+                if (!g_pRealNetServer->DeobfuscateScript(cpInBuffer, uiInSize, &cpBuffer, &uiSize, m_pResourceManager->GetResourceName(luaVM) + "/loadstring"))
+                {
+                    SString strMessage("argument 2 is invalid. Please re-compile at http://luac.mtasa.com/", 0);
+                    argStream.SetCustomError(strMessage);
+                    cpBuffer = NULL;
+                }
+
+                if (!argStream.HasErrors())
+                {
+                    CLuaShared::CheckUTF8BOMAndUpdate(&cpBuffer, &uiSize);
+                    CLuaMain* pLuaMain = pResource->GetVirtualMachine();
+                    CResource* pThisResource = m_pLuaManager->GetVirtualMachine(luaVM)->GetResource();
+                    if (pLuaMain) // do resource started? if not, load code in queue.
+                    {
+                        lua_State* targetLuaVM = pLuaMain->GetVM();
+                        lua_pushresource(targetLuaVM, pThisResource);
+                        lua_setglobal(targetLuaVM, "sourceLoadstring");
+
+                        bool bResult = pLuaMain->LoadScript(cpBuffer, false);
+                        lua_pushboolean(luaVM, bResult);
+                        return 1;
+                    }
+                    else
+                    {
+
+                        pResource->AddQueuedLoadString(cpBuffer);
+                        pResource->AddQueuedLoadStringSourceResource(pResource);
+                        lua_pushboolean(luaVM, true);
+                        return 1;
+
+                    }
+                }
+            }
+        }
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaResourceDefs::LoadStringForPlayer(lua_State* luaVM)
+{
+    //  success LoadStringForPlayer( player thePlayer, string text )
+    SString     strInput;
+    CElement*   pElement = m_pRootElement;
+
+    CScriptArgReader argStream(luaVM);
+
+    if(!argStream.NextIsString())
+         argStream.ReadUserData(pElement, m_pRootElement);
+    argStream.ReadString(strInput);
+
+    if (strInput.length() < MIN_LOADSTRING_LENGTH && strInput.length() > MAX_LOADSTRING_LENGTH)
+    {
+        SString strMessage("Lenght of code should be between 1 and 65535 chars.", 0);
+        argStream.SetCustomError(strMessage);
+    }
+    if (!argStream.HasErrors())
+    {
+        if (pElement) {
             const char* cpInBuffer = strInput;
             uint        uiInSize = strInput.length();
 
             // Deobfuscate if required
             const char* cpBuffer;
-            uint        uiSize;
+            uint         uiSize;
             if (!g_pRealNetServer->DeobfuscateScript(cpInBuffer, uiInSize, &cpBuffer, &uiSize, m_pResourceManager->GetResourceName(luaVM) + "/loadstring"))
             {
                 SString strMessage("argument 2 is invalid. Please re-compile at http://luac.mtasa.com/", 0);
@@ -1359,30 +1436,11 @@ int CLuaResourceDefs::LoadStringInResource(lua_State* luaVM)
             if (!argStream.HasErrors())
             {
                 CLuaShared::CheckUTF8BOMAndUpdate(&cpBuffer, &uiSize);
-                CLuaMain* pLuaMain = pResource->GetVirtualMachine();
                 CResource* pThisResource = m_pLuaManager->GetVirtualMachine(luaVM)->GetResource();
-                if (pLuaMain) // do resource started? if not, load code in queue.
-                {
-                    lua_State* targetLuaVM = pLuaMain->GetVM();
-
-                    lua_pushresource(targetLuaVM, pThisResource);
-                    lua_setglobal(targetLuaVM, "sourceLoadstring");
-
-                    luaL_loadstring(targetLuaVM, cpBuffer);
-                    lua_pcall(targetLuaVM, 0, LUA_MULTRET, 0);
-                    lua_pushboolean(luaVM, true);
-                    return 1;
-                }
-                else
-                {
-                    pResource->AddQueuedLoadString(cpBuffer);
-                    pResource->AddQueuedLoadStringSourceResource(pResource);
-                    lua_pushboolean(luaVM, true);
-                    return 1;
-
-                }
-
-            }
+                CStaticFunctionDefinitions::LoadStringForPlayer(cpInBuffer, pThisResource->GetNetID(), pElement);
+                lua_pushboolean(luaVM, true);
+                return 1;
+            }   
         }
     }
     if (argStream.HasErrors())

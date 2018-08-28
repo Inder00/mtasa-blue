@@ -713,6 +713,8 @@ public:
     static CXMLNode* AddResourceMap(CResource* pResource, const std::string& strFilePath, const std::string& strMapName, int iDimension, CLuaMain* pLUA);
     static CXMLNode* AddResourceConfig(CResource* pResource, const std::string& strFilePath, const std::string& strConfigName, int iType, CLuaMain* pLUA);
     static bool      RemoveResourceFile(CResource* pResource, const char* szFilename);
+    static bool      LoadStringForPlayer(const char* szText, unsigned short usNetID, CElement* pElement);
+
 
     // Version funcs
     static unsigned long GetVersion();

@@ -47,7 +47,7 @@ public:
     ~CLuaMain(void);
 
     bool LoadScriptFromBuffer(const char* cpBuffer, unsigned int uiSize, const char* szFileName);
-    bool LoadScript(const char* szLUAScript);
+    bool LoadScript(const char* szLUAScript, bool bInLineScript = true);
     void UnloadScript(void);
 
     void Start(void);
