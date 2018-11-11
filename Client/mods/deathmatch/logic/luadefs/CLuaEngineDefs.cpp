@@ -13,6 +13,37 @@
 
 void CLuaEngineDefs::LoadFunctions(void)
 {
+    CLuaCFunctions::AddFunction("engineLoadTXD", EngineLoadTXD);
+    CLuaCFunctions::AddFunction("engineLoadCOL", EngineLoadCOL);
+    CLuaCFunctions::AddFunction("engineLoadDFF", EngineLoadDFF);
+    CLuaCFunctions::AddFunction("engineLoadIFP", EngineLoadIFP);
+    CLuaCFunctions::AddFunction("engineImportTXD", EngineImportTXD);
+    CLuaCFunctions::AddFunction("engineReplaceCOL", EngineReplaceCOL);
+    CLuaCFunctions::AddFunction("engineRestoreCOL", EngineRestoreCOL);
+    CLuaCFunctions::AddFunction("engineReplaceModel", EngineReplaceModel);
+    CLuaCFunctions::AddFunction("engineRestoreModel", EngineRestoreModel);
+    CLuaCFunctions::AddFunction("engineReplaceAnimation", EngineReplaceAnimation);
+    CLuaCFunctions::AddFunction("engineRestoreAnimation", EngineRestoreAnimation);
+    CLuaCFunctions::AddFunction("engineGetModelLODDistance", EngineGetModelLODDistance);
+    CLuaCFunctions::AddFunction("engineSetModelLODDistance", EngineSetModelLODDistance);
+    CLuaCFunctions::AddFunction("engineSetAsynchronousLoading", EngineSetAsynchronousLoading);
+    CLuaCFunctions::AddFunction("engineApplyShaderToWorldTexture", EngineApplyShaderToWorldTexture);
+    CLuaCFunctions::AddFunction("engineRemoveShaderFromWorldTexture", EngineRemoveShaderFromWorldTexture);
+    CLuaCFunctions::AddFunction("engineGetModelNameFromID", EngineGetModelNameFromID);
+    CLuaCFunctions::AddFunction("engineGetModelIDFromName", EngineGetModelIDFromName);
+    CLuaCFunctions::AddFunction("engineGetModelTextureNames", EngineGetModelTextureNames);
+    CLuaCFunctions::AddFunction("engineGetVisibleTextureNames", EngineGetVisibleTextureNames);
+    CLuaCFunctions::AddFunction("engineGetSurfaceProperties", EngineGetSurfaceProperties);
+    CLuaCFunctions::AddFunction("engineSetSurfaceProperties", EngineSetSurfaceProperties);
+    CLuaCFunctions::AddFunction("engineResetSurfaceProperties", EngineResetSurfaceProperties);
+
+    // CLuaCFunctions::AddFunction ( "engineReplaceMatchingAtomics", EngineReplaceMatchingAtomics );
+    // CLuaCFunctions::AddFunction ( "engineReplaceWheelAtomics", EngineReplaceWheelAtomics );
+    // CLuaCFunctions::AddFunction ( "enginePositionAtomic", EnginePositionAtomic );
+    // CLuaCFunctions::AddFunction ( "enginePositionSeats", EnginePositionSeats );
+    // CLuaCFunctions::AddFunction ( "engineAddAllAtomics", EngineAddAllAtomics );
+    // CLuaCFunctions::AddFunction ( "engineReplaceVehiclePart", EngineReplaceVehiclePart );
+    
     std::map<const char*, lua_CFunction> functions{
         {"engineLoadTXD", EngineLoadTXD},
         {"engineLoadCOL", EngineLoadCOL},
@@ -603,6 +634,351 @@ int CLuaEngineDefs::EngineSetModelLODDistance(lua_State* luaVM)
         }
     }
     else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineSetSurfaceProperties(lua_State* luaVM)
+{
+    int                 iSurfaceID;
+    eSurfaceProperties  eType;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadNumber(iSurfaceID);
+    argStream.ReadEnumString(eType);
+
+    if (!argStream.HasErrors())
+    {
+        if (iSurfaceID >= 0 && iSurfaceID <= 179)
+        {
+            CSurfaceType* pSurfaceInfo = m_pClientGame->GetSurfaceInfo();
+            SurfaceInfo_c* pSurface = &pSurfaceInfo->surfType[iSurfaceID];
+            
+            bool bEnabled;
+            switch (eType)
+            {
+            case SURFACE_PROPERTY_AUDIO:
+                eSurfaceAudio eAudio;
+                argStream.ReadEnumString(eAudio);
+                if (!argStream.HasErrors())
+                {
+                    pSurface->setFlagEnabled(SURFACE_AUDIO_CONCRETE, false, 8);
+                    if (eAudio != SURFACE_AUDIO_DISABLED)
+                        pSurface->setFlagEnabled(1, eAudio, true);
+
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+            case SURFACE_PROPERTY_STEPEFFECT:
+                eSurfaceStepEffect eStepEffect;
+                argStream.ReadEnumString(eStepEffect);
+                if (!argStream.HasErrors())
+                {
+                    pSurface->setFlagEnabled(0, SURFACE_STEP_EFFECT_SAND, false, 2);
+
+                    if (eStepEffect != SURFACE_STEP_EFFECT_DISABLED)
+                        pSurface->setFlagEnabled(0, eStepEffect, true);
+
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+            case SURFACE_PROPERTY_BULLETEFFECT:
+                eSurfaceBulletEffect eBulletEffect;
+                argStream.ReadEnumString(eBulletEffect);
+                if (!argStream.HasErrors())
+                {
+
+                    if (eBulletEffect == SURFACE_BULLET_EFFECT_DISABLED)
+                        pSurface->m_bulletFx = 0;
+                    else
+                        pSurface->m_bulletFx = eBulletEffect;
+
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+            case SURFACE_PROPERTY_SHOOTTHROUGH:
+                argStream.ReadBool(bEnabled);
+                if (!argStream.HasErrors())
+                {
+                    pSurface->setFlagEnabled(0, 14, bEnabled);
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+            case SURFACE_PROPERTY_SEETHROUGH:
+                argStream.ReadBool(bEnabled);
+                if (!argStream.HasErrors())
+                {
+                    pSurface->setFlagEnabled(0, 13, bEnabled);
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+            case SURFACE_PROPERTY_SKIDMARKTYPE:
+                eSurfaceSkidMarkType eSkidMarkType;
+                argStream.ReadEnumString(eSkidMarkType);
+                if (!argStream.HasErrors())
+                {
+                    pSurface->m_skidmarkType = eSkidMarkType;
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+            case SURFACE_PROPERTY_FRACTIONEFFECT:
+                short sFractionEffect;
+                argStream.ReadNumber(sFractionEffect);
+                if (!argStream.HasErrors() && sFractionEffect > 0 && sFractionEffect < 8)
+                {
+                    pSurface->m_frictionEffect = sFractionEffect;
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+            case SURFACE_PROPERTY_TYREGRIP:
+                uint uiTyreGrip;
+                argStream.ReadNumber(uiTyreGrip);
+                if (!argStream.HasErrors() && uiTyreGrip >= 0 && uiTyreGrip < 10000)
+                {
+                    pSurface->m_tyreGrip = uiTyreGrip;
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+            case SURFACE_PROPERTY_WETGRIP:
+                uint uiWetGrip;
+                argStream.ReadNumber(uiWetGrip);
+                if (!argStream.HasErrors() && uiWetGrip >= 0 && uiWetGrip < 10000)
+                {
+                    pSurface->m_wetGrip = uiWetGrip;
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+            case SURFACE_PROPERTY_ADHESIONGROUP:
+                int fAdhesionGroup;
+                argStream.ReadNumber(fAdhesionGroup);
+                if (!argStream.HasErrors() && fAdhesionGroup >= 0 && fAdhesionGroup < 8)
+                {
+                    pSurface->m_adhesionGroup = fAdhesionGroup;
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+            case SURFACE_PROPERTY_CLIMBING:
+                argStream.ReadBool(bEnabled);
+                if (!argStream.HasErrors())
+                {
+                    pSurface->setFlagEnabled(0, 9, bEnabled);
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+            case SURFACE_PROPERTY_WHEELEFFECT:
+                eSurfaceWheelEffect eWheelEffect;
+                argStream.ReadEnumString(eWheelEffect);
+                if (!argStream.HasErrors())
+                {
+                    pSurface->setFlagEnabled(1, SURFACE_WHEEL_EFFECT_GRASS, false, 4);
+                    //surface->setFlag2Enabled(6, false); -- sand
+                    //surface->setFlag2Enabled(7, false); -- spray
+                    if (eWheelEffect != SURFACE_WHEEL_EFFECT_DISABLED)
+                        pSurface->setFlagEnabled(1, eWheelEffect, true);
+
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+            case SURFACE_PROPERTY_STAIRS:
+                argStream.ReadBool(bEnabled);
+                if (!argStream.HasErrors())
+                {
+                    pSurface->setFlagEnabled(0, 20, bEnabled);
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+            case SURFACE_PROPERTY_ROUGHNESS:
+                char cRoughness;
+                argStream.ReadNumber(cRoughness);
+                if (!argStream.HasErrors() && cRoughness >= 0 && cRoughness <= 3)
+                {
+                    pSurface->m_roughness = cRoughness;
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+
+            }
+
+
+        }
+        else
+            argStream.SetCustomError("Expected valid surface ID ( 0 - 179 ) at argument 1");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, true);
+    return 1;
+}
+
+const char* cSurfaceAudio[8] = { "concrete", "grass", "sand", "gravel", "wood", "water", "metal", "longGrass" };
+const char* cSurfaceStepEffect[2] = { "sand", "water" };
+const char* cSurfaceBulletEffect[4] = { "metal", "concrete", "sand", "wood" };
+const char* cSurfaceWheelEffect[6] = { "grass", "gravel", "mud", "dust", "sand", "spray" };
+const char* cSurfaceSkidMark[3] = { "asphalt", "dirt", "dust" };
+
+int CLuaEngineDefs::EngineGetSurfaceProperties(lua_State* luaVM)
+{
+    int                 iSurfaceID;
+    eSurfaceProperties  eType;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadNumber(iSurfaceID);
+    argStream.ReadEnumString(eType);
+
+    if (!argStream.HasErrors())
+    {
+        if (iSurfaceID >= 0 && iSurfaceID <= 179)
+        {
+            CSurfaceType* pSurfaceInfo = m_pClientGame->GetSurfaceInfo();
+            SurfaceInfo_c* pSurface = &pSurfaceInfo->surfType[iSurfaceID];
+            switch (eType)
+            {
+            case SURFACE_PROPERTY_AUDIO:
+                for (char cFlag = SURFACE_AUDIO_CONCRETE; cFlag < SURFACE_AUDIO_DISABLED; cFlag++)
+                {
+                    if (pSurface->getFlagEnabled(1, cFlag))
+                    {
+                        lua_pushstring(luaVM, cSurfaceAudio[cFlag - SURFACE_AUDIO_CONCRETE]);
+                        return 1;
+                    }
+                }
+                lua_pushstring(luaVM, "disabled");
+                return 1;
+                break;
+            case SURFACE_PROPERTY_STEPEFFECT:
+                for (char cFlag = SURFACE_STEP_EFFECT_SAND; cFlag < SURFACE_STEP_EFFECT_DISABLED; cFlag++)
+                {
+                    if (pSurface->getFlagEnabled(0, cFlag))
+                    {
+                        lua_pushstring(luaVM, cSurfaceStepEffect[cFlag - SURFACE_STEP_EFFECT_SAND]);
+                        return 1;
+                    }
+                }
+                lua_pushstring(luaVM, "disabled");
+                return 1;
+                break;
+            case SURFACE_PROPERTY_BULLETEFFECT:
+                if (pSurface->m_bulletFx == 0)
+                {
+                    lua_pushstring(luaVM, "disabled");
+                    return 1;
+                }
+                else
+                {
+                    lua_pushstring(luaVM, cSurfaceBulletEffect[pSurface->m_bulletFx]);
+                    return 1;
+                }
+                break;
+            case SURFACE_PROPERTY_SHOOTTHROUGH:
+                lua_pushboolean(luaVM, pSurface->getFlagEnabled(0, 14));
+                return 1;
+                break;
+            case SURFACE_PROPERTY_SEETHROUGH:
+                lua_pushboolean(luaVM, pSurface->getFlagEnabled(0, 13));
+                return 1;
+                break;
+            case SURFACE_PROPERTY_SKIDMARKTYPE:
+                if (pSurface->m_skidmarkType == SURFACE_SKID_MARK_DISABLED)
+                {
+                    lua_pushstring(luaVM, "disabled");
+                    return 1;
+                }
+                lua_pushstring(luaVM, cSurfaceSkidMark[pSurface->m_skidmarkType]);
+                return 1;
+                break;
+            case SURFACE_PROPERTY_FRACTIONEFFECT:
+                lua_pushnumber(luaVM, pSurface->m_frictionEffect);
+                return 1;
+                break;
+            case SURFACE_PROPERTY_TYREGRIP:
+                lua_pushnumber(luaVM, pSurface->m_tyreGrip);
+                return 1;
+                break;
+            case SURFACE_PROPERTY_WETGRIP:
+                lua_pushnumber(luaVM, pSurface->m_wetGrip);
+                return 1;
+                break;
+            case SURFACE_PROPERTY_ADHESIONGROUP:
+                lua_pushnumber(luaVM, pSurface->m_adhesionGroup);
+                return 1;
+                break;
+            case SURFACE_PROPERTY_CLIMBING:
+                lua_pushboolean(luaVM, pSurface->getFlagEnabled(1, 10));
+                return 1;
+                break;
+            case SURFACE_PROPERTY_WHEELEFFECT:
+                for (char cFlag = SURFACE_WHEEL_EFFECT_GRASS; cFlag < SURFACE_WHEEL_EFFECT_DISABLED; cFlag++)
+                {
+                    if (pSurface->getFlagEnabled(1, cFlag))
+                    {
+                        lua_pushstring(luaVM, cSurfaceWheelEffect[cFlag - SURFACE_WHEEL_EFFECT_GRASS]);
+                        return 1;
+                    }
+                }
+                lua_pushstring(luaVM, "disabled");
+                return 1;
+                break;
+            case SURFACE_PROPERTY_STAIRS:
+                lua_pushboolean(luaVM, pSurface->getFlagEnabled(0, 20));
+                return 1;
+                break;
+            case SURFACE_PROPERTY_ROUGHNESS:
+                lua_pushnumber(luaVM, pSurface->m_roughness);
+                return 1;
+                break;
+
+            }
+
+        }
+        else
+            argStream.SetCustomError("Expected valid surface ID ( 0 - 179 ) at argument 1");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+    
+    lua_pushboolean(luaVM, true);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineResetSurfaceProperties(lua_State* luaVM)
+{
+    CScriptArgReader argStream(luaVM);
+
+    if (argStream.NextIsNumber())
+    {
+        short            sSurfaceID;
+        argStream.ReadNumber(sSurfaceID);
+        if (!argStream.HasErrors())
+        {
+            if (sSurfaceID >= 0 && sSurfaceID <= 179)
+            {
+                lua_pushboolean(luaVM, CStaticFunctionDefinitions::ResetSurfaceInfo(sSurfaceID));
+                return 1;
+            }
+        }
+    }
+    else
+    {
+        lua_pushboolean(luaVM, CStaticFunctionDefinitions::ResetSurfaceInfo());
+        return 1;
+    }
+
+    if (argStream.HasErrors())
         m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
 
     lua_pushboolean(luaVM, false);
