@@ -928,91 +928,105 @@ int CLuaEngineDefs::EngineGetVisibleTextureNames(lua_State* luaVM)
 
 int CLuaEngineDefs::EngineGetModelCollisionProperties(lua_State* luaVM)
 {
-    ushort usModel;
+    CClientColModel* pCol = NULL;
+    unsigned short   usModel = 0;
     CScriptArgReader argStream(luaVM);
-    argStream.ReadNumber(usModel);
+    // Grab the COL or model ID
+    // If COL element then read custom collision, otherwise read original collision
+    if( argStream.NextIsNumber())
+        argStream.ReadNumber(usModel);
+    else
+        argStream.ReadUserData(pCol);
 
     if (!argStream.HasErrors())
     {
-        if (CClientObjectManager::IsValidModel(usModel))
+        CColModelSAInterface* pColModelSAInterface;
+        if (pCol)
         {
-            CBaseModelInfoSAInterface* pModelInfo = ppModelInfo[usModel];
-            if (pModelInfo != nullptr)
+            pColModelSAInterface = pCol->GetColModelInterface();
+        }
+        else
+        {
+            if(CClientObjectManager::IsValidModel(usModel))
             {
-                CColModelSAInterface* pCol = pModelInfo->pColModel;
-                if (pCol)
+                CBaseModelInfoSAInterface* pModelInfo = ppModelInfo[usModel];
+                if (pModelInfo)
                 {
-                    lua_newtable(luaVM);
-                    lua_pushstring(luaVM, "boundingBox");
-                    lua_newtable(luaVM);
-                    lua_pushstring(luaVM, "vecMin");
-                    lua_newtable(luaVM);
-                    lua_pushnumber(luaVM, 1);
-                    lua_pushnumber(luaVM, pCol->boundingBox.vecMin.fX);
-                    lua_settable(luaVM, -3);
-                    lua_pushnumber(luaVM, 2);
-                    lua_pushnumber(luaVM, pCol->boundingBox.vecMin.fY);
-                    lua_settable(luaVM, -3);
-                    lua_pushnumber(luaVM, 3);
-                    lua_pushnumber(luaVM, pCol->boundingBox.vecMin.fZ);
-                    lua_settable(luaVM, -3);
-                    lua_settable(luaVM, -3);
-
-                    lua_pushstring(luaVM, "vecMax");
-                    lua_newtable(luaVM);
-                    lua_pushnumber(luaVM, 1);
-                    lua_pushnumber(luaVM, pCol->boundingBox.vecMax.fX);
-                    lua_settable(luaVM, -3);
-                    lua_pushnumber(luaVM, 2);
-                    lua_pushnumber(luaVM, pCol->boundingBox.vecMax.fY);
-                    lua_settable(luaVM, -3);
-                    lua_pushnumber(luaVM, 3);
-                    lua_pushnumber(luaVM, pCol->boundingBox.vecMax.fZ);
-                    lua_settable(luaVM, -3);
-                    lua_settable(luaVM, -3);
-                    lua_pushstring(luaVM, "vecOffset");
-                    lua_newtable(luaVM);
-                    lua_pushnumber(luaVM, 1);
-                    lua_pushnumber(luaVM, pCol->boundingBox.vecOffset.fX);
-                    lua_settable(luaVM, -3);
-                    lua_pushnumber(luaVM, 2);
-                    lua_pushnumber(luaVM, pCol->boundingBox.vecOffset.fY);
-                    lua_settable(luaVM, -3);
-                    lua_pushnumber(luaVM, 3);
-                    lua_pushnumber(luaVM, pCol->boundingBox.vecOffset.fZ);
-                    lua_settable(luaVM, -3);
-                    lua_settable(luaVM, -3);
-                    lua_pushstring(luaVM, "radius");
-                    lua_pushnumber(luaVM, pCol->boundingBox.fRadius);
-                    lua_settable(luaVM, -3);
-
-                    CColDataSA* pColData = pCol->pColData;
-                    if (pColData != nullptr)
-                    {
-                        lua_settable(luaVM, -3);
-                        lua_pushstring(luaVM, "colBoxes");
-                        lua_pushnumber(luaVM, pColData->numColBoxes);
-                        lua_settable(luaVM, -3);
-                        lua_pushstring(luaVM, "colSpheres");
-                        lua_pushnumber(luaVM, pColData->numColSpheres);
-                        lua_settable(luaVM, -3);
-                        lua_pushstring(luaVM, "colTriangles");
-                        lua_pushnumber(luaVM, pColData->numColTriangles);
-                        lua_settable(luaVM, -3);
-                        lua_pushstring(luaVM, "colVertices");
-                        lua_pushnumber(luaVM, pColData->getNumVertices());
-                        lua_settable(luaVM, -3);
-                        lua_pushstring(luaVM, "shadowTriangles");
-                        lua_pushnumber(luaVM, pColData->m_nNumShadowTriangles);
-                        lua_settable(luaVM, -3);
-                        lua_pushstring(luaVM, "shadowVertices");
-                        lua_pushnumber(luaVM, pColData->m_nNumShadowVertices);
-                        lua_settable(luaVM, -3);
-                    }
-
-                    return 1;
+                    pColModelSAInterface = pModelInfo->pColModel;
                 }
             }
+        }
+        if (pColModelSAInterface)
+        {
+            lua_newtable(luaVM);
+            lua_pushstring(luaVM, "boundingBox");
+            lua_newtable(luaVM);
+            lua_pushstring(luaVM, "vecMin");
+            lua_newtable(luaVM);
+            lua_pushnumber(luaVM, 1);
+            lua_pushnumber(luaVM, pColModelSAInterface->boundingBox.vecMin.fX);
+            lua_settable(luaVM, -3);
+            lua_pushnumber(luaVM, 2);
+            lua_pushnumber(luaVM, pColModelSAInterface->boundingBox.vecMin.fY);
+            lua_settable(luaVM, -3);
+            lua_pushnumber(luaVM, 3);
+            lua_pushnumber(luaVM, pColModelSAInterface->boundingBox.vecMin.fZ);
+            lua_settable(luaVM, -3);
+            lua_settable(luaVM, -3);
+
+            lua_pushstring(luaVM, "vecMax");
+            lua_newtable(luaVM);
+            lua_pushnumber(luaVM, 1);
+            lua_pushnumber(luaVM, pColModelSAInterface->boundingBox.vecMax.fX);
+            lua_settable(luaVM, -3);
+            lua_pushnumber(luaVM, 2);
+            lua_pushnumber(luaVM, pColModelSAInterface->boundingBox.vecMax.fY);
+            lua_settable(luaVM, -3);
+            lua_pushnumber(luaVM, 3);
+            lua_pushnumber(luaVM, pColModelSAInterface->boundingBox.vecMax.fZ);
+            lua_settable(luaVM, -3);
+            lua_settable(luaVM, -3);
+            lua_pushstring(luaVM, "vecOffset");
+            lua_newtable(luaVM);
+            lua_pushnumber(luaVM, 1);
+            lua_pushnumber(luaVM, pColModelSAInterface->boundingBox.vecOffset.fX);
+            lua_settable(luaVM, -3);
+            lua_pushnumber(luaVM, 2);
+            lua_pushnumber(luaVM, pColModelSAInterface->boundingBox.vecOffset.fY);
+            lua_settable(luaVM, -3);
+            lua_pushnumber(luaVM, 3);
+            lua_pushnumber(luaVM, pColModelSAInterface->boundingBox.vecOffset.fZ);
+            lua_settable(luaVM, -3);
+            lua_settable(luaVM, -3);
+            lua_pushstring(luaVM, "radius");
+            lua_pushnumber(luaVM, pColModelSAInterface->boundingBox.fRadius);
+            lua_settable(luaVM, -3);
+
+            CColDataSA* pColData = pColModelSAInterface->pColData;
+            if (pColData != nullptr)
+            {
+                lua_settable(luaVM, -3);
+                lua_pushstring(luaVM, "colBoxes");
+                lua_pushnumber(luaVM, pColData->numColBoxes);
+                lua_settable(luaVM, -3);
+                lua_pushstring(luaVM, "colSpheres");
+                lua_pushnumber(luaVM, pColData->numColSpheres);
+                lua_settable(luaVM, -3);
+                lua_pushstring(luaVM, "colTriangles");
+                lua_pushnumber(luaVM, pColData->numColTriangles);
+                lua_settable(luaVM, -3);
+                lua_pushstring(luaVM, "colVertices");
+                lua_pushnumber(luaVM, pColData->getNumVertices());
+                lua_settable(luaVM, -3);
+                lua_pushstring(luaVM, "shadowTriangles");
+                lua_pushnumber(luaVM, pColData->m_nNumShadowTriangles);
+                lua_settable(luaVM, -3);
+                lua_pushstring(luaVM, "shadowVertices");
+                lua_pushnumber(luaVM, pColData->m_nNumShadowVertices);
+                lua_settable(luaVM, -3);
+            }
+
+            return 1;
         }
     }
     if (argStream.HasErrors())

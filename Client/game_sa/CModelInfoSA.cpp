@@ -1020,6 +1020,29 @@ void CModelInfoSA::RestoreOriginalModel(void)
     m_pCustomClump = NULL;
 }
 
+CColModelSAInterface* CModelInfoSA::GetColModel(DWORD dwModelID, bool bOriginal)
+{
+    // Are we loaded?
+    m_pInterface = ppModelInfo[m_dwModelID];
+    if (m_pInterface)
+    {
+        if (m_pOriginalColModelInterface)
+        {
+            if (bOriginal)
+            {
+                return m_pOriginalColModelInterface;
+            }
+            else
+            {
+                if (m_pCustomColModel)
+                {
+                    return m_pCustomColModel->GetInterface();
+                }
+            }
+        }
+    }
+    return false;
+}
 void CModelInfoSA::SetColModel(CColModel* pColModel)
 {
     // Grab the interfaces

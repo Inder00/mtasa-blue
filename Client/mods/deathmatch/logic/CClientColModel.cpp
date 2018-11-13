@@ -148,3 +148,12 @@ bool CClientColModel::IsCOLData(const SString& strData)
 {
     return strData.length() > 32 && memcmp(strData, "COL", 3) == 0 && strData[7] == 0;
 }
+
+CColModelSAInterface* CClientColModel::GetColModelInterface()
+{
+    if (m_pColModel)
+    {
+        return m_pColModel->GetInterface();
+    }
+    return nullptr;
+}

@@ -32,6 +32,8 @@ public:
     bool        HasReplaced(unsigned short usModel);
     static bool IsCOLData(const SString& strData);
 
+    CColModelSAInterface* GetColModelInterface();
+
     // Sorta a hack that these are required by CClientEntity...
     void Unlink(void){};
     void GetPosition(CVector& vecPosition) const {};

@@ -360,6 +360,7 @@ public:
     void SetCustomModel(RpClump* pClump);
     void RestoreOriginalModel(void);
     void SetColModel(CColModel* pColModel);
+    CColModelSAInterface* GetColModel(DWORD dwModelID, bool bOriginal = false);
     void RestoreColModel(void);
     void MakeCustomModel(void);
 
