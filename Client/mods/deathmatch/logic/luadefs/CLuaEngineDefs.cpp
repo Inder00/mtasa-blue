@@ -45,7 +45,6 @@ void CLuaEngineDefs::LoadFunctions(void)
         {"engineModelCollisionCreate", EngineModelCollisionCreate },
         {"engineModelCollisionRemove", EngineModelCollisionRemove },
         {"isModelCollisionLoaded", IsModelCollisionLoaded },
-        {"engineRestoreOriginalCollisions", EngineRestoreOriginalCollisions },
 
         // CLuaCFunctions::AddFunction ( "engineReplaceMatchingAtomics", EngineReplaceMatchingAtomics );
         // CLuaCFunctions::AddFunction ( "engineReplaceWheelAtomics", EngineReplaceWheelAtomics );
@@ -926,6 +925,23 @@ int CLuaEngineDefs::EngineGetVisibleTextureNames(lua_State* luaVM)
     return 1;
 }
 
+CColModelSAInterface* GetModelCollisionInterface(ushort usModel)
+{
+    if (CClientObjectManager::IsValidModel(usModel))
+    {
+        CBaseModelInfoSAInterface* pModelInfo = ppModelInfo[usModel];
+        if (pModelInfo != nullptr)
+        {
+            CColModelSAInterface* pColModelInterface = pModelInfo->pColModel;
+            if (pColModelInterface)
+            {
+                return pColModelInterface;
+            }
+        }
+    }
+    return false;
+}
+
 int CLuaEngineDefs::EngineGetModelCollisionProperties(lua_State* luaVM)
 {
     CClientColModel* pCol = NULL;
@@ -942,20 +958,10 @@ int CLuaEngineDefs::EngineGetModelCollisionProperties(lua_State* luaVM)
     {
         CColModelSAInterface* pColModelSAInterface;
         if (pCol)
-        {
             pColModelSAInterface = pCol->GetColModelInterface();
-        }
         else
-        {
-            if(CClientObjectManager::IsValidModel(usModel))
-            {
-                CBaseModelInfoSAInterface* pModelInfo = ppModelInfo[usModel];
-                if (pModelInfo)
-                {
-                    pColModelSAInterface = pModelInfo->pColModel;
-                }
-            }
-        }
+            pColModelSAInterface = GetModelCollisionInterface(usModel);
+
         if (pColModelSAInterface)
         {
             lua_newtable(luaVM);
@@ -1036,22 +1042,6 @@ int CLuaEngineDefs::EngineGetModelCollisionProperties(lua_State* luaVM)
     return 1;
 }
 
-bool GetModelCollisionInterface(ushort usModel, CColModelSAInterface* &pColModelInterface)
-{
-    if (CClientObjectManager::IsValidModel(usModel))
-    {
-        CBaseModelInfoSAInterface* pModelInfo = ppModelInfo[usModel];
-        if (pModelInfo != nullptr)
-        {
-            pColModelInterface = pModelInfo->pColModel;
-            if (pColModelInterface)
-            {
-                return true;
-            }
-        }
-    }
-    return false;
-}
 void VectorAlign(CVector& destMin, CVector& destMax, CVector& src)
 {
     if (src.fX < destMax.fX)
@@ -1078,42 +1068,13 @@ bool checkVector(CVector& vec, float fRadius = 0)
     }
     else
     {
-        return (128 > vec.fX > -128 && 128 > vec.fY > -128 && 128 > vec.fZ > -128);
+        return (128 > vec.fX && vec.fX > -128 && 128 > vec.fY && vec.fY > -128 && 128 > vec.fZ && vec.fZ > -128);
     }
 }
 
-//CColStore::RemoveAllCollision(void).text	00410E00	00000060	00000004	00000000	R	.	.	.	.	.	.
-//CStreaming::RemoveModel(int)	.text	004089A0	000002C4	00000004	00000004	R	.	.	.	.	T	.
-
-typedef void(__cdecl * hRemoveAllCollision) (void);
-auto cRemoveAllCollision = (hRemoveAllCollision)0x410E00;
-typedef void(__cdecl * hRemoveModel) (int index); // index from 0 to 254 + 25000 ( 25000 - 25255 are collisions )
-auto cRemoveModel = (hRemoveModel)0x4089A0;
-
-struct CLASS_CColModelPoolStruct {
-    int m_pObjects;
-    int m_byteMap;
-    int m_nSize;
-    int top;
-    char m_bOwnsAllocations;
-    char bLocked;
-    char _pad[2];
-};
-
-int CLuaEngineDefs::EngineRestoreOriginalCollisions(lua_State* luaVM)
+bool compareVector(CVector& vecMin, CVector& vecMax)
 {
-    CScriptArgReader argStream(luaVM);
-    if (!argStream.HasErrors())
-    {
-        cRemoveAllCollision();
-        lua_pushboolean(luaVM, true);
-        return 1;
-    }
-    if (argStream.HasErrors())
-        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
-
-    lua_pushboolean(luaVM, false);
-    return 1;
+    return vecMax.fX >= vecMin.fX && vecMax.fY >= vecMin.fY && vecMax.fZ >= vecMin.fZ;
 }
 
 int CLuaEngineDefs::IsModelCollisionLoaded(lua_State* luaVM)
@@ -1123,8 +1084,7 @@ int CLuaEngineDefs::IsModelCollisionLoaded(lua_State* luaVM)
     argStream.ReadNumber(usModel);
     if (!argStream.HasErrors())
     {
-        CColModelSAInterface* pCol;
-        lua_pushboolean(luaVM, GetModelCollisionInterface(usModel, pCol));
+        lua_pushboolean(luaVM, GetModelCollisionInterface(usModel) != nullptr);
         return 1;
     }
     if (argStream.HasErrors())
@@ -1136,18 +1096,32 @@ int CLuaEngineDefs::IsModelCollisionLoaded(lua_State* luaVM)
 
 int CLuaEngineDefs::EngineGetModelCollisionData(lua_State* luaVM)
 {
-    ushort usModel, usIndex;
-    eCollisionShapes eCollisionShape;
+    CClientColModel* pCol = NULL;
+    unsigned short   usModel = 0;
     CScriptArgReader argStream(luaVM);
-    argStream.ReadNumber(usModel);
-    argStream.ReadEnumString(eCollisionShape);
-    argStream.ReadNumber(usIndex, 0);
+    // Grab the COL or model ID
+    // If COL element then read custom collision, otherwise read original collision
+    if (argStream.NextIsNumber())
+        argStream.ReadNumber(usModel);
+    else
+        argStream.ReadUserData(pCol);
+
     if (!argStream.HasErrors())
     {
-        CColModelSAInterface* pCol;
-        if (GetModelCollisionInterface(usModel, pCol))
+        CColModelSAInterface* pColModelSAInterface;
+        if (pCol)
+            pColModelSAInterface = pCol->GetColModelInterface();
+        else
+            pColModelSAInterface = GetModelCollisionInterface(usModel);
+
+        if (pColModelSAInterface)
         {
-            CColDataSA* pColData = pCol->pColData;
+
+            ushort usIndex;
+            eCollisionShapes eCollisionShape;
+            argStream.ReadEnumString(eCollisionShape);
+            argStream.ReadNumber(usIndex, 0);
+            CColDataSA* pColData = pColModelSAInterface->pColData;
             if (pColData)
             {
                 switch (eCollisionShape)
@@ -1418,18 +1392,22 @@ int CLuaEngineDefs::EngineGetModelCollisionData(lua_State* luaVM)
 
 int CLuaEngineDefs::EngineUpdateModelCollisionBoundingBox(lua_State* luaVM)
 {
-    ushort usModel;
+    CClientColModel* pCol = NULL;
+    CVector vecCenter;
     CScriptArgReader argStream(luaVM);
-    CVector center;
-    argStream.ReadNumber(usModel);
-    argStream.ReadVector3D(center, CVector(0,0,0));
+    argStream.ReadUserData(pCol);
+    argStream.ReadVector3D(vecCenter, CVector(0, 0, 0));
+
     if (!argStream.HasErrors())
     {
-        CColModelSAInterface* pCol;
-        if (GetModelCollisionInterface(usModel, pCol))
+        CColModelSAInterface* pColModelSAInterface;
+        if (pCol)
+            pColModelSAInterface = pCol->GetColModelInterface();
+
+        if (pColModelSAInterface)
         {
-            CColDataSA* pColData = pCol->pColData;
-            CBoundingBoxSA* pBoundingBox = &pCol->boundingBox;
+            CColDataSA* pColData = pColModelSAInterface->pColData;
+            CBoundingBoxSA* pBoundingBox = &pColModelSAInterface->boundingBox;
             float fRadius = 0;
             CVector minVec(0, 0, 0);
             CVector maxVec(0, 0, 0);
@@ -1443,7 +1421,7 @@ int CLuaEngineDefs::EngineUpdateModelCollisionBoundingBox(lua_State* luaVM)
                 pBox = pColData->pColBoxes[i];
                 pBoxMaxVec = pBox.max;
                 pBoxMinVec = pBox.min;
-                fDis = DistanceBetweenPoints3D(pBoxMaxVec, center);
+                fDis = DistanceBetweenPoints3D(pBoxMaxVec, vecCenter);
                 if (fDis > fRadius)
                 {
                     fRadius = fDis;
@@ -1461,7 +1439,7 @@ int CLuaEngineDefs::EngineUpdateModelCollisionBoundingBox(lua_State* luaVM)
                 pBoxMaxVec.fY += pSphere.fRadius;
                 pBoxMaxVec.fZ += pSphere.fRadius;
                 VectorAlign(maxVec, minVec, pBoxMaxVec);
-                fDis = DistanceBetweenPoints3D(pBoxMaxVec, center);
+                fDis = DistanceBetweenPoints3D(pBoxMaxVec, vecCenter);
                 if (fDis > fRadius)
                 {
                     fRadius = fDis;
@@ -1470,7 +1448,7 @@ int CLuaEngineDefs::EngineUpdateModelCollisionBoundingBox(lua_State* luaVM)
                 pBoxMaxVec.fY -= pSphere.fRadius * 2;
                 pBoxMaxVec.fZ -= pSphere.fRadius * 2;
                 VectorAlign(maxVec, minVec, pBoxMaxVec);
-                fDis = DistanceBetweenPoints3D(pBoxMaxVec, center);
+                fDis = DistanceBetweenPoints3D(pBoxMaxVec, vecCenter);
                 if (fDis > fRadius)
                 {
                     fRadius = fDis;
@@ -1483,14 +1461,14 @@ int CLuaEngineDefs::EngineUpdateModelCollisionBoundingBox(lua_State* luaVM)
             {
                 pBoxMaxVec = it->second.getVector();
                 VectorAlign(maxVec, minVec, pBoxMaxVec);
-                fDis = DistanceBetweenPoints3D(pBoxMaxVec, center);
+                fDis = DistanceBetweenPoints3D(pBoxMaxVec, vecCenter);
                 if (fDis > fRadius)
                 {
                     fRadius = fDis;
                 }
             }
             pBoundingBox->fRadius = fRadius;
-            pBoundingBox->vecOffset = center;
+            pBoundingBox->vecOffset = vecCenter;
             pBoundingBox->vecMax = maxVec;
             pBoundingBox->vecMin = minVec;
             lua_pushboolean(luaVM, true);
@@ -1502,7 +1480,7 @@ int CLuaEngineDefs::EngineUpdateModelCollisionBoundingBox(lua_State* luaVM)
 }
 int CLuaEngineDefs::EngineSetModelCollisionData(lua_State* luaVM)
 {
-    ushort usModel;
+    CClientColModel* pCol = NULL;
     ushort usShapeId;
     std::vector<ushort> vecShapeId;
     eCollisionShapes eCollisionShape;
@@ -1510,12 +1488,14 @@ int CLuaEngineDefs::EngineSetModelCollisionData(lua_State* luaVM)
     CVector vec1, vec2, vec3;
     uchar cSurface;
     float fNumber;
+    bool bBool;
     uchar cDay,cNight;
     ushort sVertex[3];
     float fPosition[3];
     CScriptArgReader argStream(luaVM);
-    argStream.ReadNumber(usModel);
+    argStream.ReadUserData(pCol);
     argStream.ReadEnumString(eCollisionShape);
+    argStream.ReadEnumString(eCollisionKey);
     if (argStream.NextIsNumber())
     {
         argStream.ReadNumber(usShapeId);
@@ -1524,13 +1504,16 @@ int CLuaEngineDefs::EngineSetModelCollisionData(lua_State* luaVM)
     else
         argStream.ReadNumberTable(vecShapeId);
 
-    argStream.ReadEnumString(eCollisionKey);
+
     if (!argStream.HasErrors())
     {
-        CColModelSAInterface* pCol;
-        if (GetModelCollisionInterface(usModel, pCol))
+        CColModelSAInterface* pColModelSAInterface;
+        if (pCol)
+            pColModelSAInterface = pCol->GetColModelInterface();
+
+        if (pColModelSAInterface)
         {
-            CColDataSA* pColData = pCol->pColData;
+            CColDataSA* pColData = pColModelSAInterface->pColData;
             ushort numVertices = pColData->getNumVertices();
             for (int i = 0; i != vecShapeId.size(); i++) {
                 vecShapeId[i]--;
@@ -1564,20 +1547,61 @@ int CLuaEngineDefs::EngineSetModelCollisionData(lua_State* luaVM)
                             }
                         }
                     case COLLISION_KEY_SIZE:
-                        argStream.ReadVector3D(vec1);
-                        argStream.ReadVector3D(vec2);
-                        if (!argStream.HasErrors())
+                        if (argStream.NextIsBool())
                         {
-                            if (checkVector(vec1) && checkVector(vec2))
+                            argStream.ReadBool(bBool); // true = min, false = max
+                            argStream.ReadVector3D(vec1);
+                            if (!argStream.HasErrors())
                             {
-                                for (std::vector<ushort>::iterator it = vecShapeId.begin(); it != vecShapeId.end(); ++it)
+                                if (checkVector(vec1))
                                 {
-                                    pBox = &pColData->pColBoxes[*it];
-                                    pBox->min = vec1;
-                                    pBox->max = vec2;
+                                    if (bBool)
+                                    {
+                                        for (std::vector<ushort>::iterator it = vecShapeId.begin(); it != vecShapeId.end(); ++it)
+                                        {
+                                            pBox = &pColData->pColBoxes[*it];
+                                            if (compareVector(vec1, pBox->max))
+                                            {
+                                                pBox->min = vec1;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        for (std::vector<ushort>::iterator it = vecShapeId.begin(); it != vecShapeId.end(); ++it)
+                                        {
+                                            pBox = &pColData->pColBoxes[*it];
+                                            if (compareVector(pBox->min, vec1))
+                                            {
+                                                pBox->max = vec1;
+                                            }
+                                        }
+                                    }
+                                    lua_pushboolean(luaVM, true);
+                                    return 1;
                                 }
-                                lua_pushboolean(luaVM, true);
-                                return 1;
+                            }
+                        }
+                        else
+                        {
+                            argStream.ReadVector3D(vec1);
+                            argStream.ReadVector3D(vec2);
+                            if (!argStream.HasErrors())
+                            {
+                                if (checkVector(vec1) && checkVector(vec2))
+                                {
+                                    if (compareVector(vec1, vec2))
+                                    {
+                                        for (std::vector<ushort>::iterator it = vecShapeId.begin(); it != vecShapeId.end(); ++it)
+                                        {
+                                            pBox = &pColData->pColBoxes[*it];
+                                            pBox->min = vec1;
+                                            pBox->max = vec2;
+                                        }
+                                        lua_pushboolean(luaVM, true);
+                                        return 1;
+                                    }
+                                }
                             }
                         }
                     case COLLISION_KEY_POSITION:
@@ -1588,21 +1612,14 @@ int CLuaEngineDefs::EngineSetModelCollisionData(lua_State* luaVM)
                             {
                                 pBox = &pColData->pColBoxes[*it];
                                 vec2 = CVector(pBox->min.fX + pBox->max.fX, pBox->min.fY + pBox->max.fY, pBox->min.fZ + pBox->max.fZ);
-                                vec2.fX = sqrt(vec2.fX);
-                                vec2.fY = sqrt(vec2.fY);
-                                vec2.fZ = sqrt(vec2.fZ);
-                                vec3 = pBox->min - (vec1 + vec2);
+                                vec2 /= 2;
+                                vec3 = pBox->min + (vec1 - vec2);
                                 if (checkVector(vec3))
                                 {
-                                    pBox->min -= vec1 + vec2;
-                                    vec2 = CVector(pBox->max.fX * pBox->max.fX, pBox->max.fY * pBox->max.fY, pBox->max.fZ * pBox->max.fZ);
-                                    vec2.fX = sqrt(vec2.fX);
-                                    vec2.fY = sqrt(vec2.fY);
-                                    vec2.fZ = sqrt(vec2.fZ);
-                                    if (checkVector(pBox->max - (vec1 + vec2)))
+                                    if (checkVector(pBox->max + (vec1 - vec2)))
                                     {
                                         pBox->min = vec3;
-                                        pBox->max -= vec1 + vec2;
+                                        pBox->max += (vec1 - vec2);
                                     }
                                 }
                             }
@@ -1824,12 +1841,13 @@ int CLuaEngineDefs::EngineSetModelCollisionData(lua_State* luaVM)
 
 int CLuaEngineDefs::EngineModelCollisionRemove(lua_State* luaVM)
 {
-    ushort usModel, usIndex;
+    CClientColModel* pCol = NULL;
+    unsigned short usIndex;
     float fRadius;
     std::vector<ushort> vecIndexes;
     eCollisionShapes eCollisionShape;
     CScriptArgReader argStream(luaVM);
-    argStream.ReadNumber(usModel);
+    argStream.ReadUserData(pCol);
     argStream.ReadEnumString(eCollisionShape);
     if (argStream.NextIsNumber())
     {
@@ -1841,10 +1859,13 @@ int CLuaEngineDefs::EngineModelCollisionRemove(lua_State* luaVM)
 
     if (!argStream.HasErrors())
     {
-        CColModelSAInterface* pCol;
-        if (GetModelCollisionInterface(usModel, pCol))
+        CColModelSAInterface* pColModelSAInterface;
+        if (pCol)
+            pColModelSAInterface = pCol->GetColModelInterface();
+
+        if (pColModelSAInterface)
         {
-            CColDataSA* pColData = pCol->pColData;
+            CColDataSA* pColData = pColModelSAInterface->pColData;
             ushort numVertices = pColData->getNumVertices();
             for (int i = 0; i != vecIndexes.size(); i++) {
                 vecIndexes[i]--;
@@ -1879,9 +1900,7 @@ int CLuaEngineDefs::EngineModelCollisionRemove(lua_State* luaVM)
                 return 1;
                 break;
             case COLLISION_TRIANGLE:
-                pColData->removeColTriangles_(vecIndexes);
-                m_pManager->GetObjectManager()->RestreamObjects(usModel);
-                g_pGame->GetModelInfo(usModel)->RestreamIPL();
+                //pColData->removeColTriangles_(vecIndexes);
                 lua_pushboolean(luaVM, true);
                 return 1;
                 break;
@@ -1902,19 +1921,22 @@ int CLuaEngineDefs::EngineModelCollisionRemove(lua_State* luaVM)
 
 int CLuaEngineDefs::EngineModelCollisionCreate(lua_State* luaVM)
 {
-    ushort usModel;
+    CClientColModel* pCol = NULL;
     float fRadius;
     eCollisionShapes eCollisionShape;
     CScriptArgReader argStream(luaVM);
-    argStream.ReadNumber(usModel);
+    argStream.ReadUserData(pCol);
     argStream.ReadEnumString(eCollisionShape);
 
     if (!argStream.HasErrors())
     {
-        CColModelSAInterface* pCol;
-        if (GetModelCollisionInterface(usModel, pCol))
+        CColModelSAInterface* pColModelSAInterface;
+        if (pCol)
+            pColModelSAInterface = pCol->GetColModelInterface();
+
+        if (pColModelSAInterface)
         {
-            CColDataSA* pColData = pCol->pColData;
+            CColDataSA* pColData = pColModelSAInterface->pColData;
 
             CVector vecArray[3];
             ushort usArray[3];
@@ -1930,13 +1952,17 @@ int CLuaEngineDefs::EngineModelCollisionCreate(lua_State* luaVM)
                     {
                         for (int i = 0; i < 2; i++)
                         {
-                            if (!checkVector(vecArray[i]))
+                           if (!checkVector(vecArray[i]))
                             {
                                 argStream.SetCustomError(SString("Position at argument %i is out of bounding.", i + 2));
                                 m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
                                 lua_pushboolean(luaVM, false);
                                 return 1;
                             }
+                        }
+                        if (!compareVector(vecArray[0], vecArray[1])) // don't let min vector be greater then max vector
+                        {
+                            std::swap(vecArray[0], vecArray[1]);
                         }
                         lua_pushnumber(luaVM, pColData->createCollisionBox(vecArray[0], vecArray[1], cMaterial));
                         return 1;
@@ -1948,7 +1974,7 @@ int CLuaEngineDefs::EngineModelCollisionCreate(lua_State* luaVM)
                     argStream.ReadNumber(cMaterial, 0);
                     if (!argStream.HasErrors())
                     {
-                        if (!checkVector(vecArray[0]))
+                        if (!checkVector(vecArray[0], fRadius))
                         {
                             argStream.SetCustomError("Position at argument 3 is out of bounding.");
                             m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
