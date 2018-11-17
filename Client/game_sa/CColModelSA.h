@@ -113,13 +113,7 @@ typedef struct
     WORD                 numColBoxes;
     WORD                 numColTriangles;
     BYTE                 ucNumWheels;
-    struct {
-        unsigned char   bUsesDisks : 1;
-        unsigned char   bNotEmpty : 1;
-        unsigned char   b03 : 1;
-        unsigned char   bHasFaceGroups : 1;
-        unsigned char   bHasShadow : 1;
-    }                    m_nFlags;
+    BYTE                 m_nFlags;
     CColSphereSA*        pColSpheres;
     CColBoxSA*           pColBoxes; 
     void*                pSuspensionLines;

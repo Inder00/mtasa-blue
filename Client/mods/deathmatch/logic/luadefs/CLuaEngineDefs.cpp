@@ -1006,12 +1006,6 @@ int CLuaEngineDefs::EngineGetModelCollisionProperties(lua_State* luaVM)
                 lua_pushstring(luaVM, "colVertices");
                 lua_pushnumber(luaVM, pColData->getNumVertices());
                 lua_settable(luaVM, -3);
-                /*lua_pushstring(luaVM, "shadowTriangles");
-                lua_pushnumber(luaVM, pColData->m_nNumShadowTriangles);
-                lua_settable(luaVM, -3);
-                lua_pushstring(luaVM, "shadowVertices");
-                lua_pushnumber(luaVM, pColData->m_nNumShadowVertices);
-                lua_settable(luaVM, -3);*/
             }
 
             return 1;
