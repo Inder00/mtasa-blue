@@ -96,6 +96,7 @@ enum eCollisionShapes
     COLLISION_SPHERE,
     COLLISION_TRIANGLE,
     COLLISION_VERTEX,
+    COLLISION_DISABLED,
 };
 DECLARE_ENUM(eCollisionShapes);
 
