@@ -415,6 +415,8 @@ void CGame::DoPulse(void)
 
     // Pulse the net interface
     CLOCK_CALL1(g_pNetServer->DoPulse(););
+    
+    CLOCK_CALL1(GetConfig()->GetNetQueues()->FlushAllQueues(););
 
     if (m_pLanBroadcast)
     {

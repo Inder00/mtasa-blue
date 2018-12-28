@@ -286,6 +286,7 @@ struct SAclRequest;
 #include "CZoneNames.h"
 #include "TaskNames.h"
 #include "Utils.h"
+#include "CNetQueues.h"
 #include "logic/CWeaponStat.h"
 #include "logic/CCustomWeapon.h"
 #include "logic/CCustomWeaponManager.h"

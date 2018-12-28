@@ -38,6 +38,7 @@ CMainConfig::CMainConfig(CConsole* pConsole, CLuaManager* pLuaMain) : CXMLConfig
     m_pLuaManager = pLuaMain;
     m_pRootNode = NULL;
     m_pCommandLineParser = NULL;
+    m_pNetQueues = new CNetQueues;
 
     m_usServerPort = 0;
     m_uiHardMaxPlayers = 0;
@@ -61,6 +62,7 @@ CMainConfig::CMainConfig(CConsole* pConsole, CLuaManager* pLuaMain) : CXMLConfig
     m_bVoiceEnabled = false;
     m_uiVoiceBitrate = 0;
     m_strBandwidthReductionMode = "medium";
+    m_bBandwidthQueues = false;
     m_iPendingWorkToDoSleepTime = -1;
     m_iNoWorkToDoSleepTime = -1;
     m_bThreadNetEnabled = true;
@@ -352,6 +354,13 @@ bool CMainConfig::Load(void)
     if (iResult == IS_SUCCESS)
     {
         m_bVoiceEnabled = iTemp ? true : false;
+    }
+    
+    // Grab whether or not voice is enabled
+    iResult = GetInteger(m_pRootNode, "bandwithqueues", iTemp, 0, 1);
+    if (iResult == IS_SUCCESS)
+    {
+        m_bBandwidthQueues = iTemp ? true : false;
     }
 
     // Grab the Sample Rate for Voice
@@ -911,6 +920,12 @@ bool CMainConfig::SetFPSLimit(unsigned short usFPS, bool bSave)
         return true;
     }
     return false;
+}
+
+bool CMainConfig::SetBandwithQueuesEnabled(bool bEnabled)
+{
+    m_bBandwidthQueues = bEnabled;
+    return true;
 }
 
 void CMainConfig::RegisterCommand(const char* szName, FCommandHandler* pFunction, bool bRestricted)

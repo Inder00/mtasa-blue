@@ -883,15 +883,23 @@ bool CStaticFunctionDefinitions::SetElementData(CElement* pElement, const char* 
         if (bSynchronize)
         {
             // Tell our clients to update their data
-            unsigned short usNameLength = static_cast<unsigned short>(strlen(szName));
-            CBitStream     BitStream;
-            BitStream.pBitStream->WriteCompressed(usNameLength);
-            BitStream.pBitStream->Write(szName, usNameLength);
-            Variable.WriteToBitStream(*BitStream.pBitStream);
-            m_pPlayerManager->BroadcastOnlyJoined(CElementRPCPacket(pElement, SET_ELEMENT_DATA, *BitStream.pBitStream));
+            if (g_pGame->GetConfig()->GetBandwithQueuesEnabled())
+            {
+                CNetQueues* asdf = g_pGame->GetConfig()->GetNetQueues();
+                asdf->AddElementData(pElement, szName);
+            }
+            else
+            {
+                unsigned short usNameLength = static_cast<unsigned short>(strlen(szName));
+                CBitStream     BitStream;
+                BitStream.pBitStream->WriteCompressed(usNameLength);
+                BitStream.pBitStream->Write(szName, usNameLength);
+                Variable.WriteToBitStream(*BitStream.pBitStream);
+                m_pPlayerManager->BroadcastOnlyJoined(CElementRPCPacket(pElement, SET_ELEMENT_DATA, *BitStream.pBitStream));
 
-            CPerfStatEventPacketUsage::GetSingleton()->UpdateElementDataUsageOut(szName, m_pPlayerManager->Count(),
-                                                                                 BitStream.pBitStream->GetNumberOfBytesUsed());
+                CPerfStatEventPacketUsage::GetSingleton()->UpdateElementDataUsageOut(szName, m_pPlayerManager->Count(),
+                    BitStream.pBitStream->GetNumberOfBytesUsed());
+            }
         }
 
         // Set its custom data

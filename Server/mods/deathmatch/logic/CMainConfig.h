@@ -123,6 +123,8 @@ public:
     const std::vector<SString>& GetOwnerEmailAddressList(void) const { return m_OwnerEmailAddressList; }
     bool                        IsDatabaseCredentialsProtectionEnabled(void) const { return m_bDatabaseCredentialsProtectionEnabled != 0; }
     bool                        IsFakeLagCommandEnabled(void) const { return m_bFakeLagCommandEnabled != 0; }
+    bool                        GetBandwithQueuesEnabled(void) { return m_bBandwidthQueues; };
+    bool                        SetBandwithQueuesEnabled(bool bSave);
 
     SString GetSetting(const SString& configSetting);
     bool    GetSetting(const SString& configSetting, SString& strValue);
@@ -135,6 +137,7 @@ public:
     void               ApplyThreadNetEnabled(void);
     void               SetFakeLag(int iPacketLoss, int iExtraPing, int iExtraPingVary, int iKBPSLimit);
     const SNetOptions& GetNetOptions(void) { return m_NetOptions; }
+    CNetQueues*  GetNetQueues(void) { return m_pNetQueues; }
 
     const std::vector<SIntSetting>& GetIntSettingList(void);
     void                            OnTickRateChange(void);
@@ -149,6 +152,7 @@ private:
     CLuaManager*        m_pLuaManager;
     CXMLNode*           m_pRootNode;
     CCommandLineParser* m_pCommandLineParser;
+    CNetQueues*         m_pNetQueues;
 
     unsigned int  m_uiVoiceSampleRate;
     unsigned char m_ucVoiceQuality;
@@ -201,6 +205,7 @@ private:
     int                        m_iCompactInternalDatabases;
     bool                       m_bDidBackup;
     SString                    m_strBandwidthReductionMode;
+    bool                       m_bBandwidthQueues; // todo, find better name
     int                        m_iPendingWorkToDoSleepTime;
     int                        m_iNoWorkToDoSleepTime;
     bool                       m_bThreadNetEnabled;
