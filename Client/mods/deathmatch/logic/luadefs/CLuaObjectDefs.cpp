@@ -35,6 +35,7 @@ void CLuaObjectDefs::LoadFunctions(void)
         {"toggleObjectRespawn", ToggleObjectRespawn},
         {"setObjectMass", SetObjectMass},
         {"setObjectProperty", SetObjectProperty},
+        {"setObjectComponentPosition", SetObjectComponentPosition },
     };
 
     // Add functions
@@ -586,6 +587,30 @@ int CLuaObjectDefs::SetObjectMass(lua_State* luaVM)
     if (!argStream.HasErrors())
     {
         if (CStaticFunctionDefinitions::SetObjectMass(*pEntity, fMass))
+        {
+            lua_pushboolean(luaVM, true);
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::SetObjectComponentPosition(lua_State* luaVM)
+{
+    CClientEntity* pEntity;
+    SString strComponentName;
+    CVector vecPosition;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pEntity);
+    argStream.ReadString(strComponentName);
+    argStream.ReadVector3D(vecPosition);
+    if (!argStream.HasErrors())
+    {
+        if (CStaticFunctionDefinitions::SetObjectComponentPosition(*pEntity, strComponentName, vecPosition))
         {
             lua_pushboolean(luaVM, true);
             return 1;

@@ -41,4 +41,5 @@ public:
     LUA_DECLARE(ToggleObjectRespawn);
     LUA_DECLARE(SetObjectMass);
     LUA_DECLARE(SetObjectProperty);
+    LUA_DECLARE(SetObjectComponentPosition);
 };

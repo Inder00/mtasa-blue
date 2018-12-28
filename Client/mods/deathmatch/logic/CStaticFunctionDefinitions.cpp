@@ -3992,6 +3992,30 @@ bool CStaticFunctionDefinitions::SetObjectMass(CClientEntity& Entity, float fMas
     return false;
 }
 
+#include "d:\mtablue\mtasa-blue\Client\game_sa\CRenderWareSA.h";
+
+bool CStaticFunctionDefinitions::SetObjectComponentPosition(CClientEntity& Entity, const SString& strComponentName, const CVector& vecPosition)
+{
+
+    if (IS_OBJECT(&Entity))
+    {
+        CDeathmatchObject& Object = static_cast<CDeathmatchObject&>(Entity);
+        RpClump* clump = Object.GetClump();
+        if (clump != nullptr)
+        {
+            CRenderWareSA* asdf = (CRenderWareSA*)g_pGame->GetRenderWare();
+            RwFrame* pFrame = asdf->GetFrameFromName(clump, strComponentName);
+            if (pFrame != nullptr)
+            {
+                pFrame->modelling.pos = (RwV3d&)vecPosition;
+                pFrame->ltm.pos = (RwV3d&)vecPosition;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 bool CStaticFunctionDefinitions::SetObjectTurnMass(CClientEntity& Entity, float fTurnMass)
 {
     if (fTurnMass >= 0.0f)

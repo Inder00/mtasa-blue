@@ -301,6 +301,7 @@ public:
     static bool SetObjectBuoyancyConstant(CClientEntity& Entity, float fBuoyancyConstant);
     static bool SetObjectCenterOfMass(CClientEntity& Entity, const CVector& vecCenterOfMass);
     static bool SetObjectVisibleInAllDimensions(CClientEntity& Entity, bool bVisible, unsigned short usNewDimension = 0);
+    static bool SetObjectComponentPosition(CClientEntity& Entity, const SString& strText, const CVector& vecPosition);
 
     // Radar-area get funcs
     static CClientRadarArea* CreateRadarArea(CResource& Resource, const CVector2D& vecPosition2D, const CVector2D& vecSize, const SColor color);
