@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 #include "StdInc.h"
+#include "gamesa_renderware.h"
 
 //#define MTA_USE_BUILDINGS_AS_OBJECTS
 
@@ -27,6 +28,128 @@ struct CFileObjectInstance
     DWORD areaNumber;
     long  flags;            // = -1
 };
+
+
+namespace
+{
+    void CMatrixToRwMatrix(const CMatrix& mat, RwMatrix& rwOutMatrix)
+    {
+        rwOutMatrix.right = (RwV3d&)mat.vRight;
+        rwOutMatrix.up = (RwV3d&)mat.vFront;
+        rwOutMatrix.at = (RwV3d&)mat.vUp;
+        rwOutMatrix.pos = (RwV3d&)mat.vPos;
+    }
+
+    void RwMatrixToCMatrix(const RwMatrix& rwMatrix, CMatrix& matOut)
+    {
+        matOut.vRight = (CVector&)rwMatrix.right;
+        matOut.vFront = (CVector&)rwMatrix.up;
+        matOut.vUp = (CVector&)rwMatrix.at;
+        matOut.vPos = (CVector&)rwMatrix.pos;
+    }
+
+    void RwMatrixGetRotation(const RwMatrix& rwMatrix, CVector& vecOutRotation)
+    {
+        CMatrix matTemp;
+        RwMatrixToCMatrix(rwMatrix, matTemp);
+        vecOutRotation = matTemp.GetRotation();
+    }
+
+    void RwMatrixSetRotation(RwMatrix& rwInOutMatrix, const CVector& vecRotation)
+    {
+        CMatrix matTemp;
+        RwMatrixToCMatrix(rwInOutMatrix, matTemp);
+        matTemp.SetRotation(vecRotation);
+        rwInOutMatrix.right = (RwV3d&)matTemp.vRight;
+        rwInOutMatrix.up = (RwV3d&)matTemp.vFront;
+        rwInOutMatrix.at = (RwV3d&)matTemp.vUp;
+    }
+
+    void RwMatrixGetPosition(const RwMatrix& rwMatrix, CVector& vecOutPosition) { vecOutPosition = (CVector&)rwMatrix.pos; }
+
+    void RwMatrixSetPosition(RwMatrix& rwInOutMatrix, const CVector& vecPosition) { rwInOutMatrix.pos = (RwV3d&)vecPosition; }
+
+    void RwMatrixGetScale(const RwMatrix& rwMatrix, CVector& vecOutScale)
+    {
+        CMatrix matTemp;
+        RwMatrixToCMatrix(rwMatrix, matTemp);
+        vecOutScale = matTemp.GetScale();
+    }
+
+    void RwMatrixSetScale(RwMatrix& rwInOutMatrix, const CVector& vecScale)
+    {
+        CMatrix matTemp;
+        RwMatrixToCMatrix(rwInOutMatrix, matTemp);
+        matTemp.SetScale(vecScale);
+        rwInOutMatrix.right = (RwV3d&)matTemp.vRight;
+        rwInOutMatrix.up = (RwV3d&)matTemp.vFront;
+        rwInOutMatrix.at = (RwV3d&)matTemp.vUp;
+    }
+
+    bool ClumpDumpCB(RpAtomic* pAtomic, void* data)
+    {
+        CObjectSA* pObjectSA = (CObjectSA*)data;
+        RwFrame*    pFrame = RpGetFrame(pAtomic);
+        pObjectSA->AddComponent(pFrame, false);
+        // g_pCore->GetConsole()->Print ( SString ( "Atomic:%08x  Frame:%08x %s", pAtomic, pFrame, pFrame ? pFrame->szName : "" ) );
+        // OutputDebugLine ( SString ( "Atomic:%08x  Frame:%08x %s", pAtomic, pFrame, pFrame ? pFrame->szName : "" ) );
+        return true;
+    }
+
+    void ClumpDump(RpClump* pClump, CObjectSA* pObjectSA)
+    {
+        // get the clump's frame
+        RwFrame* pFrame = RpGetFrame(pClump);
+        // OutputDebugLine ( SStringX ( "--------------------------------" ) );
+        // OutputDebugLine ( SString ( "Clump:%08x  Frame:%08x %s", pClump, pFrame, pFrame ? pFrame->szName : "" ) );
+        // g_pCore->GetConsole()->Print ( SStringX ( "--------------------------------" ) );
+        // g_pCore->GetConsole()->Print ( SString ( "Clump:%08x  Frame:%08x %s", pClump, pFrame, pFrame ? pFrame->szName : "" ) );
+        // Do for all atomics
+        RpClumpForAllAtomics(pClump, ClumpDumpCB, pObjectSA);
+    }
+
+    // Recursive RwFrame children searching function
+    void RwFrameDump(RwFrame* parent, CObjectSA* pObjectSA)
+    {
+        RwFrame* ret = parent->child;
+        while (ret != NULL)
+        {
+            // recurse into the child
+            if (ret->child != NULL)
+            {
+                RwFrameDump(ret, pObjectSA);
+            }
+            // don't re-add, check ret for validity, if it has an empty string at this point it isn't a variant or it's already added
+            if (pObjectSA->IsComponentPresent(ret->szName) == false && ret->szName != "")
+            {
+                pObjectSA->AddComponent(ret, true);
+            }
+            ret = ret->next;
+        }
+    }
+
+    void ObjectDump(CObjectSA* pObjectSA)
+    {
+        if (pObjectSA->GetInterface()->m_pRwObject != nullptr)
+        {
+            // This grabs 90% of the frames
+            ClumpDump(pObjectSA->GetInterface()->m_pRwObject, pObjectSA);
+            // This grabs the rest which aren't always copied to the Model Info in the interface ( usually markers for things like NOS )
+            RwFrameDump(RpGetFrame((RpClump*)pGame->GetModelInfo(pObjectSA->GetModelIndex())->GetRwObject()), pObjectSA);
+        }
+    }
+
+    RwObject* __cdecl GetAllAtomicObjectCB(struct RwObject* object, void* data)
+    {
+        std::vector<RwObject*>& result = *((std::vector<RwObject*>*)data);
+        result.push_back(object);
+        return object;
+    }
+
+    // Get all atomics for this frame (even if they are invisible)
+    void GetAllAtomicObjects(RwFrame* frame, std::vector<RwObject*>& result) { RwFrameForAllObjects(frame, (void*)GetAllAtomicObjectCB, &result); }
+}            // namespace
+
 
 CObjectSA::CObjectSA(CObjectSAInterface* objectInterface)
 {
@@ -175,6 +298,10 @@ CObjectSA::CObjectSA(DWORD dwModel, bool bBreakingDisabled)
     {
         ResetScale();
         CheckForGangTag();
+
+        m_ExtraFrames.clear();
+
+        ObjectDump(this);
     }
 }
 
@@ -363,4 +490,243 @@ CVector* CObjectSA::GetScale()
 void CObjectSA::ResetScale()
 {
     SetScale(1.0f, 1.0f, 1.0f);
+}
+
+void CObjectSA::UpdateComponents(void)
+{
+    m_ExtraFrames.clear();
+    ObjectDump(this);
+    FinalizeFramesList();
+}
+
+
+SObjectFrame* CObjectSA::GetObjectComponent(const SString& objectComponent)
+{
+    return MapFind(m_ExtraFrames, objectComponent);
+}
+
+bool CObjectSA::SetComponentRotation(const SString& objectComponent, const CVector& vecRotation)
+{
+    SObjectFrame* pComponent = GetObjectComponent(objectComponent);
+    if (pComponent && pComponent->pFrame != NULL)
+    {
+        RwMatrixSetRotation(pComponent->pFrame->ltm, vecRotation);
+        return true;
+    }
+    return false;
+}
+
+bool CObjectSA::GetComponentRotation(const SString& objectComponent, CVector& vecRotation)
+{
+    SObjectFrame* pComponent = GetObjectComponent(objectComponent);
+    if (pComponent && pComponent->pFrame != NULL)
+    {
+        RwMatrixGetRotation(pComponent->pFrame->ltm, vecRotation);
+        return true;
+    }
+    return false;
+}
+
+bool CObjectSA::SetComponentPosition(const SString& objectComponent, const CVector& vecPosition)
+{
+    SObjectFrame* pComponent = GetObjectComponent(objectComponent);
+    if (pComponent && pComponent->pFrame != NULL)
+    {
+        RwMatrixSetPosition(pComponent->pFrame->ltm, vecPosition);
+        return true;
+    }
+    return false;
+}
+
+bool CObjectSA::GetComponentPosition(const SString& objectComponent, CVector& vecPositionModelling)
+{
+    SObjectFrame* pComponent = GetObjectComponent(objectComponent);
+    if (pComponent && pComponent->pFrame != NULL)
+    {
+        RwMatrixGetPosition(pComponent->pFrame->ltm, vecPositionModelling);
+        return true;
+    }
+    return false;
+}
+
+bool CObjectSA::SetComponentScale(const SString& objectComponent, const CVector& vecScale)
+{
+    SObjectFrame* pComponent = GetObjectComponent(objectComponent);
+    if (pComponent && pComponent->pFrame != NULL)
+    {
+        RwMatrixSetScale(pComponent->pFrame->ltm, vecScale);
+        return true;
+    }
+    return false;
+}
+
+bool CObjectSA::GetComponentScale(const SString& objectComponent, CVector& vecScaleModelling)
+{
+    SObjectFrame* pComponent = GetObjectComponent(objectComponent);
+    if (pComponent && pComponent->pFrame != NULL)
+    {
+        RwMatrixGetScale(pComponent->pFrame->ltm, vecScaleModelling);
+        return true;
+    }
+    return false;
+}
+
+bool CObjectSA::IsComponentPresent(const SString& objectComponent)
+{
+    return GetObjectComponent(objectComponent) != NULL;
+}
+
+bool CObjectSA::GetComponentMatrix(const SString& objectComponent, CMatrix& matOutOrientation)
+{
+    SObjectFrame* pComponent = GetObjectComponent(objectComponent);
+    // Check validty
+    if (pComponent && pComponent->pFrame != NULL)
+    {
+        RwMatrixToCMatrix(pComponent->pFrame->ltm, matOutOrientation);
+        return true;
+    }
+    return false;
+}
+
+bool CObjectSA::SetComponentMatrix(const SString& objectComponent, const CMatrix& matOrientation)
+{
+    SObjectFrame* pComponent = GetObjectComponent(objectComponent);
+    // Check validty
+    if (pComponent && pComponent->pFrame != NULL)
+    {
+        CMatrixToRwMatrix(matOrientation, pComponent->pFrame->ltm);
+        return true;
+    }
+    return false;
+}
+
+// Get transform from component parent to the model root
+bool CObjectSA::GetComponentParentToRootMatrix(const SString& objectComponent, CMatrix& matOutParentToRoot)
+{
+    SObjectFrame* pComponent = GetObjectComponent(objectComponent);
+    // Check validty
+    if (pComponent && pComponent->pFrame != NULL)
+    {
+        // Calc root to parent transform
+        CMatrix matCombo;
+        for (uint i = 0; i < pComponent->frameList.size(); i++)
+        {
+            RwFrame* pFrame = pComponent->frameList[i];
+            if (pFrame)
+            {
+                CMatrix matFrame;
+                RwMatrixToCMatrix(pFrame->ltm, matFrame);
+                matCombo = matFrame * matCombo;
+            }
+        }
+        matOutParentToRoot = matCombo;
+        return true;
+    }
+    return false;
+}
+
+void CObjectSA::AddComponent(RwFrame* pFrame, bool bReadOnly)
+{
+    // if the frame is invalid we don't want to be here
+    if (!pFrame)
+        return;
+    // if the frame already exists ignore it
+    if (IsComponentPresent(pFrame->szName) || pFrame->szName == "")
+        return;
+
+    SString strName = pFrame->szName;
+    SObjectFrame frame = SObjectFrame(pFrame, bReadOnly);
+    // insert our new frame
+    m_ExtraFrames.insert(std::pair<SString, SObjectFrame>(strName, frame));
+}
+
+void CObjectSA::FinalizeFramesList(void)
+{
+    // For each frame, make list of parent frames
+    std::map<SString, SObjectFrame>::iterator iter = m_ExtraFrames.begin();
+    for (; iter != m_ExtraFrames.end(); ++iter)
+    {
+        SObjectFrame& vehicleFrame = iter->second;
+        dassert(vehicleFrame.frameList.empty());
+        vehicleFrame.frameList.clear();
+
+        // Get frame list from parent component down to the root
+        RwFrame* pParent = (RwFrame*)vehicleFrame.pFrame->object.parent;
+        for (; pParent && pParent != pParent->root; pParent = (RwFrame*)pParent->object.parent)
+        {
+            // Get parent frame by name from our list instead of the RwFrame structure
+            SObjectFrame* parentObjectFrame = GetObjectComponent(pParent->szName);
+            if (parentObjectFrame && parentObjectFrame->pFrame != NULL)
+            {
+                vehicleFrame.frameList.insert(vehicleFrame.frameList.begin(), parentObjectFrame->pFrame);
+            }
+        }
+    }
+}
+
+bool CObjectSA::SetComponentVisible(const SString& objectComponent, bool bRequestVisible)
+{
+    SObjectFrame* pComponent = GetObjectComponent(objectComponent);
+    // Check validty
+    if (pComponent && pComponent->pFrame != NULL && pComponent->bReadOnly == false)
+    {
+        RwFrame* pFrame = pComponent->pFrame;
+        // Get all atomics for this component - Usually one, or two if there is a damaged version
+        std::vector<RwObject*> atomicList;
+        GetAllAtomicObjects(pFrame, atomicList);
+
+        // Count number currently visible
+        uint uiNumAtomicsCurrentlyVisible = 0;
+        for (uint i = 0; i < atomicList.size(); i++)
+            if (atomicList[i]->flags & 0x04)
+                uiNumAtomicsCurrentlyVisible++;
+
+        if (bRequestVisible && uiNumAtomicsCurrentlyVisible == 0)
+        {
+            // Make atomic (undamaged version) visible. TODO - Check if damaged version should be made visible instead
+            for (uint i = 0; i < atomicList.size(); i++)
+            {
+                RwObject* pAtomic = atomicList[i];
+                int       AtomicId = pGame->GetVisibilityPlugins()->GetAtomicId(pAtomic);
+
+                if (!(AtomicId & ATOMIC_ID_FLAG_TWO_VERSIONS_DAMAGED))
+                {
+                    // Either only one version, or two versions and this is the undamaged one
+                    pAtomic->flags |= 0x04;
+                }
+            }
+        }
+        else if (!bRequestVisible && uiNumAtomicsCurrentlyVisible > 0)
+        {
+            // Make all atomics invisible
+            for (uint i = 0; i < atomicList.size(); i++)
+                atomicList[i]->flags &= ~0x05;            // Mimic what GTA seems to do - Not sure what the bottom bit is for
+        }
+        return true;
+    }
+    return false;
+}
+
+bool CObjectSA::GetComponentVisible(const SString& objectComponent, bool& bOutVisible)
+{
+    SObjectFrame* pComponent = GetObjectComponent(objectComponent);
+    // Check validty
+    if (pComponent && pComponent->pFrame != NULL && pComponent->bReadOnly == false)
+    {
+        RwFrame* pFrame = pComponent->pFrame;
+        // Get all atomics for this component - Usually one, or two if there is a damaged version
+        std::vector<RwObject*> atomicList;
+        GetAllAtomicObjects(pFrame, atomicList);
+
+        // Count number currently visible
+        uint uiNumAtomicsCurrentlyVisible = 0;
+        for (uint i = 0; i < atomicList.size(); i++)
+            if (atomicList[i]->flags & 0x04)
+                uiNumAtomicsCurrentlyVisible++;
+
+        // Set result
+        bOutVisible = (uiNumAtomicsCurrentlyVisible > 0);
+        return true;
+    }
+    return false;
 }

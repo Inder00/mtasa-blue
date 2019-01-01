@@ -35,6 +35,21 @@ void CLuaObjectDefs::LoadFunctions(void)
         {"toggleObjectRespawn", ToggleObjectRespawn},
         {"setObjectMass", SetObjectMass},
         {"setObjectProperty", SetObjectProperty},
+
+        { "getObjectComponentPosition", GetObjectComponentPosition },
+        { "getObjectComponentRotation", GetObjectComponentRotation },
+        { "getObjectComponentScale", GetObjectComponentScale },
+        { "getObjectComponentVisible", GetObjectComponentVisible },
+        { "getObjectComponents", GetObjectComponents },
+        { "setObjectComponentPosition", SetObjectComponentPosition },
+        { "setObjectComponentRotation", SetObjectComponentRotation },
+        { "setObjectComponentScale", SetObjectComponentScale },
+        { "resetObjectComponentPosition", ResetObjectComponentPosition },
+        { "resetObjectComponentRotation", ResetObjectComponentRotation },
+        { "resetObjectComponentScale", ResetObjectComponentScale },
+        { "setObjectComponentVisible", SetObjectComponentVisible },
+
+
     };
 
     // Add functions
@@ -700,3 +715,418 @@ int CLuaObjectDefs::SetObjectProperty(lua_State* luaVM)
     lua_pushboolean(luaVM, false);
     return 1;
 }
+
+
+int CLuaObjectDefs::SetObjectComponentPosition(lua_State* luaVM)
+{
+    // bool setObjectComponentPosition ( Object theObject, string theComponent, float posX, float posY, float posZ [, string base = "root"] )
+    SString            strComponent;
+    CClientObject*    pObject = NULL;
+    CVector            vecPosition;
+    EComponentBaseType inputBase;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pObject);
+    argStream.ReadString(strComponent);
+    argStream.ReadVector3D(vecPosition);
+    argStream.ReadEnumString(inputBase, EComponentBase::ROOT);
+
+    if (!argStream.HasErrors())
+    {
+        if (pObject->SetComponentPosition(strComponent, vecPosition, inputBase))
+        {
+            lua_pushboolean(luaVM, true);
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::GetObjectComponentPosition(lua_State* luaVM)
+{
+    // float, float, float getObjectComponentPosition ( Object theObject, string theComponent [, string base = "root"] )
+    SString            strComponent;
+    CClientObject*    pObject = NULL;
+    EComponentBaseType outputBase;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pObject);
+    argStream.ReadString(strComponent);
+    argStream.ReadEnumString(outputBase, EComponentBase::ROOT);
+
+    if (!argStream.HasErrors())
+    {
+        CVector vecPosition;
+        if (pObject->GetComponentPosition(strComponent, vecPosition, outputBase))
+        {
+            lua_pushnumber(luaVM, vecPosition.fX);
+            lua_pushnumber(luaVM, vecPosition.fY);
+            lua_pushnumber(luaVM, vecPosition.fZ);
+            return 3;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::OOP_GetObjectComponentPosition(lua_State* luaVM)
+{
+    // float, float, float getObjectComponentPosition ( Object theObject, string theComponent [, string base = "root"] )
+    SString            strComponent;
+    CClientObject*    pObject = NULL;
+    EComponentBaseType outputBase;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pObject);
+    argStream.ReadString(strComponent);
+    argStream.ReadEnumString(outputBase, EComponentBase::ROOT);
+
+    if (!argStream.HasErrors())
+    {
+        CVector vecPosition;
+        if (pObject->GetComponentPosition(strComponent, vecPosition, outputBase))
+        {
+            lua_pushnumber(luaVM, vecPosition.fX);
+            lua_pushnumber(luaVM, vecPosition.fY);
+            lua_pushnumber(luaVM, vecPosition.fZ);
+            return 3;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::SetObjectComponentRotation(lua_State* luaVM)
+{
+    //  bool setObjectComponentRotation ( Object theObject, string theComponent, float rotX, float rotY, float rotZ [, string base = "parent"] )
+    SString            strComponent;
+    CClientObject*    pObject = NULL;
+    CVector            vecRotation;
+    EComponentBaseType inputBase;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pObject);
+    argStream.ReadString(strComponent);
+    argStream.ReadVector3D(vecRotation);
+    argStream.ReadEnumString(inputBase, EComponentBase::PARENT);
+
+    if (!argStream.HasErrors())
+    {
+        // Script uses degrees
+        ConvertDegreesToRadians(vecRotation);
+        pObject->SetComponentRotation(strComponent, vecRotation, inputBase);
+        lua_pushboolean(luaVM, true);
+        return 1;
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::GetObjectComponentRotation(lua_State* luaVM)
+{
+    // float, float, float getObjectComponentRotation ( Object theObject, string theComponent [, string base = "parent"]  )
+    SString            strComponent;
+    CClientObject*    pObject = NULL;
+    EComponentBaseType outputBase;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pObject);
+    argStream.ReadString(strComponent);
+    argStream.ReadEnumString(outputBase, EComponentBase::PARENT);
+
+    if (!argStream.HasErrors())
+    {
+        CVector vecRotation;
+        if (pObject->GetComponentRotation(strComponent, vecRotation, outputBase))
+        {
+            // Script uses degrees
+            ConvertRadiansToDegrees(vecRotation);
+            lua_pushnumber(luaVM, vecRotation.fX);
+            lua_pushnumber(luaVM, vecRotation.fY);
+            lua_pushnumber(luaVM, vecRotation.fZ);
+            return 3;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::OOP_GetObjectComponentRotation(lua_State* luaVM)
+{
+    // float, float, float getObjectComponentRotation ( Object theObject, string theComponent [, string base = "parent"]  )
+    SString            strComponent;
+    CClientObject*    pObject = NULL;
+    EComponentBaseType outputBase;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pObject);
+    argStream.ReadString(strComponent);
+    argStream.ReadEnumString(outputBase, EComponentBase::PARENT);
+
+    if (!argStream.HasErrors())
+    {
+        CVector vecRotation;
+        if (pObject->GetComponentRotation(strComponent, vecRotation, outputBase))
+        {
+            // Script uses degrees
+            ConvertRadiansToDegrees(vecRotation);
+            lua_pushnumber(luaVM, vecRotation.fX);
+            lua_pushnumber(luaVM, vecRotation.fY);
+            lua_pushnumber(luaVM, vecRotation.fZ);
+            return 3;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::SetObjectComponentScale(lua_State* luaVM)
+{
+    //  bool setObjectComponentScale ( Object theObject, string theComponent, float rotX, float rotY, float rotZ [, string base = "parent"] )
+    SString            strComponent;
+    CClientObject*    pObject = NULL;
+    CVector            vecScale;
+    EComponentBaseType inputBase;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pObject);
+    argStream.ReadString(strComponent);
+    argStream.ReadVector3D(vecScale);
+    argStream.ReadEnumString(inputBase, EComponentBase::PARENT);
+
+    if (!argStream.HasErrors())
+    {
+        pObject->SetComponentScale(strComponent, vecScale, inputBase);
+        lua_pushboolean(luaVM, true);
+        return 1;
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::GetObjectComponentScale(lua_State* luaVM)
+{
+    // float, float, float getObjectComponentScale ( Object theObject, string theComponent [, string base = "parent"]  )
+    SString            strComponent;
+    CClientObject*    pObject = NULL;
+    EComponentBaseType outputBase;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pObject);
+    argStream.ReadString(strComponent);
+    argStream.ReadEnumString(outputBase, EComponentBase::PARENT);
+
+    if (!argStream.HasErrors())
+    {
+        CVector vecScale;
+        if (pObject->GetComponentScale(strComponent, vecScale, outputBase))
+        {
+            lua_pushnumber(luaVM, vecScale.fX);
+            lua_pushnumber(luaVM, vecScale.fY);
+            lua_pushnumber(luaVM, vecScale.fZ);
+            return 3;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::OOP_GetObjectComponentScale(lua_State* luaVM)
+{
+    // float, float, float getObjectComponentScale ( Object theObject, string theComponent [, string base = "parent"]  )
+    SString            strComponent;
+    CClientObject*    pObject = NULL;
+    EComponentBaseType outputBase;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pObject);
+    argStream.ReadString(strComponent);
+    argStream.ReadEnumString(outputBase, EComponentBase::PARENT);
+
+    if (!argStream.HasErrors())
+    {
+        CVector vecScale;
+        if (pObject->GetComponentScale(strComponent, vecScale, outputBase))
+        {
+            lua_pushvector(luaVM, vecScale);
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::ResetObjectComponentPosition(lua_State* luaVM)
+{
+    CScriptArgReader argStream(luaVM);
+    SString          strComponent;
+    CClientObject*  pObject = NULL;
+    argStream.ReadUserData(pObject);
+    argStream.ReadString(strComponent);
+
+    if (!argStream.HasErrors())
+    {
+        if (pObject->ResetComponentPosition(strComponent))
+        {
+            lua_pushboolean(luaVM, true);
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::ResetObjectComponentRotation(lua_State* luaVM)
+{
+    CScriptArgReader argStream(luaVM);
+    SString          strComponent;
+    CClientObject*  pObject = NULL;
+    argStream.ReadUserData(pObject);
+    argStream.ReadString(strComponent);
+
+    if (!argStream.HasErrors())
+    {
+        if (pObject->ResetComponentRotation(strComponent))
+        {
+            lua_pushboolean(luaVM, true);
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::ResetObjectComponentScale(lua_State* luaVM)
+{
+    CScriptArgReader argStream(luaVM);
+    SString          strComponent;
+    CClientObject*  pObject = NULL;
+    argStream.ReadUserData(pObject);
+    argStream.ReadString(strComponent);
+
+    if (!argStream.HasErrors())
+    {
+        if (pObject->ResetComponentScale(strComponent))
+        {
+            lua_pushboolean(luaVM, true);
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::SetObjectComponentVisible(lua_State* luaVM)
+{
+    CScriptArgReader argStream(luaVM);
+    SString          strComponent;
+    CClientObject*  pObject = NULL;
+    bool             bVisible = false;
+    argStream.ReadUserData(pObject);
+    argStream.ReadString(strComponent);
+    argStream.ReadBool(bVisible);
+
+    if (!argStream.HasErrors())
+    {
+        if (pObject->SetComponentVisible(strComponent, bVisible))
+        {
+            lua_pushboolean(luaVM, true);
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::GetObjectComponentVisible(lua_State* luaVM)
+{
+    CScriptArgReader argStream(luaVM);
+    SString          strComponent;
+    CClientObject*  pObject = NULL;
+    bool             bVisible = false;
+    argStream.ReadUserData(pObject);
+    argStream.ReadString(strComponent);
+
+    if (!argStream.HasErrors())
+    {
+        if (pObject->GetComponentVisible(strComponent, bVisible))
+        {
+            lua_pushboolean(luaVM, bVisible);
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaObjectDefs::GetObjectComponents(lua_State* luaVM)
+{
+    CScriptArgReader argStream(luaVM);
+    SString          strComponent;
+    CClientObject*  pObject = NULL;
+
+    argStream.ReadUserData(pObject);
+
+    if (!argStream.HasErrors())
+    {
+        CStaticFunctionDefinitions::UpdateComponents(pObject);
+        std::map<SString, SObjectComponentData>::iterator iter = pObject->ComponentsBegin();
+        lua_newtable(luaVM);
+        for (; iter != pObject->ComponentsEnd(); iter++)
+        {
+            lua_pushstring(luaVM, (*iter).first);
+            lua_pushboolean(luaVM, (*iter).second.m_bVisible);
+            lua_settable(luaVM, -3);            // End of Table
+        }
+        return 1;
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+

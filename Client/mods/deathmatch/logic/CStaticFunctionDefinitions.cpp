@@ -3839,6 +3839,17 @@ bool CStaticFunctionDefinitions::SetObjectRotation(CClientEntity& Entity, const 
 
     return false;
 }
+bool CStaticFunctionDefinitions::UpdateComponents(CClientObject* Entity)
+{
+    if (IS_OBJECT(Entity))
+    {
+        CDeathmatchObject* Object = static_cast<CDeathmatchObject*>(Entity);
+
+        Object->UpdateComponents();
+        return true;
+    }
+    return false;
+}
 
 bool CStaticFunctionDefinitions::MoveObject(CClientEntity& Entity, unsigned long ulTime, const CVector& vecPosition, const CVector& vecDeltaRotation,
                                             CEasingCurve::eType a_eEasingType, double a_fEasingPeriod, double a_fEasingAmplitude, double a_fEasingOvershoot)

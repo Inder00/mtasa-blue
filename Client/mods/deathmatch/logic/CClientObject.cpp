@@ -53,6 +53,401 @@ CClientObject::CClientObject(CClientManager* pManager, ElementID ID, unsigned sh
 
     if (m_bIsLowLod)
         m_pManager->OnLowLODElementCreated();
+
+    if (m_ComponentData.empty())
+    {
+        // grab our map of components
+        std::map<SString, SObjectFrame> componentMap = GetComponentMap();
+        // get our beginning
+        std::map<SString, SObjectFrame>::iterator iter = componentMap.begin();
+        // loop through all the components.... we don't care about the RwFrame we just want the names.
+        for (; iter != componentMap.end(); iter++)
+        {
+            const SString&       strName = iter->first;
+            const SObjectFrame& frame = iter->second;
+
+            SObjectComponentData objectComponentData;
+
+            // Find parent component name
+            if (!frame.frameList.empty())
+            {
+                RwFrame* pParentRwFrame = frame.frameList.back();
+                for (std::map<SString, SObjectFrame>::const_iterator iter2 = componentMap.begin(); iter2 != componentMap.end(); iter2++)
+                {
+                    if (iter2->second.pFrame == pParentRwFrame)
+                    {
+                        objectComponentData.m_strParentName = iter2->first;
+                        break;
+                    }
+                }
+            }
+
+            // Grab our start position
+            GetComponentPosition((*iter).first, objectComponentData.m_vecComponentPosition);
+            GetComponentRotation((*iter).first, objectComponentData.m_vecComponentRotation);
+            GetComponentScale((*iter).first, objectComponentData.m_vecComponentScale);
+
+            // copy it into our original positions
+            objectComponentData.m_vecOriginalComponentPosition = objectComponentData.m_vecComponentPosition;
+            objectComponentData.m_vecOriginalComponentRotation = objectComponentData.m_vecComponentRotation;
+            objectComponentData.m_vecOriginalComponentScale = objectComponentData.m_vecComponentScale;
+
+            // insert it into our component data list
+            m_ComponentData.insert(std::pair<SString, SObjectComponentData>((*iter).first, objectComponentData));
+
+            // # prefix means hidden by default.
+            if ((*iter).first[0] == '#')
+            {
+                SetComponentVisible((*iter).first, false);
+            }
+        }
+    }
+}
+
+void CClientObject::ConvertComponentScaleBase(const SString& objectComponent, CVector& vecScale, EComponentBaseType inputBase, EComponentBaseType outputBase)
+{
+    if (inputBase != outputBase)
+    {
+        CMatrix matTemp(CVector(), CVector(), vecScale);
+        ConvertComponentMatrixBase(objectComponent, matTemp, inputBase, outputBase);
+        vecScale = matTemp.GetScale();
+    }
+}
+
+bool CClientObject::GetComponentScale(const SString& objectComponent, CVector& vecScale, EComponentBaseType outputBase)
+{
+    if (m_ComponentData.find(objectComponent) != m_ComponentData.end())
+    {
+        // fill our rotation from the cached rotation
+        vecScale = m_ComponentData[objectComponent].m_vecComponentScale;
+
+        // Convert to required base
+        ConvertComponentScaleBase(objectComponent, vecScale, EComponentBase::PARENT, outputBase);
+        return true;
+    }
+    return false;
+}
+
+void CClientObject::ConvertComponentRotationBase(const SString& objectComponent, CVector& vecRotation, EComponentBaseType inputBase,
+    EComponentBaseType outputBase)
+{
+    if (inputBase != outputBase)
+    {
+        CMatrix matTemp(CVector(), vecRotation);
+        ConvertComponentMatrixBase(objectComponent, matTemp, inputBase, outputBase);
+        vecRotation = matTemp.GetRotation();
+    }
+}
+
+bool CClientObject::GetComponentRotation(const SString& objectComponent, CVector& vecRotation, EComponentBaseType outputBase)
+{
+    if (m_ComponentData.find(objectComponent) != m_ComponentData.end())
+    {
+        // fill our rotation from the cached rotation
+        vecRotation = m_ComponentData[objectComponent].m_vecComponentRotation;
+
+        // Convert to required base
+        ConvertComponentRotationBase(objectComponent, vecRotation, EComponentBase::PARENT, outputBase);
+        return true;
+    }
+    return false;
+}
+
+void CClientObject::ConvertComponentPositionBase(const SString& objectComponent, CVector& vecPosition, EComponentBaseType inputBase,
+    EComponentBaseType outputBase)
+{
+    if (inputBase != outputBase)
+    {
+        CMatrix matTemp(vecPosition);
+        ConvertComponentMatrixBase(objectComponent, matTemp, inputBase, outputBase);
+        vecPosition = matTemp.GetPosition();
+    }
+}
+
+void CClientObject::GetComponentParentToRootMatrix(const SString& objectComponent, CMatrix& matOutParentToRoot)
+{
+    // Get first parent
+    SObjectComponentData* pComponentData = MapFind(m_ComponentData, objectComponent);
+    if (pComponentData)
+    {
+        pComponentData = MapFind(m_ComponentData, pComponentData->m_strParentName);
+    }
+
+    // Combine transforms of parent components (limit to 10 in case of problems)
+    CMatrix matCombo;
+    for (uint i = 0; pComponentData && i < 10; i++)
+    {
+        CMatrix matFrame(pComponentData->m_vecComponentPosition, pComponentData->m_vecComponentRotation, pComponentData->m_vecComponentScale);
+        matCombo = matCombo * matFrame;
+        pComponentData = MapFind(m_ComponentData, pComponentData->m_strParentName);
+    }
+
+    matOutParentToRoot = matCombo;
+}
+
+
+void CClientObject::ConvertComponentMatrixBase(const SString& objectComponent, CMatrix& matOrientation, EComponentBaseType inputBase,
+    EComponentBaseType outputBase)
+{
+    if (inputBase == outputBase)
+        return;
+
+    if (inputBase == EComponentBaseType::PARENT)
+    {
+        if (outputBase == EComponentBaseType::ROOT)
+        {
+            // Parent relative to root relative
+            CMatrix matParentToRoot;
+            GetComponentParentToRootMatrix(objectComponent, matParentToRoot);
+            matOrientation = matOrientation * matParentToRoot;
+        }
+        else if (outputBase == EComponentBaseType::WORLD)
+        {
+            // Parent relative to world
+            CMatrix matParentToRoot;
+            GetComponentParentToRootMatrix(objectComponent, matParentToRoot);
+            matOrientation = matOrientation * matParentToRoot;
+
+            CMatrix matRootToWorld;
+            GetMatrix(matRootToWorld);
+            matOrientation = matOrientation * matRootToWorld;
+        }
+    }
+    else if (inputBase == EComponentBaseType::ROOT)
+    {
+        if (outputBase == EComponentBaseType::PARENT)
+        {
+            // Root relative to parent relative
+            CMatrix matParentToRoot;
+            GetComponentParentToRootMatrix(objectComponent, matParentToRoot);
+            matOrientation = matOrientation * matParentToRoot.Inverse();
+        }
+        else if (outputBase == EComponentBaseType::WORLD)
+        {
+            // Root relative to world
+            CMatrix matRootToWorld;
+            GetMatrix(matRootToWorld);
+            matOrientation = matOrientation * matRootToWorld;
+        }
+    }
+    else if (inputBase == EComponentBaseType::WORLD)
+    {
+        if (outputBase == EComponentBaseType::PARENT)
+        {
+            // World to parent relative
+            CMatrix matRootToWorld;
+            GetMatrix(matRootToWorld);
+            matOrientation = matOrientation * matRootToWorld.Inverse();
+
+            CMatrix matParentToRoot;
+            GetComponentParentToRootMatrix(objectComponent, matParentToRoot);
+            matOrientation = matOrientation * matParentToRoot.Inverse();
+        }
+        else if (outputBase == EComponentBaseType::ROOT)
+        {
+            // World to root relative
+            CMatrix matRootToWorld;
+            GetMatrix(matRootToWorld);
+            matOrientation = matOrientation * matRootToWorld.Inverse();
+        }
+    }
+}
+
+bool CClientObject::SetComponentVisible(const SString& objectComponent, bool bVisible)
+{
+    if (m_pObject)
+    {
+        if (m_pObject->SetComponentVisible(objectComponent, bVisible))
+        {
+            // update our cache
+            m_ComponentData[objectComponent].m_bVisible = bVisible;
+
+            // set our visibility on the model
+            m_pObject->SetComponentVisible(objectComponent, bVisible);
+            return true;
+        }
+    }
+    else
+    {
+        if (m_ComponentData.find(objectComponent) != m_ComponentData.end())
+        {
+            // store our visible variable to the cached data
+            m_ComponentData[objectComponent].m_bVisible = bVisible;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CClientObject::GetComponentVisible(const SString& objectComponent, bool& bVisible)
+{
+    if (m_pObject)
+    {
+        // fill our visible variable from the actual position
+        return m_pObject->GetComponentVisible(objectComponent, bVisible);
+    }
+    else
+    {
+        if (m_ComponentData.find(objectComponent) != m_ComponentData.end())
+        {
+            // fill our visible variable from the cached data
+            bVisible = m_ComponentData[objectComponent].m_bVisible;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CClientObject::ResetComponentScale(const SString& objectComponent)
+{
+    // set our rotation on the model
+    if (SetComponentScale(objectComponent, m_ComponentData[objectComponent].m_vecOriginalComponentScale))
+    {
+        // update our cache
+        m_ComponentData[objectComponent].m_bScaleChanged = false;
+        return true;
+    }
+    return false;
+}
+bool CClientObject::ResetComponentRotation(const SString& objectComponent)
+{
+    // set our rotation on the model
+    if (SetComponentRotation(objectComponent, m_ComponentData[objectComponent].m_vecOriginalComponentRotation))
+    {
+        // update our cache
+        m_ComponentData[objectComponent].m_bRotationChanged = false;
+        return true;
+    }
+    return false;
+}
+bool CClientObject::ResetComponentPosition(const SString& objectComponent)
+{
+    // set our position on the model
+    if (SetComponentPosition(objectComponent, m_ComponentData[objectComponent].m_vecOriginalComponentPosition))
+    {
+        // update our cache
+        m_ComponentData[objectComponent].m_bPositionChanged = false;
+        return true;
+    }
+    return false;
+}
+
+bool CClientObject::SetComponentPosition(const SString& objectComponent, CVector vecPosition, EComponentBaseType inputBase)
+{
+    // Ensure position is parent relative
+    ConvertComponentPositionBase(objectComponent, vecPosition, inputBase, EComponentBase::PARENT);
+
+    if (m_pObject)
+    {
+        // set our position on the model
+        if (m_pObject->SetComponentPosition(objectComponent, vecPosition))
+        {
+            // update our cache
+            m_ComponentData[objectComponent].m_vecComponentPosition = vecPosition;
+            m_ComponentData[objectComponent].m_bPositionChanged = true;
+
+            return true;
+        }
+    }
+    else
+    {
+        if (m_ComponentData.find(objectComponent) != m_ComponentData.end())
+        {
+            // update our cache
+            m_ComponentData[objectComponent].m_vecComponentPosition = vecPosition;
+            m_ComponentData[objectComponent].m_bPositionChanged = true;
+            return true;
+        }
+    }
+    return false;
+}
+
+
+bool CClientObject::SetComponentRotation(const SString& objectComponent, CVector vecRotation, EComponentBaseType inputBase)
+{
+    // Ensure rotation is parent relative
+    ConvertComponentRotationBase(objectComponent, vecRotation, inputBase, EComponentBase::PARENT);
+
+    if (m_pObject)
+    {
+        // set our rotation on the model
+        if (m_pObject->SetComponentRotation(objectComponent, vecRotation))
+        {
+            // update our cache
+            m_ComponentData[objectComponent].m_vecComponentRotation = vecRotation;
+            m_ComponentData[objectComponent].m_bRotationChanged = true;
+
+            return true;
+        }
+    }
+    else
+    {
+        if (m_ComponentData.find(objectComponent) != m_ComponentData.end())
+        {
+            // update our cache
+            m_ComponentData[objectComponent].m_vecComponentRotation = vecRotation;
+            m_ComponentData[objectComponent].m_bRotationChanged = true;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CClientObject::SetComponentScale(const SString& objectComponent, CVector vecScale, EComponentBaseType inputBase)
+{
+    // Ensure scale is parent relative
+    ConvertComponentScaleBase(objectComponent, vecScale, inputBase, EComponentBase::PARENT);
+
+    if (m_pObject)
+    {
+        // set our rotation on the model
+        if (m_pObject->SetComponentScale(objectComponent, vecScale))
+        {
+            // update our cache
+            m_ComponentData[objectComponent].m_vecComponentScale = vecScale;
+            m_ComponentData[objectComponent].m_bScaleChanged = true;
+
+            return true;
+        }
+    }
+    else
+    {
+        if (m_ComponentData.find(objectComponent) != m_ComponentData.end())
+        {
+            // update our cache
+            m_ComponentData[objectComponent].m_vecComponentScale = vecScale;
+            m_ComponentData[objectComponent].m_bScaleChanged = true;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CClientObject::GetComponentPosition(const SString& objectComponent, CVector& vecPosition, EComponentBaseType outputBase)
+{
+    if (m_pObject)
+    {
+        // fill our position from the actual position
+        if (m_pObject->GetComponentPosition(objectComponent, vecPosition))
+        {
+            // Convert to required base
+            ConvertComponentPositionBase(objectComponent, vecPosition, EComponentBase::PARENT, outputBase);
+            return true;
+        }
+    }
+    else
+    {
+        if (m_ComponentData.find(objectComponent) != m_ComponentData.end())
+        {
+            // fill our position from the cached position
+            vecPosition = m_ComponentData[objectComponent].m_vecComponentPosition;
+
+            // Convert to required base
+            ConvertComponentPositionBase(objectComponent, vecPosition, EComponentBase::PARENT, outputBase);
+            return true;
+        }
+    }
+    return false;
 }
 
 CClientObject::~CClientObject(void)
@@ -157,6 +552,106 @@ void CClientObject::SetRotationDegrees(const CVector& vecRotation)
     vecTemp.fZ = vecRotation.fZ * 3.1415926535897932384626433832795f / 180.0f;
 
     SetRotationRadians(vecTemp);
+}
+
+void CClientObject::UpdateComponents()
+{
+    if (m_pObject)
+    {
+        m_pObject->UpdateComponents();
+        if (m_ComponentData.empty())
+        {
+            // grab our map of components
+            std::map<SString, SObjectFrame> componentMap = m_pObject->GetComponentMap();
+            // get our beginning
+            std::map<SString, SObjectFrame>::iterator iter = componentMap.begin();
+            // loop through all the components.... we don't care about the RwFrame we just want the names.
+            for (; iter != componentMap.end(); iter++)
+            {
+                const SString&       strName = iter->first;
+                const SObjectFrame& frame = iter->second;
+
+                SObjectComponentData objectComponentData;
+
+                // Find parent component name
+                if (!frame.frameList.empty())
+                {
+                    RwFrame* pParentRwFrame = frame.frameList.back();
+                    for (std::map<SString, SObjectFrame>::const_iterator iter2 = componentMap.begin(); iter2 != componentMap.end(); iter2++)
+                    {
+                        if (iter2->second.pFrame == pParentRwFrame)
+                        {
+                            objectComponentData.m_strParentName = iter2->first;
+                            break;
+                        }
+                    }
+                }
+
+                // Grab our start position
+                GetComponentPosition((*iter).first, objectComponentData.m_vecComponentPosition);
+                GetComponentRotation((*iter).first, objectComponentData.m_vecComponentRotation);
+                GetComponentScale((*iter).first, objectComponentData.m_vecComponentScale);
+
+                // copy it into our original positions
+                objectComponentData.m_vecOriginalComponentPosition = objectComponentData.m_vecComponentPosition;
+                objectComponentData.m_vecOriginalComponentRotation = objectComponentData.m_vecComponentRotation;
+                objectComponentData.m_vecOriginalComponentScale = objectComponentData.m_vecComponentScale;
+
+                // insert it into our component data list
+                m_ComponentData.insert(std::pair<SString, SObjectComponentData>((*iter).first, objectComponentData));
+
+                // # prefix means hidden by default.
+                if ((*iter).first[0] == '#')
+                {
+                    SetComponentVisible((*iter).first, false);
+                }
+            }
+        }
+        // Grab our component data
+        std::map<SString, SObjectComponentData>::iterator iter = m_ComponentData.begin();
+        // Loop through our component data
+        for (; iter != m_ComponentData.end(); iter++)
+        {
+            // store our string in a temporary variable
+            SString strTemp = (*iter).first;
+            // get our poisition and rotation and store it into
+            // GetComponentPosition ( strTemp, (*iter).second.m_vecComponentPosition );
+            // GetComponentRotation ( strTemp, (*iter).second.m_vecComponentRotation );
+            // is our position changed?
+            if ((*iter).second.m_bPositionChanged)
+            {
+                // Make sure it's different
+                if ((*iter).second.m_vecOriginalComponentPosition != (*iter).second.m_vecComponentPosition)
+                {
+                    // apply our new position
+                    SetComponentPosition(strTemp, (*iter).second.m_vecComponentPosition);
+                }
+            }
+            // is our rotation changed?
+            if ((*iter).second.m_bRotationChanged)
+            {
+                // Make sure it's different
+                if ((*iter).second.m_vecOriginalComponentRotation != (*iter).second.m_vecComponentRotation)
+                {
+                    // apple our new rotation
+                    SetComponentRotation(strTemp, (*iter).second.m_vecComponentRotation);
+                }
+            }
+            // is our scale changed?
+            if ((*iter).second.m_bScaleChanged)
+            {
+                // Make sure it's different
+                if ((*iter).second.m_vecOriginalComponentScale != (*iter).second.m_vecComponentScale)
+                {
+                    // apple our new scale
+                    SetComponentScale(strTemp, (*iter).second.m_vecComponentScale);
+                }
+            }
+            // set our visibility
+            SetComponentVisible(strTemp, (*iter).second.m_bVisible);
+        }
+    }
+
 }
 
 void CClientObject::SetRotationRadians(const CVector& vecRotation)
@@ -544,6 +1039,97 @@ void CClientObject::Create(void)
                 // Validate this entity again
                 m_pManager->RestoreEntity(this);
 
+                if (m_ComponentData.empty())
+                {
+                    // grab our map of components
+                    std::map<SString, SObjectFrame> componentMap = m_pObject->GetComponentMap();
+                    // get our beginning
+                    std::map<SString, SObjectFrame>::iterator iter = componentMap.begin();
+                    // loop through all the components.... we don't care about the RwFrame we just want the names.
+                    for (; iter != componentMap.end(); iter++)
+                    {
+                        const SString&       strName = iter->first;
+                        const SObjectFrame& frame = iter->second;
+
+                        SObjectComponentData objectComponentData;
+
+                        // Find parent component name
+                        if (!frame.frameList.empty())
+                        {
+                            RwFrame* pParentRwFrame = frame.frameList.back();
+                            for (std::map<SString, SObjectFrame>::const_iterator iter2 = componentMap.begin(); iter2 != componentMap.end(); iter2++)
+                            {
+                                if (iter2->second.pFrame == pParentRwFrame)
+                                {
+                                    objectComponentData.m_strParentName = iter2->first;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Grab our start position
+                        GetComponentPosition((*iter).first, objectComponentData.m_vecComponentPosition);
+                        GetComponentRotation((*iter).first, objectComponentData.m_vecComponentRotation);
+                        GetComponentScale((*iter).first, objectComponentData.m_vecComponentScale);
+
+                        // copy it into our original positions
+                        objectComponentData.m_vecOriginalComponentPosition = objectComponentData.m_vecComponentPosition;
+                        objectComponentData.m_vecOriginalComponentRotation = objectComponentData.m_vecComponentRotation;
+                        objectComponentData.m_vecOriginalComponentScale = objectComponentData.m_vecComponentScale;
+
+                        // insert it into our component data list
+                        m_ComponentData.insert(std::pair<SString, SObjectComponentData>((*iter).first, objectComponentData));
+
+                        // # prefix means hidden by default.
+                        if ((*iter).first[0] == '#')
+                        {
+                            SetComponentVisible((*iter).first, false);
+                        }
+                    }
+                }
+                // Grab our component data
+                std::map<SString, SObjectComponentData>::iterator iter = m_ComponentData.begin();
+                // Loop through our component data
+                for (; iter != m_ComponentData.end(); iter++)
+                {
+                    // store our string in a temporary variable
+                    SString strTemp = (*iter).first;
+                    // get our poisition and rotation and store it into
+                    // GetComponentPosition ( strTemp, (*iter).second.m_vecComponentPosition );
+                    // GetComponentRotation ( strTemp, (*iter).second.m_vecComponentRotation );
+                    // is our position changed?
+                    if ((*iter).second.m_bPositionChanged)
+                    {
+                        // Make sure it's different
+                        if ((*iter).second.m_vecOriginalComponentPosition != (*iter).second.m_vecComponentPosition)
+                        {
+                            // apply our new position
+                            SetComponentPosition(strTemp, (*iter).second.m_vecComponentPosition);
+                        }
+                    }
+                    // is our rotation changed?
+                    if ((*iter).second.m_bRotationChanged)
+                    {
+                        // Make sure it's different
+                        if ((*iter).second.m_vecOriginalComponentRotation != (*iter).second.m_vecComponentRotation)
+                        {
+                            // apple our new rotation
+                            SetComponentRotation(strTemp, (*iter).second.m_vecComponentRotation);
+                        }
+                    }
+                    // is our scale changed?
+                    if ((*iter).second.m_bScaleChanged)
+                    {
+                        // Make sure it's different
+                        if ((*iter).second.m_vecOriginalComponentScale != (*iter).second.m_vecComponentScale)
+                        {
+                            // apple our new scale
+                            SetComponentScale(strTemp, (*iter).second.m_vecComponentScale);
+                        }
+                    }
+                    // set our visibility
+                    SetComponentVisible(strTemp, (*iter).second.m_bVisible);
+                }
                 // Tell the streamer we've created this object
                 NotifyCreate();
 

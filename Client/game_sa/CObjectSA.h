@@ -150,7 +150,28 @@ public:
     CVector* GetScale();
     void     ResetScale();
 
+    SObjectFrame* GetObjectComponent(const SString& objectComponent);
+    void          UpdateComponents(void);
+    void          FinalizeFramesList(void);
+    bool                              SetComponentRotation(const SString& objectComponent, const CVector& vecRotation);
+    bool                              GetComponentRotation(const SString& objectComponent, CVector& vecPositionModelling);
+    bool                              SetComponentPosition(const SString& objectComponent, const CVector& vecPosition);
+    bool                              GetComponentPosition(const SString& objectComponent, CVector& vecPositionModelling);
+    bool                              SetComponentScale(const SString& objectComponent, const CVector& vecScale);
+    bool                              GetComponentScale(const SString& objectComponent, CVector& vecScaleModelling);
+    bool                              IsComponentPresent(const SString& objectComponent);
+    bool                              SetComponentMatrix(const SString& objectComponent, const CMatrix& matOrientation);
+    bool                              GetComponentMatrix(const SString& objectComponent, CMatrix& matOutOrientation);
+    bool                              GetComponentParentToRootMatrix(const SString& objectComponent, CMatrix& matOutParentToRoot);
+    bool                              SetComponentVisible(const SString& objectComponent, bool bVisible);
+    void                              AddComponent(RwFrame* pFrame, bool bReadOnly);
+    bool                              GetComponentVisible(const SString& objectComponent, bool& bVisible);
+    std::map<SString, SObjectFrame>& GetComponentMap(void) { return m_ExtraFrames; }
+
+
 private:
+    std::map<SString, SObjectFrame>         m_ExtraFrames;
+
     void CheckForGangTag();
 };
 

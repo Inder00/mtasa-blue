@@ -625,6 +625,8 @@ public:
     static bool SetMoonSize(int iMoonSize);
     static bool ResetMoonSize(void);
 
+    static bool UpdateComponents(CElement* pElement);
+
     // Loaded Map Functions
     static CElement* GetRootElement(void);
     static CElement* LoadMapData(CLuaMain* pLuaMain, CElement* pParent, CXMLNode* pNode);

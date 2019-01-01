@@ -784,6 +784,8 @@ public:
     static bool              SetEntryHandling(CHandlingEntry* pEntry, eHandlingProperty eProperty, unsigned int uiValue);
     static bool              SetEntryHandling(CHandlingEntry* pEntry, eHandlingProperty eProperty, unsigned char ucValue);
 
+    static bool UpdateComponents(CClientObject* Entity);
+
     // Version funcs
     static unsigned long GetVersion();
     static const char*   GetVersionString();

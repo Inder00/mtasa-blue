@@ -41,4 +41,17 @@ public:
     LUA_DECLARE(ToggleObjectRespawn);
     LUA_DECLARE(SetObjectMass);
     LUA_DECLARE(SetObjectProperty);
+
+    LUA_DECLARE(SetObjectComponentPosition);
+    LUA_DECLARE_OOP(GetObjectComponentPosition);
+    LUA_DECLARE(SetObjectComponentRotation);
+    LUA_DECLARE_OOP(GetObjectComponentRotation);
+    LUA_DECLARE(SetObjectComponentScale);
+    LUA_DECLARE_OOP(GetObjectComponentScale);
+    LUA_DECLARE(ResetObjectComponentPosition);
+    LUA_DECLARE(ResetObjectComponentRotation);
+    LUA_DECLARE(ResetObjectComponentScale);
+    LUA_DECLARE(SetObjectComponentVisible);
+    LUA_DECLARE(GetObjectComponentVisible);
+    LUA_DECLARE(GetObjectComponents);
 };

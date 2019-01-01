@@ -13,6 +13,19 @@
 
 #include "CPhysical.h"
 
+class CPed;
+class CObject;
+class CColModel;
+
+struct SObjectFrame
+{
+    SObjectFrame(RwFrame* pFrame = NULL, bool bReadOnly = true) : pFrame(pFrame), bReadOnly(bReadOnly) {}
+
+    RwFrame*              pFrame;
+    bool                  bReadOnly;
+    std::vector<RwFrame*> frameList;            // Frames from root to parent
+};
+
 class CVehicle;
 class CPed;
 class CObjectSAInterface;
@@ -39,4 +52,18 @@ public:
     virtual void     SetScale(float fX, float fY, float fZ) = 0;
     virtual CVector* GetScale() = 0;
     virtual void     ResetScale() = 0;
+    virtual void     UpdateComponents() = 0;
+    virtual bool                              SetComponentRotation(const SString& vehicleComponent, const CVector& vecRotation) = 0;
+    virtual bool                              GetComponentRotation(const SString& vehicleComponent, CVector& vecRotation) = 0;
+    virtual bool                              SetComponentPosition(const SString& vehicleComponent, const CVector& vecPosition) = 0;
+    virtual bool                              GetComponentPosition(const SString& vehicleComponent, CVector& vecPositionModelling) = 0;
+    virtual bool                              SetComponentScale(const SString& vehicleComponent, const CVector& vecScale) = 0;
+    virtual bool                              GetComponentScale(const SString& vehicleComponent, CVector& vecScaleModelling) = 0;
+    virtual bool                              IsComponentPresent(const SString& vehicleComponent) = 0;
+    virtual bool                              SetComponentMatrix(const SString& vehicleComponent, const CMatrix& matOrientation) = 0;
+    virtual bool                              GetComponentMatrix(const SString& vehicleComponent, CMatrix& matOutOrientation) = 0;
+    virtual bool                              GetComponentParentToRootMatrix(const SString& vehicleComponent, CMatrix& matOutParentToRoot) = 0;
+    virtual bool                              SetComponentVisible(const SString& vehicleComponent, bool bVisible) = 0;
+    virtual bool                              GetComponentVisible(const SString& vehicleComponent, bool& bVisible) = 0;
+    virtual std::map<SString, SObjectFrame>& GetComponentMap(void) = 0;
 };

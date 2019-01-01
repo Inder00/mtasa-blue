@@ -21,6 +21,28 @@ struct SLastSyncedObjectData
     float   fHealth;
 };
 
+struct SObjectComponentData
+{
+    SObjectComponentData()
+    {
+        m_bPositionChanged = false;
+        m_bRotationChanged = false;
+        m_bScaleChanged = false;
+        m_bVisible = true;
+    }
+    SString m_strParentName;
+    CVector m_vecComponentPosition;                    // Parent relative
+    CVector m_vecComponentRotation;                    // Parent relative radians
+    CVector m_vecComponentScale;                       // Parent relative
+    CVector m_vecOriginalComponentPosition;            // Parent relative
+    CVector m_vecOriginalComponentRotation;            // Parent relative radians
+    CVector m_vecOriginalComponentScale;               // Parent relative
+    bool    m_bPositionChanged;
+    bool    m_bRotationChanged;
+    bool    m_bScaleChanged;
+    bool    m_bVisible;
+};
+
 class CClientObject : public CClientStreamElement
 {
     DECLARE_CLASS(CClientObject, CClientStreamElement)
@@ -117,6 +139,40 @@ public:
     bool IsBeingRespawned(void) { return m_bBeingRespawned; };
     void SetBeingRespawned(bool bBeingRespawned) { m_bBeingRespawned = bBeingRespawned; };
 
+    void UpdateComponents();
+
+    std::map<SString, SObjectComponentData>::iterator ComponentsBegin(void) { return m_ComponentData.begin(); }
+    std::map<SString, SObjectComponentData>::iterator ComponentsEnd(void) { return m_ComponentData.end(); }
+
+    std::map<SString, SObjectFrame>& GetComponentMap(void) { return m_ExtraFrames; }
+
+    void ConvertComponentPositionBase(const SString& objectComponent, CVector& vecPosition, EComponentBaseType inputBase,
+        EComponentBaseType outputBase);
+    void ConvertComponentRotationBase(const SString& objectComponent, CVector& vecRotation, EComponentBaseType inputBase,
+        EComponentBaseType outputBase);
+    void ConvertComponentMatrixBase(const SString& objectComponent, CMatrix& matOrientation, EComponentBaseType inputBase,
+        EComponentBaseType outputBase);
+    void GetComponentParentToRootMatrix(const SString& objectComponent, CMatrix& matOutParentToRoot);
+    void ConvertComponentScaleBase(const SString& objectComponent, CVector& vecScale, EComponentBaseType inputBase, EComponentBaseType outputBase);
+
+
+    bool ResetComponentPosition(const SString& objectComponent);
+    bool SetComponentPosition(const SString& objectComponent, CVector vecPosition, EComponentBaseType base = EComponentBase::PARENT);
+    bool GetComponentPosition(const SString& objectComponent, CVector& vecPosition, EComponentBaseType base = EComponentBase::PARENT);
+
+    bool ResetComponentRotation(const SString& objectComponent);
+    bool SetComponentRotation(const SString& objectComponent, CVector vecRotation, EComponentBaseType base = EComponentBase::PARENT);
+    bool GetComponentRotation(const SString& objectComponent, CVector& vecRotation, EComponentBaseType base = EComponentBase::PARENT);
+
+    bool ResetComponentScale(const SString& objectComponent);
+    bool SetComponentScale(const SString& objectComponent, CVector vecScale, EComponentBaseType base = EComponentBase::PARENT);
+    bool GetComponentScale(const SString& objectComponent, CVector& vecScale, EComponentBaseType base = EComponentBase::PARENT);
+
+    bool                                               SetComponentVisible(const SString& objectComponent, bool bVisible);
+    bool                                               GetComponentVisible(const SString& objectComponent, bool& bVisible);
+
+
+
 protected:
     void StreamIn(bool bInstantly);
     void StreamOut(void);
@@ -156,12 +212,13 @@ protected:
     CVector m_vecMoveSpeed;
     CVector m_vecTurnSpeed;
 
-    const bool                  m_bIsLowLod;                    // true if this object is low LOD
-    CClientObject*              m_pLowLodObject;                // Pointer to low LOD version of this object
-    std::vector<CClientObject*> m_HighLodObjectList;            // List of objects that use this object as a low LOD version
-    bool                        m_IsHiddenLowLod;               // true if this object is low LOD and should not be drawn
-
+    const bool                              m_bIsLowLod;                    // true if this object is low LOD
+    CClientObject*                          m_pLowLodObject;                // Pointer to low LOD version of this object
+    std::vector<CClientObject*>             m_HighLodObjectList;            // List of objects that use this object as a low LOD version
+    bool                                    m_IsHiddenLowLod;               // true if this object is low LOD and should not be drawn
+    std::map<SString, SObjectComponentData> m_ComponentData;
 public:
+    std::map<SString, SObjectFrame> m_ExtraFrames;
     CObject*              m_pObject;
     SLastSyncedObjectData m_LastSyncedData;
 };
