@@ -40,6 +40,8 @@ public:
     LUA_DECLARE(GetLatentEventHandles);
     LUA_DECLARE(GetLatentEventStatus);
     LUA_DECLARE(CancelLatentEvent);
+    LUA_DECLARE(SetServerEventFiltered);
+    LUA_DECLARE(IsServerEventFiltered);
 
     // Misc functions
     LUA_DECLARE(DownloadFile);

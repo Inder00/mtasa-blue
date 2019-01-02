@@ -391,3 +391,48 @@ int CLuaFunctionDefs::CancelLatentEvent(lua_State* luaVM)
     lua_pushboolean(luaVM, false);
     return 1;
 }
+
+int CLuaFunctionDefs::SetServerEventFiltered(lua_State* luaVM)
+{
+    //  bool setServerEventFiltered ( string eventName, bool enabled )
+
+    CScriptArgReader argStream(luaVM);
+    eEventsFilter eEvent;
+    bool bEnabled;
+
+    argStream.ReadEnumString(eEvent);
+    argStream.ReadBool(bEnabled);
+    if (!argStream.HasErrors())
+    {
+        g_pClientGame->SetEventFiltered(eEvent, bEnabled);
+        lua_pushboolean(luaVM, true);
+        return 1;
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    // Failed
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaFunctionDefs::IsServerEventFiltered(lua_State* luaVM)
+{
+    //  bool isServerEventFiltered ( string eventName )
+
+    CScriptArgReader argStream(luaVM);
+    eEventsFilter eEvent;
+
+    argStream.ReadEnumString(eEvent);
+    if (!argStream.HasErrors())
+    {
+        lua_pushboolean(luaVM, g_pClientGame->IsEventFiltered(eEvent));
+        return 1;
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    // Failed
+    lua_pushnil(luaVM);
+    return 1;
+}

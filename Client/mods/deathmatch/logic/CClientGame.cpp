@@ -98,6 +98,7 @@ CClientGame::CClientGame(bool bLocalPlay)
     m_dwWanted = 0;
     m_lastWeaponSlot = WEAPONSLOT_MAX;            // last stored weapon slot, for weapon slot syncing to server (sets to invalid value)
     ResetAmmoInClip();
+    ResetEventFiltered();
 
     m_bNoNewVehicleTask = false;
     m_NoNewVehicleTaskReasonID = INVALID_ELEMENT_ID;
@@ -1883,9 +1884,12 @@ void CClientGame::UpdatePlayerTarget(void)
             TargetID = m_pTargetedEntity->GetID();
         }
 
-        CBitStream bitStream;
-        bitStream.pBitStream->Write(TargetID);
-        m_pNetAPI->RPC(PLAYER_TARGET, bitStream.pBitStream);
+        if (!IsEventFiltered(EVENT_ON_PLAYER_CLICK))
+        {
+            CBitStream bitStream;
+            bitStream.pBitStream->Write(TargetID);
+            m_pNetAPI->RPC(PLAYER_TARGET, bitStream.pBitStream);
+        }
 
         // Call our onClientPlayerTarget event
         CLuaArguments Arguments;
@@ -2598,6 +2602,7 @@ bool CClientGame::ProcessMessageForCursorEvents(HWND hwnd, UINT uMsg, WPARAM wPa
                         m_pRootEntity->CallEvent("onClientClick", Arguments, false);
 
                         // Send the button, cursor position, 3d position and the entity collided with
+
                         CBitStream bitStream;
 
                         SMouseButtonSync button;
@@ -2613,13 +2618,21 @@ bool CClientGame::ProcessMessageForCursorEvents(HWND hwnd, UINT uMsg, WPARAM wPa
 
                         if (CollisionEntityID != INVALID_ELEMENT_ID)
                         {
-                            bitStream.pBitStream->WriteBit(true);
-                            bitStream.pBitStream->Write(CollisionEntityID);
+                            if (!IsEventFiltered(EVENT_ON_ELEMENT_CLICKED))
+                            {
+                                bitStream.pBitStream->WriteBit(true);
+                                bitStream.pBitStream->Write(CollisionEntityID);
+                                m_pNetAPI->RPC(CURSOR_EVENT, bitStream.pBitStream);
+                            }
                         }
                         else
-                            bitStream.pBitStream->WriteBit(false);
-
-                        m_pNetAPI->RPC(CURSOR_EVENT, bitStream.pBitStream);
+                        {
+                            if (!IsEventFiltered(EVENT_ON_PLAYER_CLICK))
+                            {
+                                bitStream.pBitStream->WriteBit(false);
+                                m_pNetAPI->RPC(CURSOR_EVENT, bitStream.pBitStream);
+                            }
+                        }
 
                         if (strcmp(szState, "down") == 0)
                         {
@@ -6974,4 +6987,29 @@ void CClientGame::VehicleWeaponHitHandler(SVehicleWeaponHitEvent& event)
     arguments.PushNumber(event.iModel);
     arguments.PushNumber(event.iColSurface);
     pVehicle->CallEvent("onClientVehicleWeaponHit", arguments, false);
+}
+
+void CClientGame::SetEventFiltered(eEventsFilter eEvent, bool bFiltered)
+{
+    if (IsEventFiltered(eEvent) != bFiltered)
+    {
+        if (bFiltered)
+        {
+            m_filteredEvents.insert(eEvent);
+        }
+        else
+        {
+            std::set<eEventsFilter>::iterator it = m_filteredEvents.find(eEvent);
+
+            if (it != m_filteredEvents.end())
+            {
+                m_filteredEvents.erase(it);
+            }
+        }
+    }
+}
+
+void CClientGame::ResetEventFiltered(void)
+{
+    m_filteredEvents.clear();
 }

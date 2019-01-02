@@ -63,6 +63,15 @@ enum eEulerRotationOrder
 
 DECLARE_ENUM(eEulerRotationOrder);
 
+enum eEventsFilter
+{
+    EVENT_ON_ELEMENT_CLICKED,
+    EVENT_ON_PLAYER_CLICK,
+    EVENT_ON_PLAYER_TARGET,
+};
+
+DECLARE_ENUM(eEventsFilter);
+
 DECLARE_ENUM(EHashFunction::EHashFunctionType);
 DECLARE_ENUM_CLASS(PasswordHashFunction);
 DECLARE_ENUM_CLASS(StringEncryptFunction);

@@ -221,6 +221,8 @@ void CLuaManager::LoadCFunctions(void)
         {"getLatentEventHandles", CLuaFunctionDefs::GetLatentEventHandles},
         {"getLatentEventStatus", CLuaFunctionDefs::GetLatentEventStatus},
         {"cancelLatentEvent", CLuaFunctionDefs::CancelLatentEvent},
+        {"setServerEventFiltered", CLuaFunctionDefs::SetServerEventFiltered},
+        {"isServerEventFiltered", CLuaFunctionDefs::IsServerEventFiltered},
 
         // Output funcs
         {"outputConsole", CLuaFunctionDefs::OutputConsole},

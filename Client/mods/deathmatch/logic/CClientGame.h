@@ -619,6 +619,10 @@ public:
     void PedStepHandler(CPedSAInterface* pPed, bool bFoot);
     void VehicleWeaponHitHandler(SVehicleWeaponHitEvent& event);
 
+    void SetEventFiltered(eEventsFilter eEvent, bool bFiltered);
+    bool IsEventFiltered(eEventsFilter eEvent) { return m_filteredEvents.find(eEvent) != m_filteredEvents.end(); };
+    void ResetEventFiltered(void);
+
 private:
     eStatus       m_Status;
     eServerType   m_ServerType;
@@ -834,6 +838,8 @@ private:
     std::map<unsigned int, std::shared_ptr<CClientIFP> > m_mapOfIfpPointers;
     std::set<CClientPed*>                                m_setOfPedPointers;
     AnimAssociations_type                                m_mapOfCustomAnimationAssociations;
+
+    std::set<eEventsFilter> m_filteredEvents; // if event exists, isn't triggered serverside
 };
 
 extern CClientGame* g_pClientGame;
