@@ -42,6 +42,7 @@ class CClientManager;
 #include "CClientWeaponManager.h"
 #include "CClientEffectManager.h"
 #include "CClientPointLightsManager.h"
+#include "CClientRendererManager.h"
 
 class CClientProjectileManager;
 class CClientExplosionManager;
@@ -94,6 +95,7 @@ public:
     CClientWeaponManager*        GetWeaponManager(void) { return m_pWeaponManager; }
     CClientEffectManager*        GetEffectManager(void) { return m_pEffectManager; }
     CClientPointLightsManager*   GetPointLightsManager(void) { return m_pPointLightsManager; }
+    CClientRendererManager*      GetRendererManager(void) { return m_pRendererManager; }
 
     bool IsGameLoaded(void) { return g_pGame->GetSystemState() == 9 && !m_bGameUnloadedFlag && g_pCore->GetNetwork()->GetServerBitStreamVersion(); }
     bool IsBeingDeleted(void) { return m_bBeingDeleted; }
@@ -145,6 +147,7 @@ private:
     CClientEffectManager*        m_pEffectManager;
     CClientPointLightsManager*   m_pPointLightsManager;
     CClientPacketRecorder*       m_pPacketRecorder;
+    CClientRendererManager*      m_pRendererManager;
     bool                         m_bBeingDeleted;
     bool                         m_bGameUnloadedFlag;
     int                          m_iNumLowLODElements;

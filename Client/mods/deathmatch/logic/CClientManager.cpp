@@ -52,6 +52,7 @@ CClientManager::CClientManager(void)
     m_pWeaponManager = new CClientWeaponManager(this);
     m_pEffectManager = new CClientEffectManager(this);
     m_pPointLightsManager = new CClientPointLightsManager(this);
+    m_pRendererManager = new CClientRendererManager(this);
     m_pPacketRecorder = new CClientPacketRecorder(this);
 
     m_bBeingDeleted = false;
