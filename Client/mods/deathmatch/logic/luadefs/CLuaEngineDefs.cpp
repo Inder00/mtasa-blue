@@ -34,6 +34,9 @@ void CLuaEngineDefs::LoadFunctions(void)
         {"engineGetModelIDFromName", EngineGetModelIDFromName},
         {"engineGetModelTextureNames", EngineGetModelTextureNames},
         {"engineGetVisibleTextureNames", EngineGetVisibleTextureNames},
+        {"engineSetDrawDistance", EngineSetDrawDistance },
+        {"engineGetDrawDistance", EngineGetDrawDistance },
+        {"engineResetDrawDistance", EngineResetDrawDistance },
 
         // CLuaCFunctions::AddFunction ( "engineReplaceMatchingAtomics", EngineReplaceMatchingAtomics );
         // CLuaCFunctions::AddFunction ( "engineReplaceWheelAtomics", EngineReplaceWheelAtomics );
@@ -905,6 +908,72 @@ int CLuaEngineDefs::EngineGetVisibleTextureNames(lua_State* luaVM)
             return 1;
         }
         argStream.SetCustomError("Expected valid model ID or name at argument 1");
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    // We failed
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineSetDrawDistance(lua_State* luaVM)
+{
+    //  bool EngineSetDrawDistance ( string distance-thing, float distance )
+    EDrawThingDistance eDrawThing;
+    float fDistance;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadEnumString(eDrawThing);
+    argStream.ReadNumber(fDistance);
+
+    if (!argStream.HasErrors())
+    {
+        g_pGame->GetSettings()->SetDrawThingValue(eDrawThing, fDistance);
+        lua_pushboolean(luaVM, true);
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    // We failed
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineGetDrawDistance(lua_State* luaVM)
+{
+    // float EngineGetDrawDistance ( string distance-thing )
+    EDrawThingDistance eDrawThing;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadEnumString(eDrawThing);
+
+    if (!argStream.HasErrors())
+    {
+        lua_pushnumber(luaVM, g_pGame->GetSettings()->GetDrawThingValue(eDrawThing));
+        return 1;
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    // We failed
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaEngineDefs::EngineResetDrawDistance(lua_State* luaVM)
+{
+    // float EngineGetDrawDistance ( string distance-thing )
+    EDrawThingDistance eDrawThing;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadEnumString(eDrawThing);
+
+    if (!argStream.HasErrors())
+    {
+        g_pGame->GetSettings()->ResetDrawThingValue(eDrawThing);
+        lua_pushnumber(luaVM, true);
+        return 1;
     }
     if (argStream.HasErrors())
         m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());

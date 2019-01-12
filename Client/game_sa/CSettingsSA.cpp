@@ -35,8 +35,6 @@ void HOOK_GetFxQuality();
 DWORD RETURN_StoreShadowForVehicle = 0x70BDA9;
 void  HOOK_StoreShadowForVehicle();
 
-float ms_fVehicleLODDistance, ms_fTrainPlaneLODDistance, ms_fPedsLODDistance;
-
 CSettingsSA::CSettingsSA(void)
 {
     m_pInterface = (CSettingsSAInterface*)CLASS_CMenuManager;
@@ -50,12 +48,30 @@ CSettingsSA::CSettingsSA(void)
     m_iDesktopHeight = 0;
     MemPut<BYTE>(0x6FF420, 0xC3);            // Truncate CalculateAspectRatio
 
-    MemPut(0x732926, &ms_fVehicleLODDistance);
-    MemPut(0x732940, &ms_fTrainPlaneLODDistance);
-    MemPut(0x73295E, &ms_fPedsLODDistance);
+    // Same order as EDrawThingDistance enum
+    vecDistanceThing = {
+        new SDistanceThing(0x73295E, 60.0f, 50.0f, 500.0f), // Peds
+        new SDistanceThing(0x732926, 70.0f, 50.0f, 500.0f), // Vehicles
+        new SDistanceThing(0x732940, 149.8f, 50.0f, 500.0f), // Train, planes
+    };
 
     // Set "radar map and radar" as default radar mode
     SetRadarMode(RADAR_MODE_ALL);
+}
+
+void CSettingsSA::SetDrawThingValue(EDrawThingDistance eDrawThing, float fValue)
+{
+    vecDistanceThing[eDrawThing]->Set(fValue);
+}
+
+float CSettingsSA::GetDrawThingValue(EDrawThingDistance eDrawThing)
+{
+    return vecDistanceThing[eDrawThing]->Get();
+}
+
+void CSettingsSA::ResetDrawThingValue(EDrawThingDistance eDrawThing)
+{
+    vecDistanceThing[eDrawThing]->Reset();
 }
 
 bool CSettingsSA::IsWideScreenEnabled(void)
@@ -564,8 +580,8 @@ void CSettingsSA::SetFieldOfViewVehicleMax(float fAngle, bool bFromScript)
 ////////////////////////////////////////////////
 void CSettingsSA::SetVehiclesLODDistance(float fVehiclesLODDistance, float fTrainsPlanesLODDistance)
 {
-    ms_fVehicleLODDistance = fVehiclesLODDistance;
-    ms_fTrainPlaneLODDistance = fTrainsPlanesLODDistance;
+    vecDistanceThing[DRAW_THING_DISTANCE_VEHICLE]->Set(fVehiclesLODDistance);
+    vecDistanceThing[DRAW_THING_DISTANCE_TRAIN]->Set(fTrainsPlanesLODDistance);
 }
 
 void CSettingsSA::ResetVehiclesLODDistance(void)
@@ -575,20 +591,20 @@ void CSettingsSA::ResetVehiclesLODDistance(void)
 
     if (bHighDetailVehicles)
     {
-        ms_fVehicleLODDistance = MAX_VEHICLE_LOD_DISTANCE;
-        ms_fTrainPlaneLODDistance = MAX_VEHICLE_LOD_DISTANCE;
+        vecDistanceThing[DRAW_THING_DISTANCE_VEHICLE]->Set(MAX_VEHICLE_LOD_DISTANCE);
+        vecDistanceThing[DRAW_THING_DISTANCE_TRAIN]->Set(MAX_VEHICLE_LOD_DISTANCE);
     }
     else
     {
-        ms_fVehicleLODDistance = DEFAULT_VEHICLE_LOD_DISTANCE;
-        ms_fTrainPlaneLODDistance = DEFAULT_VEHICLE_LOD_DISTANCE * TRAIN_LOD_DISTANCE_MULTIPLIER;
+        vecDistanceThing[DRAW_THING_DISTANCE_VEHICLE]->Set(DEFAULT_VEHICLE_LOD_DISTANCE);
+        vecDistanceThing[DRAW_THING_DISTANCE_TRAIN]->Set(DEFAULT_VEHICLE_LOD_DISTANCE * TRAIN_LOD_DISTANCE_MULTIPLIER);
     }
 }
 
 void CSettingsSA::GetVehiclesLODDistance(float& fVehiclesLODDistance, float& fTrainsPlanesLODDistance)
 {
-    fVehiclesLODDistance = ms_fVehicleLODDistance;
-    fTrainsPlanesLODDistance = ms_fTrainPlaneLODDistance;
+    fVehiclesLODDistance = vecDistanceThing[DRAW_THING_DISTANCE_VEHICLE]->Get();
+    fTrainsPlanesLODDistance = vecDistanceThing[DRAW_THING_DISTANCE_TRAIN]->Get();
 }
 
 ////////////////////////////////////////////////
@@ -599,12 +615,12 @@ void CSettingsSA::GetVehiclesLODDistance(float& fVehiclesLODDistance, float& fTr
  
 void CSettingsSA::SetPedsLODDistance(float fPedsLODDistance)
 {
-    ms_fPedsLODDistance = fPedsLODDistance;
+    vecDistanceThing[DRAW_THING_DISTANCE_PED]->Set(fPedsLODDistance);
 }
  
 float CSettingsSA::GetPedsLODDistance()
 {
-    return ms_fPedsLODDistance;
+    return vecDistanceThing[DRAW_THING_DISTANCE_PED]->Get();
 }
  
 void CSettingsSA::ResetPedsLODDistance()
@@ -613,11 +629,11 @@ void CSettingsSA::ResetPedsLODDistance()
     g_pCore->GetCVars()->Get("high_detail_peds", bHighDetailPeds);
     if (bHighDetailPeds)
     {
-        ms_fPedsLODDistance = MAX_PEDS_LOD_DISTANCE;
+        vecDistanceThing[DRAW_THING_DISTANCE_PED]->Set(MAX_PEDS_LOD_DISTANCE);
     }
     else
     {
-        ms_fPedsLODDistance = DEFAULT_PEDS_LOD_DISTANCE;
+        vecDistanceThing[DRAW_THING_DISTANCE_PED]->Set(DEFAULT_PEDS_LOD_DISTANCE);
     }
 }
 

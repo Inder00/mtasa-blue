@@ -78,6 +78,32 @@ struct CSettingsSAInterface            // see code around 0x57CE9A for where the
     DWORD dwPrevVideoMode;            // 0xD8
 };
 
+struct SDistanceThing {
+    SDistanceThing(DWORD uiAddress, float usDefault, float usMin, float usMax)
+        : m_usMin(usMin), m_usMax(usMax)
+    {
+        MemPut(uiAddress, &m_fVar);
+        m_fVar = usDefault;
+    };
+    void Set(float fValue)
+    {
+        m_fVar = Clamp(m_usMin, fValue, m_usMax);
+    }
+    float Get()
+    {
+        return m_fVar;
+    }
+    void Reset()
+    {
+        m_fVar = m_usDefault;
+    }
+private:
+    float   m_usDefault;
+    float   m_usMin;
+    float   m_usMax;
+    float   m_fVar;
+};
+
 class CSettingsSA : public CGameSettings
 {
     friend class COffsets;
@@ -168,12 +194,17 @@ public:
     void ResetPedsLODDistance(void);
     float GetPedsLODDistance(void);
 
+    void  SetDrawThingValue(EDrawThingDistance eDrawThing, float fValue);
+    float GetDrawThingValue(EDrawThingDistance eDrawThing);
+    void  ResetDrawThingValue(EDrawThingDistance eDrawThing);
+
     static void StaticSetHooks(void);
 
     uint FindVideoMode(int iResX, int iResY, int iColorBits);
     void SetValidVideoMode(void);
     int  OnSelectDevice(void);
 
+    std::vector<SDistanceThing*> vecDistanceThing;
 private:
     static unsigned long FUNC_GetNumVideoModes;
     static unsigned long FUNC_GetVideoModeInfo;

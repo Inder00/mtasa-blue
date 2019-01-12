@@ -44,6 +44,9 @@ public:
     LUA_DECLARE(EngineGetModelIDFromName);
     LUA_DECLARE(EngineGetModelTextureNames);
     LUA_DECLARE(EngineGetVisibleTextureNames);
+    LUA_DECLARE(EngineSetDrawDistance);
+    LUA_DECLARE(EngineGetDrawDistance);
+    LUA_DECLARE(EngineResetDrawDistance);
 
 private:
     static void AddEngineColClass(lua_State* luaVM);

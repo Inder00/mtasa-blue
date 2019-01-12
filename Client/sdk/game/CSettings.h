@@ -164,5 +164,8 @@ public:
     virtual void  ResetPedsLODDistance(void) = 0;
     virtual float GetPedsLODDistance(void) = 0;
 
+    virtual void  SetDrawThingValue(EDrawThingDistance eDrawThing, float fValue) = 0;
+    virtual float GetDrawThingValue(EDrawThingDistance eDrawThing) = 0;
+    virtual void  ResetDrawThingValue(EDrawThingDistance eDrawThing) = 0;
     virtual void Save(void) = 0;
 };

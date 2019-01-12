@@ -524,6 +524,12 @@ ADD_ENUM(WING_AIRTRAIL, "wing_airtrail")
 ADD_ENUM(VEH_GUN, "veh_gun")
 IMPLEMENT_ENUM_END("vehicle-dummy")
 
+IMPLEMENT_ENUM_BEGIN(EDrawThingDistance)
+ADD_ENUM(DRAW_THING_DISTANCE_PED, "ped")
+ADD_ENUM(DRAW_THING_DISTANCE_VEHICLE, "vehicle")
+ADD_ENUM(DRAW_THING_DISTANCE_TRAIN, "train")
+IMPLEMENT_ENUM_END("distance-thing")
+
 //
 // Get best guess at name of userdata type
 //
