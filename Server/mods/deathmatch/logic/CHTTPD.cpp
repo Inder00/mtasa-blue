@@ -155,6 +155,16 @@ ResponseCode CHTTPD::HandleRequest(HttpRequest* ipoHttpRequest, HttpResponse* ip
 
     CAccount* account = CheckAuthentication(ipoHttpRequest);
 
+
+    CLuaArguments Arguments;
+    Arguments.PushString(ipoHttpRequest->sUri);
+    Arguments.PushAccount(account);
+    if (!g_pGame->GetMapManager()->GetRootElement()->CallEvent("onHTTPRequest", Arguments))
+    {
+        ipoHttpResponse->SetBody(m_CustomBody.c_str(), m_CustomBody.size());
+        return m_CustomResponseCode;
+    }
+
     if (account)
     {
         if (!m_strDefaultResourceName.empty())

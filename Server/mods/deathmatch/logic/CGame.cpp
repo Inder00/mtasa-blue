@@ -1548,6 +1548,9 @@ void CGame::AddBuiltInEvents()
     // Weapon events
     m_Events.AddEvent("onWeaponFire", "", NULL, false);
     m_Events.AddEvent("onPlayerWeaponFire", "weapon, endX, endY, endZ, hitElement, startX, startY, startZ", NULL, false);
+
+    // Http
+    m_Events.AddEvent("onHTTPRequest", "player", NULL, false);
 }
 
 void CGame::ProcessTrafficLights(long long llCurrentTime)

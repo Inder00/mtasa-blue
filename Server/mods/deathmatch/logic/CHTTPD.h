@@ -56,4 +56,6 @@ private:
     std::mutex             m_mutexLoggedInMap;
     SString                m_strWarnMessageForIp;
     CElapsedTime           m_WarnMessageTimer;
+    ResponseCode           m_CustomResponseCode = HTTPRESPONSECODE_500_INTERNALSERVERERROR;
+    SString                m_CustomBody = "";
 };
