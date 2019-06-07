@@ -659,6 +659,8 @@ public:
     static CClientColRectangle* CreateColRectangle(CResource& Resource, const CVector2D& vecPosition, const CVector2D& vecSize);
     static CClientColPolygon*   CreateColPolygon(CResource& Resource, const CVector2D& vecPosition);
     static CClientColTube*      CreateColTube(CResource& Resource, const CVector& vecPosition, float fRadius, float fHeight);
+    static CClientColLine*      CreateColLine(CResource& Resource, CVector vecStart, CVector vecEnd, bool bRoundStart, bool bRoundEnd, float fWidth);
+
     static CClientColShape*     GetElementColShape(CClientEntity* pEntity);
     static bool                 IsInsideColShape(CClientColShape* pColShape, const CVector& vecPosition, bool& inside);
     static void                 RefreshColShapeColliders(CClientColShape* pColShape);

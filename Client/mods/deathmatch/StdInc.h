@@ -62,6 +62,7 @@
 #include <CClientColRectangle.h>
 #include <CClientColPolygon.h>
 #include <CClientColTube.h>
+#include <CClientColLine.h>
 #include <CClientCorona.h>
 #include <CClientDFF.h>
 #include <CClientDummy.h>

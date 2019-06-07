@@ -20,6 +20,7 @@ void CLuaColShapeDefs::LoadFunctions()
         {"createColRectangle", CreateColRectangle},
         {"createColPolygon", CreateColPolygon},
         {"createColTube", CreateColTube},
+        {"createColLine", CreateColLine},
 
         {"isInsideColShape", IsInsideColShape},
         {"getColShapeType", GetColShapeType},
@@ -42,6 +43,7 @@ void CLuaColShapeDefs::AddClass(lua_State* luaVM)
     lua_classfunction(luaVM, "Sphere", "createColSphere");
     lua_classfunction(luaVM, "Tube", "createColTube");
     lua_classfunction(luaVM, "Polygon", "createColPolygon");
+    lua_classfunction(luaVM, "Line", "createColLine");
 
     lua_classfunction(luaVM, "getElementsWithin", "getElementsWithinColShape");
     lua_classfunction(luaVM, "isInside", "isInsideColShape");
@@ -352,6 +354,49 @@ int CLuaColShapeDefs::CreateColTube(lua_State* luaVM)
     }
     else
         m_pScriptDebugging->LogBadType(luaVM);
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+
+int CLuaColShapeDefs::CreateColLine(lua_State* luaVM)
+{
+    CVector          vecStart, vecEnd;
+    bool             bRoundStart, bRoundEnd;
+    float            fWidth;
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadVector3D(vecStart);
+    argStream.ReadVector3D(vecEnd);
+    argStream.ReadBool(bRoundStart);
+    argStream.ReadBool(bRoundEnd);
+    argStream.ReadNumber(fWidth);
+
+    if (!argStream.HasErrors())
+    {
+        CLuaMain* pLuaMain = m_pLuaManager->GetVirtualMachine(luaVM);
+        if (pLuaMain)
+        {
+            CResource* pResource = pLuaMain->GetResource();
+            if (pResource)
+            {
+                // Create it and return it
+                CClientColLine* pShape = CStaticFunctionDefinitions::CreateColLine(*pResource, vecStart, vecEnd, bRoundStart, bRoundEnd, fWidth);
+                if (pShape)
+                {
+                    CElementGroup* pGroup = pResource->GetElementGroup();
+                    if (pGroup)
+                    {
+                        pGroup->Add(pShape);
+                    }
+                    lua_pushelement(luaVM, pShape);
+                    return 1;
+                }
+            }
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
 
     lua_pushboolean(luaVM, false);
     return 1;

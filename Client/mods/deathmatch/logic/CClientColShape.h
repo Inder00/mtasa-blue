@@ -24,6 +24,7 @@ enum eColShapeType
     COLSHAPE_RECTANGLE,
     COLSHAPE_POLYGON,
     COLSHAPE_TUBE,
+    COLSHAPE_LINE,
 };
 
 class CClientColShape : public CClientEntity

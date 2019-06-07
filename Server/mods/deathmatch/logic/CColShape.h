@@ -21,6 +21,7 @@ enum eColShapeType
     COLSHAPE_RECTANGLE,
     COLSHAPE_POLYGON,
     COLSHAPE_TUBE,
+    COLSHAPE_LINE,
 };
 
 class CColShape : public CElement

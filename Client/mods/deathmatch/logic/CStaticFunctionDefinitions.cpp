@@ -7164,6 +7164,15 @@ CClientColTube* CStaticFunctionDefinitions::CreateColTube(CResource& Resource, c
     return pShape;
 }
 
+CClientColLine* CStaticFunctionDefinitions::CreateColLine(CResource& Resource, CVector vecStart, CVector vecEnd, bool bRoundStart, bool bRoundEnd, float fWidth)
+{
+    CClientColLine* pShape = new CClientColLine(m_pManager, INVALID_ELEMENT_ID, vecStart, vecEnd, bRoundStart, bRoundEnd, fWidth);
+    pShape->SetParent(Resource.GetResourceDynamicEntity());
+    // CStaticFunctionDefinitions::RefreshColShapeColliders ( pShape );   ** Not applied to maintain compatibility with existing scrips **
+    return pShape;
+}
+
+
 // Make sure all colliders for a colshape are up to date
 void CStaticFunctionDefinitions::RefreshColShapeColliders(CClientColShape* pColShape)
 {
