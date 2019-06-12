@@ -82,6 +82,9 @@ void CLuaVehicleDefs::LoadFunctions()
         {"getVehicleComponents", GetVehicleComponents},
         {"getVehicleModelExhaustFumesPosition", GetVehicleModelExhaustFumesPosition},
         {"getVehicleModelDummyPosition", GetVehicleModelDummyPosition},
+        {"fireVehicleFromWaterCannon", FireVehicleFromWaterCannon},
+        {"setWaterCannonProperty", SetWaterCannonProperty},
+        {"getWaterCannonProperty", GetWaterCannonProperty},
 
         // Vehicle set funcs
         {"createVehicle", CreateVehicle},
@@ -128,7 +131,7 @@ void CLuaVehicleDefs::LoadFunctions()
         {"setVehicleComponentScale", SetVehicleComponentScale},
         {"resetVehicleComponentPosition", ResetVehicleComponentPosition},
         {"resetVehicleComponentRotation", ResetVehicleComponentRotation},
-        {"resetVehicleComponentScale", ResetVehicleComponentScale },
+        {"resetVehicleComponentScale", ResetVehicleComponentScale},
         {"setVehicleComponentVisible", SetVehicleComponentVisible},
         {"setVehicleNitroActivated", SetVehicleNitroActivated},
         {"setVehicleNitroCount", SetVehicleNitroCount},
@@ -137,7 +140,7 @@ void CLuaVehicleDefs::LoadFunctions()
         {"setHeliBladeCollisionsEnabled", SetHeliBladeCollisionsEnabled},
         {"setVehicleWindowOpen", SetVehicleWindowOpen},
         {"setVehicleModelExhaustFumesPosition", SetVehicleModelExhaustFumesPosition},
-        {"setVehicleModelDummyPosition", SetVehicleModelDummyPosition },
+        {"setVehicleModelDummyPosition", SetVehicleModelDummyPosition},
     };
 
     // Add functions
@@ -4029,6 +4032,92 @@ int CLuaVehicleDefs::OOP_GetVehicleModelExhaustFumesPosition(lua_State* luaVM)
             lua_pushvector(luaVM, vecPosition);
             return 1;
         }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaVehicleDefs::FireVehicleFromWaterCannon(lua_State* luaVM)
+{
+    // CWaterCannons = CWaterCannons::UpdateOne(uint, CVector *, CVector *)	00728CB0
+    // int = CWaterCannon::Update_NewInput(CVector *, CVector *).text	00728C20
+    // int = CWaterCannons::Render(void)	00729B30
+    // CWaterCannons::Update(void)	0072A3C0	00000038	00000008	00000000	R	.	.	.	.	.	.
+
+    using fireFromWaterCanon_t = void(__cdecl*)(uint, class CVector*, class CVector*);
+    auto fireFromWaterCanon = (fireFromWaterCanon_t)0x728CB0;
+
+    using newInput_t = void(__cdecl*)(class CVector*, class CVector*);
+    auto newInput = (newInput_t)0x728C20;
+    using waterCanonRender_t = void(__cdecl*)(void);
+    auto waterCanonRender = (waterCanonRender_t)0x729B30;
+    using waterCanonUpdate_t = void(__cdecl*)(void);
+    auto waterCanonUpdate = (waterCanonUpdate_t)0x72A3C0;
+
+    uint            id;
+    CVector         from;
+    CVector         to;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadNumber(id);
+    argStream.ReadVector3D(from);
+    argStream.ReadVector3D(to);
+
+    if (!argStream.HasErrors())
+    {
+        fireFromWaterCanon(id, &from, &to);
+        waterCanonRender();
+        lua_pushboolean(luaVM, true);
+        return 1;
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaVehicleDefs::SetWaterCannonProperty(lua_State* luaVM)
+{
+    SString strProperty;
+    float   fValue;
+    BYTE EffectData1[12] = {0xD9, 0x05, 0x5C, 0xCB, 0xB7, 0x00, 0xD8, 0x0D, 0x38, 0x8B, 0x85, 0x00};
+    //memcpy((void*)0x729440, EffectData, sizeof(EffectData));
+    memset((void*)0x729440, 0x90, 12);
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadString(strProperty);
+    argStream.ReadNumber(fValue);
+
+    if (!argStream.HasErrors())
+    {
+        if (CStaticFunctionDefinitions::SetWaterCannonProperty(strProperty, fValue))
+        {
+            lua_pushboolean(luaVM, true);
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaVehicleDefs::GetWaterCannonProperty(lua_State* luaVM)
+{
+    SString strProperty;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadString(strProperty);
+
+    if (!argStream.HasErrors())
+    {
+        lua_pushnumber(luaVM, CStaticFunctionDefinitions::GetWaterCannonProperty(strProperty));
+        return 1;
     }
     else
         m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());

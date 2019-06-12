@@ -192,6 +192,8 @@ CGameSA::CGameSA()
     // Increase matrix array size
     MemPut<int>(0x054F3A1, MAX_OBJECTS * 3);            // Default is 900
 
+    MemPut(0x859CE0, &ms_flt_859CE0);
+
     CModelInfoSA::StaticSetHooks();
     CPlayerPedSA::StaticSetHooks();
     CRenderWareSA::StaticSetHooks();
@@ -861,4 +863,22 @@ CPed* CGameSA::GetPedContext()
     if (!m_pPedContext)
         m_pPedContext = pGame->GetPools()->GetPedFromRef((DWORD)1);
     return m_pPedContext;
+}
+
+bool CGameSA::SetCannonProperty(SString strProperty, float fValue)
+{
+    if (strProperty == "test1")
+    {
+        ms_flt_859CE0 = fValue;
+        return true;
+    }
+    return false;
+}
+
+float CGameSA::GetCannonProperty(SString strProperty)
+{
+    if (strProperty == "test1")
+    {
+        return ms_flt_859CE0;
+    }
 }

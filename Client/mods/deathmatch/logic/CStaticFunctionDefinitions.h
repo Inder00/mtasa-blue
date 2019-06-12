@@ -226,6 +226,8 @@ public:
     static bool            GetVehicleModelExhaustFumesPosition(unsigned short usModel, CVector& vecPosition);
     static bool            SetVehicleModelDummyPosition(unsigned short usModel, eVehicleDummies eDummy, CVector& vecPosition);
     static bool            GetVehicleModelDummyPosition(unsigned short usModel, eVehicleDummies eDummy, CVector& vecPosition);
+    static bool            SetWaterCannonProperty(SString strProperty, float fValue);
+    static float           GetWaterCannonProperty(SString strProperty);
 
     // Vehicle set functions
     static bool FixVehicle(CClientEntity& Entity);

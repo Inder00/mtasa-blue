@@ -3582,6 +3582,17 @@ bool CStaticFunctionDefinitions::GetVehicleModelExhaustFumesPosition(unsigned sh
     return false;
 }
 
+bool CStaticFunctionDefinitions::SetWaterCannonProperty(SString strProperty, float fValue)
+{
+    return g_pGame->SetCannonProperty(strProperty, fValue);
+}
+
+float CStaticFunctionDefinitions::GetWaterCannonProperty(SString strProperty)
+{
+    return g_pGame->GetCannonProperty(strProperty);
+
+}
+
 bool CStaticFunctionDefinitions::SetElementCollisionsEnabled(CClientEntity& Entity, bool bEnabled)
 {
     switch (Entity.GetType())

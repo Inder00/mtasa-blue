@@ -414,6 +414,8 @@ public:
     void         ResetModelLodDistances();
     void         ResetAlphaTransparencies();
     void         DisableVSync();
+    bool         SetCannonProperty(SString strProperty, float fValue);
+    float         GetCannonProperty(SString strProperty);
 
     void  OnPedContextChange(CPed* pPedContext);
     CPed* GetPedContext();
@@ -510,4 +512,6 @@ private:
 
     CPed*      m_pPedContext;
     CTickCount m_llASyncLoadingAutoUnsuspendTime;
+
+    float      ms_flt_859CE0;
 };
