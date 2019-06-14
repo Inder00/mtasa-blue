@@ -10,7 +10,7 @@
  *****************************************************************************/
 
 #include "StdInc.h"
-#define MIN_CLIENT_REQ_GETVEHICLECOMPONENT_OOP      "1.5.5-9.11710"
+#define MIN_CLIENT_REQ_GETVEHICLECOMPONENT_OOP "1.5.5-9.11710"
 
 void CLuaVehicleDefs::LoadFunctions()
 {
@@ -82,7 +82,7 @@ void CLuaVehicleDefs::LoadFunctions()
         {"getVehicleComponents", GetVehicleComponents},
         {"getVehicleModelExhaustFumesPosition", GetVehicleModelExhaustFumesPosition},
         {"getVehicleModelDummyPosition", GetVehicleModelDummyPosition},
-        {"fireVehicleFromWaterCannon", FireVehicleFromWaterCannon},
+        {"fxAddWaterCannon", FireVehicleFromWaterCannon},
         {"setWaterCannonProperty", SetWaterCannonProperty},
         {"getWaterCannonProperty", GetWaterCannonProperty},
 
@@ -3364,7 +3364,7 @@ int CLuaVehicleDefs::SetVehicleComponentScale(lua_State* luaVM)
     argStream.ReadVector3D(vecScale);
     argStream.ReadEnumString(inputBase, EComponentBase::PARENT);
 
-    if(!argStream.HasErrors())
+    if (!argStream.HasErrors())
     {
         pVehicle->SetComponentScale(strComponent, vecScale, inputBase);
         lua_pushboolean(luaVM, true);
@@ -3389,10 +3389,10 @@ int CLuaVehicleDefs::GetVehicleComponentScale(lua_State* luaVM)
     argStream.ReadString(strComponent);
     argStream.ReadEnumString(outputBase, EComponentBase::PARENT);
 
-    if(!argStream.HasErrors())
+    if (!argStream.HasErrors())
     {
         CVector vecScale;
-        if(pVehicle->GetComponentScale(strComponent, vecScale, outputBase))
+        if (pVehicle->GetComponentScale(strComponent, vecScale, outputBase))
         {
             lua_pushnumber(luaVM, vecScale.fX);
             lua_pushnumber(luaVM, vecScale.fY);
@@ -3419,10 +3419,10 @@ int CLuaVehicleDefs::OOP_GetVehicleComponentScale(lua_State* luaVM)
     argStream.ReadString(strComponent);
     argStream.ReadEnumString(outputBase, EComponentBase::PARENT);
 
-    if(!argStream.HasErrors())
+    if (!argStream.HasErrors())
     {
         CVector vecScale;
-        if(pVehicle->GetComponentScale(strComponent, vecScale, outputBase))
+        if (pVehicle->GetComponentScale(strComponent, vecScale, outputBase))
         {
             lua_pushvector(luaVM, vecScale);
             return 1;
@@ -3489,9 +3489,9 @@ int CLuaVehicleDefs::ResetVehicleComponentScale(lua_State* luaVM)
     argStream.ReadUserData(pVehicle);
     argStream.ReadString(strComponent);
 
-    if(!argStream.HasErrors())
+    if (!argStream.HasErrors())
     {
-        if(pVehicle->ResetComponentScale(strComponent))
+        if (pVehicle->ResetComponentScale(strComponent))
         {
             lua_pushboolean(luaVM, true);
             return 1;
@@ -4057,9 +4057,9 @@ int CLuaVehicleDefs::FireVehicleFromWaterCannon(lua_State* luaVM)
     using waterCanonUpdate_t = void(__cdecl*)(void);
     auto waterCanonUpdate = (waterCanonUpdate_t)0x72A3C0;
 
-    uint            id;
-    CVector         from;
-    CVector         to;
+    uint    id;
+    CVector from;
+    CVector to;
 
     CScriptArgReader argStream(luaVM);
     argStream.ReadNumber(id);
@@ -4084,8 +4084,8 @@ int CLuaVehicleDefs::SetWaterCannonProperty(lua_State* luaVM)
 {
     SString strProperty;
     float   fValue;
-    BYTE EffectData1[12] = {0xD9, 0x05, 0x5C, 0xCB, 0xB7, 0x00, 0xD8, 0x0D, 0x38, 0x8B, 0x85, 0x00};
-    //memcpy((void*)0x729440, EffectData, sizeof(EffectData));
+    BYTE    EffectData1[12] = {0xD9, 0x05, 0x5C, 0xCB, 0xB7, 0x00, 0xD8, 0x0D, 0x38, 0x8B, 0x85, 0x00};
+    // memcpy((void*)0x729440, EffectData, sizeof(EffectData));
     memset((void*)0x729440, 0x90, 12);
 
     CScriptArgReader argStream(luaVM);
@@ -4109,13 +4109,26 @@ int CLuaVehicleDefs::SetWaterCannonProperty(lua_State* luaVM)
 
 int CLuaVehicleDefs::GetWaterCannonProperty(lua_State* luaVM)
 {
-    SString strProperty;
+    eWaterCannonProperty eCannonProperty;
 
     CScriptArgReader argStream(luaVM);
-    argStream.ReadString(strProperty);
+    argStream.ReadEnumString(eCannonProperty);
 
     if (!argStream.HasErrors())
     {
+        switch (eCannonProperty)
+        {
+            case WATER_CANNON_GRAVITY:
+                break;
+            case WATER_CANNON_FIRETRUCK_RANGE:
+                break;
+            case WATER_CANNON_SWAT_RANGE:
+                break;
+            case WATER_CANNON_ROTATION_SPEED:
+                break;
+            case WATER_CANNON_HIT_EFFECT:
+                break;
+        }
         lua_pushnumber(luaVM, CStaticFunctionDefinitions::GetWaterCannonProperty(strProperty));
         return 1;
     }

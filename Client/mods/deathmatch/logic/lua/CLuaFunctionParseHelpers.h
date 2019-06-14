@@ -421,6 +421,10 @@ inline SString GetClassTypeName(eSurfaceAdhesionGroup*)
 {
     return "surface-adhesion-group";
 }
+inline SString GetClassTypeName(eWaterCannonProperty*)
+{
+    return "water-cannon-property";
+}
 
 //
 // CResource from userdata

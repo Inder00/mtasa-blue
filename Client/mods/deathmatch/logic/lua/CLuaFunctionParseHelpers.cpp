@@ -597,6 +597,14 @@ ADD_ENUM(SURFACE_ADHESION_GROUP_SAND, "sand")
 ADD_ENUM(SURFACE_ADHESION_GROUP_WET, "wet")
 IMPLEMENT_ENUM_END("surface-adhesion-group")
 
+IMPLEMENT_ENUM_BEGIN(eWaterCannonProperty)
+ADD_ENUM(WATER_CANNON_GRAVITY, "gravity")
+ADD_ENUM(WATER_CANNON_FIRETRUCK_RANGE, "firetruckrange")
+ADD_ENUM(WATER_CANNON_SWAT_RANGE, "swatrange")
+ADD_ENUM(WATER_CANNON_ROTATION_SPEED, "rotationspeed")
+ADD_ENUM(WATER_CANNON_HIT_EFFECT, "hiteffect")
+IMPLEMENT_ENUM_END("water-cannon-property")
+
 //
 // Get best guess at name of userdata type
 //
