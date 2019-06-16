@@ -340,6 +340,8 @@ void CLuaManager::LoadCFunctions()
         {"restoreAllWorldModels", CLuaFunctionDefs::RestoreWorldBuildings},
         {"restoreWorldModel", CLuaFunctionDefs::RestoreWorldBuilding},
         {"createSWATRope", CLuaFunctionDefs::CreateSWATRope},
+        {"tidyUpShadows", CLuaFunctionDefs::TidyUpShadows},
+        {"castTemporaryShadow", CLuaFunctionDefs::CastTemporaryShadow},
 
         // World reset funcs
         {"resetSkyGradient", CLuaFunctionDefs::ResetSkyGradient},

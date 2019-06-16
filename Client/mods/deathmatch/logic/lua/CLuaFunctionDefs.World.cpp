@@ -10,10 +10,10 @@
 
 #include "StdInc.h"
 
-#define MIN_CLIENT_REQ_CALLREMOTE_QUEUE_NAME                "1.5.3-9.11270"
-#define MIN_CLIENT_REQ_FETCHREMOTE_CONNECT_TIMEOUT          "1.3.5"
-#define MIN_CLIENT_REQ_CALLREMOTE_OPTIONS_TABLE             "1.5.4-9.11342"
-#define MIN_CLIENT_REQ_CALLREMOTE_OPTIONS_FORMFIELDS        "1.5.4-9.11413"
+#define MIN_CLIENT_REQ_CALLREMOTE_QUEUE_NAME "1.5.3-9.11270"
+#define MIN_CLIENT_REQ_FETCHREMOTE_CONNECT_TIMEOUT "1.3.5"
+#define MIN_CLIENT_REQ_CALLREMOTE_OPTIONS_TABLE "1.5.4-9.11342"
+#define MIN_CLIENT_REQ_CALLREMOTE_OPTIONS_FORMFIELDS "1.5.4-9.11413"
 
 int CLuaFunctionDefs::CreateExplosion(lua_State* luaVM)
 {
@@ -1548,38 +1548,38 @@ int CLuaFunctionDefs::ResetVehiclesLODDistance(lua_State* luaVM)
     return 1;
 }
 
-int CLuaFunctionDefs::GetPedsLODDistance(lua_State* luaVM) 
-{  
+int CLuaFunctionDefs::GetPedsLODDistance(lua_State* luaVM)
+{
     lua_pushnumber(luaVM, g_pGame->GetSettings()->GetPedsLODDistance());
-    return 1; 
+    return 1;
 }
- 
-int CLuaFunctionDefs::SetPedsLODDistance(lua_State* luaVM) 
-{ 
-    float fPedsDistance; 
- 
-    CScriptArgReader argStream(luaVM); 
-    argStream.ReadNumber(fPedsDistance); 
- 
-    if (!argStream.HasErrors()) 
+
+int CLuaFunctionDefs::SetPedsLODDistance(lua_State* luaVM)
+{
+    float fPedsDistance;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadNumber(fPedsDistance);
+
+    if (!argStream.HasErrors())
     {
         fPedsDistance = Clamp(0.0f, fPedsDistance, 500.0f);
-        g_pGame->GetSettings()->SetPedsLODDistance(fPedsDistance, true); 
+        g_pGame->GetSettings()->SetPedsLODDistance(fPedsDistance, true);
         lua_pushboolean(luaVM, true);
-        return 1; 
-    } 
-    else 
-        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage()); 
- 
-    lua_pushboolean(luaVM, false); 
-    return 1; 
+        return 1;
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
 }
- 
-int CLuaFunctionDefs::ResetPedsLODDistance(lua_State* luaVM) 
-{ 
-    g_pGame->GetSettings()->ResetPedsLODDistance(true); 
-    lua_pushboolean(luaVM, true); 
-    return 1; 
+
+int CLuaFunctionDefs::ResetPedsLODDistance(lua_State* luaVM)
+{
+    g_pGame->GetSettings()->ResetPedsLODDistance(true);
+    lua_pushboolean(luaVM, true);
+    return 1;
 }
 
 int CLuaFunctionDefs::GetFogDistance(lua_State* luaVM)
@@ -1918,5 +1918,63 @@ int CLuaFunctionDefs::FetchRemote(lua_State* luaVM)
         m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
 
     lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaFunctionDefs::CastTemporaryShadow(lua_State* luaVM)
+{
+
+    CScriptArgReader argStream(luaVM);
+    char             cColorType;
+    CVector          pos;
+    CVector2D          offsetA;
+    CVector2D          offsetB;
+
+    SColor color;
+    float   zDistance;
+    int    fFade;
+    float fScale;
+
+    argStream.ReadVector3D(pos);
+    argStream.ReadVector2D(offsetA);
+    argStream.ReadVector2D(offsetB);
+    argStream.ReadColor(color);
+    argStream.ReadNumber(zDistance);
+    argStream.ReadNumber(fFade);
+    argStream.ReadNumber(fScale);
+    if (!argStream.HasErrors())
+    {
+        uint          addrs;
+        memcpy(&addrs, (void*)0xC40400, 4);
+        RwTexture* blood = reinterpret_cast<RwTexture*>((void*)addrs);
+        using AddPermanentShadow_t = int(__cdecl*)(char colorType, RwTexture* texture, CVector* pos, 
+                                                    float X1, float Y1, float X2, float Y2, __int16 intensity,
+                                                    char red, char green, char blue, float zDistance, int time, float scale);
+        auto AddPermanentShadow = (AddPermanentShadow_t)0x706F60;
+
+        int offset = AddPermanentShadow(1, blood, &pos, offsetA.fX, offsetA.fY, offsetB.fX, offsetB.fY, color.A,
+                                        color.R, color.G, color.B,
+                                        zDistance,
+                                        fFade, fScale);
+        int id = offset / 48;
+        lua_pushnumber(luaVM, id);
+        return 1;
+    }
+
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaFunctionDefs::TidyUpShadows(lua_State* luaVM)
+{
+    using TidyUpShadows_t = void(__cdecl*)();
+    auto TidyUpShadows = (TidyUpShadows_t)0x707770;
+
+    TidyUpShadows();
+
+    lua_pushboolean(luaVM, true);
     return 1;
 }

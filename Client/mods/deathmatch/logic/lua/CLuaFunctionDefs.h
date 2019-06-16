@@ -177,6 +177,8 @@ public:
     LUA_DECLARE(SetFPSLimit);
     LUA_DECLARE(GetFPSLimit);
     LUA_DECLARE(FetchRemote);
+    LUA_DECLARE(TidyUpShadows);
+    LUA_DECLARE(CastTemporaryShadow);
 
     // Input functions
     LUA_DECLARE(BindKey);
