@@ -301,6 +301,40 @@ struct CSurfaceType
     SurfaceInfo_c surfType[179];
 };
 
+struct CPermanentShadow
+{
+    CVector    position;
+    CVector2D  up;
+    CVector2D  right;
+    float      fZDistance;
+    float      fScale;
+    int        timeCreated;
+    int        timeDuration;
+    RwTexture* pTexture;
+    short      intensity;
+    char       type;
+    char       red;
+    char       green;
+    char       blue;
+    union
+    {
+        short flags;
+        struct
+        {
+            bool FlagA : 1;
+            bool FlagB : 1;
+            bool FlagC : 1;
+            bool FlagD : 1;
+            bool FlagE : 1;
+            bool FlagF : 1;
+            bool FlagG : 1;
+            bool FlagH : 1;
+        };
+    };
+};
+
+static_assert(sizeof(CPermanentShadow) == 0x38, "invalid size of CPermanentShadow");
+
 class CWorld
 {
 public:
@@ -348,4 +382,7 @@ public:
     virtual CSurfaceType*     GetSurfaceInfo() = 0;
     virtual void              ResetAllSurfaceInfo() = 0;
     virtual bool              ResetSurfaceInfo(short sSurfaceID) = 0;
+    virtual void              SetShadowsLODDistance(float fDistance) = 0;
+    virtual void              RemoveAllShadows() = 0;
+    virtual void              RemoveShadows(CVector vecPosition, float fRange, eShadowType shadowType, bool bRemoveInstantly = false) = 0;
 };

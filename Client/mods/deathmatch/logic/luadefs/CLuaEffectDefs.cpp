@@ -28,6 +28,7 @@ void CLuaEffectDefs::LoadFunctions()
         {"fxAddWaterSplash", fxAddWaterSplash},
         {"fxAddBulletSplash", fxAddBulletSplash},
         {"fxAddFootSplash", fxAddFootSplash},
+        {"fxAddShadow", FxAddShadow},
         {"createEffect", CreateEffect},
         {"setEffectSpeed", SetEffectSpeed},
         {"getEffectSpeed", GetEffectSpeed},
@@ -497,6 +498,58 @@ int CLuaEffectDefs::fxAddFootSplash(lua_State* luaVM)
     lua_pushboolean(luaVM, false);
     return 1;
 }
+
+int CLuaEffectDefs::FxAddShadow(lua_State* luaVM)
+{
+    CScriptArgReader argStream(luaVM);
+    eShadowType      shadowType = SHADOW_NONE;
+    CVector          vecPosition;
+    CVector2D        vecOffset1;
+    CVector2D        vecOffset2;
+
+    SColor color;
+    float  zDistance;
+    bool   bDrawOnWater;
+    bool   bDrawOnBuildings;
+
+    if (argStream.NextIsString())
+        argStream.ReadEnumString(shadowType);
+    argStream.ReadVector3D(vecPosition);
+    argStream.ReadVector2D(vecOffset1);
+    argStream.ReadVector2D(vecOffset2);
+    argStream.ReadColor(color);
+    argStream.ReadNumber(zDistance);
+    argStream.ReadBool(bDrawOnWater, false);
+    argStream.ReadBool(bDrawOnBuildings, false);
+    if (!argStream.HasErrors())
+    {
+        if (vecOffset1.Length() > 32)
+        {
+            argStream.SetCustomError("First offset can not be longer than 32 units");
+        }
+        else if (vecOffset2.Length() > 32) // bigger and close to limit shadows size can be partially invisible
+        {
+            argStream.SetCustomError("Second offset can not be longer than 32 units");
+        }
+        else if (zDistance < 0 || zDistance > 3000)            // negative distance not working
+        {
+            argStream.SetCustomError("Z Distance must be between 0.0 and 3000.0");
+        }
+        else
+        {
+            bool result = CStaticFunctionDefinitions::FxAddShadow(shadowType, vecPosition, vecOffset1, vecOffset2, color, zDistance, bDrawOnWater, bDrawOnBuildings);
+            lua_pushboolean(luaVM, result);
+            return 1;
+        }
+    }
+
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushnil(luaVM);
+    return 1;
+}
+
 
 int CLuaEffectDefs::CreateEffect(lua_State* luaVM)
 {

@@ -166,5 +166,10 @@ public:
     virtual void  ResetPedsLODDistanceFromScript() = 0;
     virtual float GetPedsLODDistance() = 0;
 
+    virtual void  SetShadowsLODDistance(float fPedsLODDistance, bool bFromScript) = 0;
+    virtual void  ResetShadowsLODDistance(bool bFromScript) = 0;
+    virtual void  ResetShadowsLODDistanceFromScript() = 0;
+    virtual float GetShadowsLODDistance() = 0;
+
     virtual void Save() = 0;
 };

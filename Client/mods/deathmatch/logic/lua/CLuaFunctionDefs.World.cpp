@@ -1577,7 +1577,41 @@ int CLuaFunctionDefs::SetPedsLODDistance(lua_State* luaVM)
 
 int CLuaFunctionDefs::ResetPedsLODDistance(lua_State* luaVM)
 {
-    g_pGame->GetSettings()->ResetPedsLODDistance(true);
+    g_pGame->GetSettings()->ResetShadowsLODDistance(true);
+    lua_pushboolean(luaVM, true);
+    return 1;
+}
+
+int CLuaFunctionDefs::GetShadowsLODDistance(lua_State* luaVM)
+{
+    lua_pushnumber(luaVM, g_pGame->GetSettings()->GetShadowsLODDistance());
+    return 1;
+}
+
+int CLuaFunctionDefs::SetShadowsLODDistance(lua_State* luaVM)
+{
+    float fShadowsLODDistance;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadNumber(fShadowsLODDistance);
+
+    if (!argStream.HasErrors())
+    {
+        fShadowsLODDistance = Clamp(0.0f, fShadowsLODDistance, 1000.0f);
+        g_pGame->GetSettings()->SetShadowsLODDistance(fShadowsLODDistance, true);
+        lua_pushboolean(luaVM, true);
+        return 1;
+    }
+    else
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
+}
+
+int CLuaFunctionDefs::ResetShadowsLODDistance(lua_State* luaVM)
+{
+    g_pGame->GetSettings()->ResetShadowsLODDistance(true);
     lua_pushboolean(luaVM, true);
     return 1;
 }
@@ -1921,60 +1955,34 @@ int CLuaFunctionDefs::FetchRemote(lua_State* luaVM)
     return 1;
 }
 
-int CLuaFunctionDefs::CastTemporaryShadow(lua_State* luaVM)
+int CLuaFunctionDefs::RemoveShadows(lua_State* luaVM)
 {
-
     CScriptArgReader argStream(luaVM);
-    char             cColorType;
-    CVector          pos;
-    CVector2D          offsetA;
-    CVector2D          offsetB;
+    CVector          vecPosition;
+    float            fRange;
+    eShadowType      shadowType = SHADOW_NONE;
+    bool             bRemoveInstantly;
 
-    SColor color;
-    float   zDistance;
-    int    fFade;
-    float fScale;
+    if (argStream.NextIsNil() || argStream.NextIsNone())
+    {
+        g_pCore->GetGame()->GetWorld()->RemoveAllShadows();
+        lua_pushboolean(luaVM, true);
+        return 1;
+    }
 
-    argStream.ReadVector3D(pos);
-    argStream.ReadVector2D(offsetA);
-    argStream.ReadVector2D(offsetB);
-    argStream.ReadColor(color);
-    argStream.ReadNumber(zDistance);
-    argStream.ReadNumber(fFade);
-    argStream.ReadNumber(fScale);
+    argStream.ReadVector3D(vecPosition);
+    argStream.ReadNumber(fRange);
+    if (argStream.NextIsString())
+        argStream.ReadEnumString(shadowType);
+    argStream.ReadBool(bRemoveInstantly, false);
     if (!argStream.HasErrors())
     {
-        uint          addrs;
-        memcpy(&addrs, (void*)0xC40400, 4);
-        RwTexture* blood = reinterpret_cast<RwTexture*>((void*)addrs);
-        using AddPermanentShadow_t = int(__cdecl*)(char colorType, RwTexture* texture, CVector* pos, 
-                                                    float X1, float Y1, float X2, float Y2, __int16 intensity,
-                                                    char red, char green, char blue, float zDistance, int time, float scale);
-        auto AddPermanentShadow = (AddPermanentShadow_t)0x706F60;
-
-        int offset = AddPermanentShadow(1, blood, &pos, offsetA.fX, offsetA.fY, offsetB.fX, offsetB.fY, color.A,
-                                        color.R, color.G, color.B,
-                                        zDistance,
-                                        fFade, fScale);
-        int id = offset / 48;
-        lua_pushnumber(luaVM, id);
-        return 1;
+        g_pCore->GetGame()->GetWorld()->RemoveShadows(vecPosition, fRange, shadowType, bRemoveInstantly);
     }
 
     if (argStream.HasErrors())
         m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
 
     lua_pushboolean(luaVM, false);
-    return 1;
-}
-
-int CLuaFunctionDefs::TidyUpShadows(lua_State* luaVM)
-{
-    using TidyUpShadows_t = void(__cdecl*)();
-    auto TidyUpShadows = (TidyUpShadows_t)0x707770;
-
-    TidyUpShadows();
-
-    lua_pushboolean(luaVM, true);
     return 1;
 }

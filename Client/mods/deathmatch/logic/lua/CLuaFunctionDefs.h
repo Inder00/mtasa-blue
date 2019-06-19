@@ -151,6 +151,9 @@ public:
     LUA_DECLARE(GetPedsLODDistance); 
     LUA_DECLARE(SetPedsLODDistance); 
     LUA_DECLARE(ResetPedsLODDistance); 
+    LUA_DECLARE(GetShadowsLODDistance); 
+    LUA_DECLARE(SetShadowsLODDistance); 
+    LUA_DECLARE(ResetShadowsLODDistance); 
     LUA_DECLARE(GetFogDistance);
     LUA_DECLARE(SetFogDistance);
     LUA_DECLARE(ResetFogDistance);
@@ -177,8 +180,10 @@ public:
     LUA_DECLARE(SetFPSLimit);
     LUA_DECLARE(GetFPSLimit);
     LUA_DECLARE(FetchRemote);
-    LUA_DECLARE(TidyUpShadows);
-    LUA_DECLARE(CastTemporaryShadow);
+    LUA_DECLARE(SetShadowsLODistance);
+    LUA_DECLARE(GetShadowsLODistance);
+    LUA_DECLARE(ResetShadowsLODistance);
+    LUA_DECLARE(RemoveShadows);
 
     // Input functions
     LUA_DECLARE(BindKey);

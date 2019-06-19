@@ -285,6 +285,7 @@ void CLuaManager::LoadCFunctions()
         {"getNearClipDistance", CLuaFunctionDefs::GetNearClipDistance},
         {"getVehiclesLODDistance", CLuaFunctionDefs::GetVehiclesLODDistance},
         {"getPedsLODDistance", CLuaFunctionDefs::GetPedsLODDistance},
+        {"getShadowsLODDistance", CLuaFunctionDefs::GetShadowsLODDistance},
         {"getFogDistance", CLuaFunctionDefs::GetFogDistance},
         {"getSunColor", CLuaFunctionDefs::GetSunColor},
         {"getSunSize", CLuaFunctionDefs::GetSunSize},
@@ -326,6 +327,7 @@ void CLuaManager::LoadCFunctions()
         {"setNearClipDistance", CLuaFunctionDefs::SetNearClipDistance},
         {"setVehiclesLODDistance", CLuaFunctionDefs::SetVehiclesLODDistance},
         {"setPedsLODDistance", CLuaFunctionDefs::SetPedsLODDistance},
+        {"setShadowsLODDistance", CLuaFunctionDefs::SetShadowsLODDistance},
         {"setFogDistance", CLuaFunctionDefs::SetFogDistance},
         {"setSunColor", CLuaFunctionDefs::SetSunColor},
         {"setSunSize", CLuaFunctionDefs::SetSunSize},
@@ -340,8 +342,7 @@ void CLuaManager::LoadCFunctions()
         {"restoreAllWorldModels", CLuaFunctionDefs::RestoreWorldBuildings},
         {"restoreWorldModel", CLuaFunctionDefs::RestoreWorldBuilding},
         {"createSWATRope", CLuaFunctionDefs::CreateSWATRope},
-        {"tidyUpShadows", CLuaFunctionDefs::TidyUpShadows},
-        {"castTemporaryShadow", CLuaFunctionDefs::CastTemporaryShadow},
+        {"removeShadows", CLuaFunctionDefs::RemoveShadows},
 
         // World reset funcs
         {"resetSkyGradient", CLuaFunctionDefs::ResetSkyGradient},
@@ -352,6 +353,7 @@ void CLuaManager::LoadCFunctions()
         {"resetNearClipDistance", CLuaFunctionDefs::ResetNearClipDistance},
         {"resetVehiclesLODDistance", CLuaFunctionDefs::ResetVehiclesLODDistance},
         {"resetPedsLODDistance", CLuaFunctionDefs::ResetPedsLODDistance},
+        {"resetShadowsLODDistance", CLuaFunctionDefs::ResetShadowsLODDistance},
         {"resetFogDistance", CLuaFunctionDefs::ResetFogDistance},
         {"resetSunColor", CLuaFunctionDefs::ResetSunColor},
         {"resetSunSize", CLuaFunctionDefs::ResetSunSize},

@@ -121,6 +121,11 @@ public:
     CSurfaceType*     GetSurfaceInfo() override;
     void              ResetAllSurfaceInfo() override;
     bool              ResetSurfaceInfo(short sSurfaceID) override;
+
+    void              SetShadowsLODDistance(float fDistance);
+    void              RemoveAllShadows();
+    void              RemoveShadows(CVector vecPosition, float fRange, eShadowType shadowType, bool bRemoveInstantly = false);
+
 private:
     std::multimap<unsigned short, SBuildingRemoval*>*         m_pBuildingRemovals;
     std::multimap<unsigned short, sDataBuildingRemovalItem*>* m_pDataBuildings;
@@ -130,4 +135,5 @@ private:
     std::map<DWORD, bool>                                     m_pAddedEntities;
     float                                                     m_fAircraftMaxHeight;
     CSurfaceType*                                             m_pSurfaceInfo;
+    CPermanentShadow*                                         m_pShadowsInfo;
 };

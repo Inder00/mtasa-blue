@@ -554,6 +554,7 @@ void CCore::ApplyGameSettings()
     pGameSettings->UpdateFieldOfViewFromSettings();
     pGameSettings->ResetVehiclesLODDistance(false);
     pGameSettings->ResetPedsLODDistance(false);
+    pGameSettings->ResetShadowsLODDistance(false);
     pController->SetVerticalAimSensitivityRawValue(CVARS_GET_VALUE<float>("vertical_aim_sensitivity"));
     CVARS_GET("mastervolume", fVal);
     pGameSettings->SetRadioVolume(pGameSettings->GetRadioVolume() * fVal);

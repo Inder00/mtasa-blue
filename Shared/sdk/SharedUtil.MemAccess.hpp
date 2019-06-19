@@ -42,6 +42,7 @@ namespace SharedUtil
         VirtualProtect((LPVOID)0x6AE000, 0x1000, PAGE_EXECUTE_READWRITE, &oldProt);
         VirtualProtect((LPVOID)0x729000, 0x1000, PAGE_EXECUTE_READWRITE, &oldProt);
         VirtualProtect((LPVOID)0x742000, 0x1000, PAGE_EXECUTE_READWRITE, &oldProt);
+        VirtualProtect((LPVOID)0x70C996, 0x4, PAGE_EXECUTE_READWRITE, &oldProt);
     }
 
     // Returns true if pAddr is in slow mem area

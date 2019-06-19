@@ -36,6 +36,7 @@ DWORD RETURN_StoreShadowForVehicle = 0x70BDA9;
 void  HOOK_StoreShadowForVehicle();
 
 float ms_fVehicleLODDistance, ms_fTrainPlaneLODDistance, ms_fPedsLODDistance;
+float ms_fShadowsLODDistance;
 
 CSettingsSA::CSettingsSA()
 {
@@ -696,6 +697,69 @@ void CSettingsSA::ResetPedsLODDistanceFromScript()
 float CSettingsSA::GetPedsLODDistance()
 {
     return ms_fPedsLODDistance;
+}
+
+////////////////////////////////////////////////
+//
+// ShadowsLOD draw distance
+//
+////////////////////////////////////////////////
+float ms_fClientMaxShadowsLODDistance = DEFAULT_SHADOWS_LOD_DISTANCE;
+float ms_fScriptMaxShadowsLODDistance = ms_fClientMaxShadowsLODDistance;
+bool  ms_bMaxShadowsLODDistanceFromScript = false;
+
+void CSettingsSA::SetShadowsLODDistance(float fShadowsLODDistance, bool bFromScript)
+{
+    if (bFromScript)
+    {
+        ms_fScriptMaxShadowsLODDistance = fShadowsLODDistance;
+        ms_bMaxShadowsLODDistanceFromScript = bFromScript;
+    }
+    else
+        ms_fClientMaxShadowsLODDistance = fShadowsLODDistance;
+
+    if (ms_bMaxShadowsLODDistanceFromScript)
+        ms_fShadowsLODDistance = Min(ms_fClientMaxShadowsLODDistance, ms_fScriptMaxShadowsLODDistance);
+    else
+        ms_fShadowsLODDistance = Min(fShadowsLODDistance, ms_fClientMaxShadowsLODDistance);
+
+    g_pCore->GetGame()->GetWorld()->SetShadowsLODDistance(ms_fShadowsLODDistance);
+}
+
+void CSettingsSA::ResetShadowsLODDistance(bool bFromScript)
+{
+    if (!bFromScript)
+    {
+        bool bHighDetailShadowsLOD;
+        g_pCore->GetCVars()->Get("high_detail_shadows", bHighDetailShadowsLOD);
+
+        if (bHighDetailShadowsLOD)
+            ms_fClientMaxShadowsLODDistance = MAX_SHADOWS_LOD_DISTANCE;
+        else
+            ms_fClientMaxShadowsLODDistance = DEFAULT_SHADOWS_LOD_DISTANCE;
+
+        // Script still wants to override client setting, let's make sure we use latest max
+        if (ms_bMaxShadowsLODDistanceFromScript)
+        {
+            ms_fShadowsLODDistance = Min(ms_fClientMaxShadowsLODDistance, ms_fScriptMaxShadowsLODDistance);
+            return;
+        }
+    }
+
+    ms_bMaxShadowsLODDistanceFromScript = false;
+    ms_fShadowsLODDistance = ms_fClientMaxShadowsLODDistance;
+    g_pCore->GetGame()->GetWorld()->SetShadowsLODDistance(ms_fShadowsLODDistance);
+}
+
+void CSettingsSA::ResetShadowsLODDistanceFromScript()
+{
+    ms_bMaxShadowsLODDistanceFromScript = false;
+    ResetShadowsLODDistance(false);
+}
+
+float CSettingsSA::GetShadowsLODDistance()
+{
+    return ms_fShadowsLODDistance;
 }
 
 ////////////////////////////////////////////////

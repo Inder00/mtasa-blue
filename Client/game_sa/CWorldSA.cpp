@@ -12,6 +12,11 @@
 #include "StdInc.h"
 
 #define ARRAY_SurfaceInfos 0xB79538
+#define ARRAY_PermanentShadows 0xC4AC30
+
+
+using TidyUpShadows_t = void(__cdecl*)();
+auto TidyUpShadows = (TidyUpShadows_t)0x707770;
 
 namespace
 {
@@ -25,6 +30,7 @@ CWorldSA::CWorldSA()
     m_pBinaryBuildings = new std::multimap<unsigned short, sBuildingRemovalItem*>;
 
     m_pSurfaceInfo = reinterpret_cast<CSurfaceType*>(ARRAY_SurfaceInfos);
+    m_pShadowsInfo = reinterpret_cast<CPermanentShadow*>(ARRAY_PermanentShadows);
 
     InstallHooks();
 }
