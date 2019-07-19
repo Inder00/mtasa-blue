@@ -20,6 +20,20 @@ class CEventDamageSAInterface;
 class CPed;
 class CPedDamageResponse;
 
+enum EDamageSourceType
+{
+    DAMAGE_SOURCE_UNKNOWN,
+    DAMAGE_SOURCE_FIRE,
+    DAMAGE_SOURCE_FALL,
+    DAMAGE_SOURCE_EXPLOSION,
+    DAMAGE_SOURCE_VEHICLE_EXPLOSION,
+    DAMAGE_SOURCE_FALLOFBIKE,
+    DAMAGE_SOURCE_WEAPON,            // drown, tear gas, hit by object
+    DAMAGE_SOURCE_HELIBLADE,
+    DAMAGE_SOURCE_VEHICLE_HIT,
+    DAMAGE_SOURCE_HIT_BY_VEHICLE_WHILE_WEARING_JETPACK,            // something like that
+};
+
 namespace EDamageReason
 {
     enum EDamageReasonType
@@ -60,4 +74,6 @@ public:
 
     virtual void              SetDamageReason(EDamageReasonType damageReason) = 0;
     virtual EDamageReasonType GetDamageReason() = 0;
+    virtual void              SetDamageSource(EDamageSourceType damageSource) = 0;
+    virtual EDamageSourceType GetDamageSource() = 0;
 };

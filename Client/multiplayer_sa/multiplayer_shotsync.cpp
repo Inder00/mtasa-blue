@@ -742,7 +742,7 @@ void _declspec(naked) HOOK_CWeapon__Fire_Sniper()
     }
 }
 
-bool ProcessDamageEvent(CEventDamageSAInterface* event, CPedSAInterface* affectsPed)
+bool ProcessDamageEvent(CEventDamageSAInterface* event, CPedSAInterface* affectsPed, EDamageSourceType eDamageSource)
 {
     if (m_pDamageHandler && event)
     {
@@ -756,6 +756,7 @@ bool ProcessDamageEvent(CEventDamageSAInterface* event, CPedSAInterface* affects
             // This creates a CEventDamageSA for us
             CEventDamage* pEvent = pGameInterface->GetEventList()->GetEventDamage(event);
             pEvent->SetDamageReason(g_GenerateDamageEventReason);
+            pEvent->SetDamageSource(eDamageSource);
             // Call the event
             bool bReturn = m_pDamageHandler(pPed, pEvent);
             // Destroy the CEventDamageSA (so we dont get a leak)
@@ -767,8 +768,36 @@ bool ProcessDamageEvent(CEventDamageSAInterface* event, CPedSAInterface* affects
     return true;
 }
 
+EDamageSourceType GetDamageSourceType(DWORD dwAdress)
+{
+    switch (dwAdress)
+    {
+        case 0x4AB4C4:
+            return DAMAGE_SOURCE_FIRE;
+        case 0x5E3025:
+            return DAMAGE_SOURCE_FALL;
+        case 0x568276:
+            return DAMAGE_SOURCE_EXPLOSION;
+        case 0xC1AD0E1:
+            return DAMAGE_SOURCE_FALLOFBIKE;
+        case 0x73A68C:
+            return DAMAGE_SOURCE_WEAPON;
+        case 0x6DB310:
+            return DAMAGE_SOURCE_HELIBLADE;
+        case 0x5F0F2A:
+            return DAMAGE_SOURCE_VEHICLE_HIT;
+        case 0x4AB815:
+            return DAMAGE_SOURCE_HIT_BY_VEHICLE_WHILE_WEARING_JETPACK;
+        default:
+            return DAMAGE_SOURCE_UNKNOWN;
+    }
+}
+
 CPedSAInterface*         affectsPed = 0;
 CEventDamageSAInterface* event = 0;
+DWORD                    dwReturnAddress = 0;
+EDamageSourceType        eDamageSourceType;
+
 void _declspec(naked) HOOK_CEventDamage__AffectsPed()
 {
     /*
@@ -779,6 +808,11 @@ void _declspec(naked) HOOK_CEventDamage__AffectsPed()
 
     _asm
     {
+        push eax
+        mov eax, [esp + 4]
+        mov dwReturnAddress, eax
+        pop eax
+
         push    esi
 
         mov     esi, [esp+8]
@@ -790,7 +824,9 @@ void _declspec(naked) HOOK_CEventDamage__AffectsPed()
         pushad
     }
 
-    if (ProcessDamageEvent(event, affectsPed))
+    eDamageSourceType = GetDamageSourceType(dwReturnAddress);
+    
+    if (ProcessDamageEvent(event, affectsPed, eDamageSourceType))
     {
         // they want the damage to happen!
         _asm

@@ -4268,6 +4268,7 @@ bool CClientGame::DamageHandler(CPed* pDamagePed, CEventDamage* pEvent)
     CWeaponInfo*      pWeaponInfo = g_pGame->GetWeaponInfo(weaponUsed);
     float             fDamage = pEvent->GetDamageApplied();
     EDamageReasonType damageReason = pEvent->GetDamageReason();
+    EDamageSourceType damageSource = pEvent->GetDamageSource();
 
     /* Causes too much desync right now
     // Is this shotgun damage?
@@ -4405,7 +4406,7 @@ bool CClientGame::DamageHandler(CPed* pDamagePed, CEventDamage* pEvent)
         // Pass 1 end
         ///////////////////////////////////////////////////////////////////////////
 
-        return ApplyPedDamageFromGame(weaponUsed, fDamage, hitZone, pDamagedPed, pInflictingEntity, pEvent);
+        return ApplyPedDamageFromGame(weaponUsed, fDamage, hitZone, pDamagedPed, pInflictingEntity, damageSource, pEvent);
     }
 
     // No damage anim for fire
@@ -4420,7 +4421,7 @@ bool CClientGame::DamageHandler(CPed* pDamagePed, CEventDamage* pEvent)
 // Check GTA stored health with our stored health and do stuff
 //
 bool CClientGame::ApplyPedDamageFromGame(eWeaponType weaponUsed, float fDamage, uchar hitZone, CClientPed* pDamagedPed, CClientEntity* pInflictingEntity,
-                                         CEventDamage* pEvent)
+                                         EDamageSourceType damageSource, CEventDamage* pEvent)
 {
     float fPreviousHealth = pDamagedPed->m_fHealth;
     float fCurrentHealth = pDamagedPed->GetGamePlayer()->GetHealth();
@@ -4450,6 +4451,7 @@ bool CClientGame::ApplyPedDamageFromGame(eWeaponType weaponUsed, float fDamage, 
         Arguments.PushNumber(static_cast<unsigned char>(weaponUsed));
         Arguments.PushNumber(static_cast<unsigned char>(hitZone));
         Arguments.PushNumber(fDamage);
+        Arguments.PushNumber(damageSource);
 
         // Call our event
         if ((IS_PLAYER(pDamagedPed) && !pDamagedPed->CallEvent("onClientPlayerDamage", Arguments, true)) ||

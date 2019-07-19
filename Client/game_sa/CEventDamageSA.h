@@ -67,6 +67,7 @@ private:
     CPedDamageResponse*      m_pDamageResponse;
     bool                     m_bDestroyInterface;
     EDamageReasonType        m_DamageReason;
+    EDamageSourceType        m_DamageSource;
 
 public:
     CEventDamageSA(CEntity* pEntity, unsigned int i_1, eWeaponType weaponType, ePedPieceTypes hitZone, unsigned char uc_2, bool b_3, bool b_4);
@@ -101,4 +102,6 @@ public:
     bool              AffectsPed(CPed* pPed);
     void              SetDamageReason(EDamageReasonType damageReason) { m_DamageReason = damageReason; }
     EDamageReasonType GetDamageReason() { return m_DamageReason; }
+    void              SetDamageSource(EDamageSourceType damageSource) { m_DamageSource = damageSource; }
+    EDamageSourceType GetDamageSource() { return m_DamageSource; }
 };

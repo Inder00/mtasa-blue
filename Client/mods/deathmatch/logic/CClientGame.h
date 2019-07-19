@@ -585,7 +585,7 @@ public:
     static bool StaticProcessPacket(unsigned char ucPacketID, NetBitStreamInterface& bitStream);
 
     bool ApplyPedDamageFromGame(eWeaponType weaponType, float fDamage, uchar ucHitZone, CClientPed* pDamagedPed, CClientEntity* pInflictingEntity,
-                                CEventDamage* pEvent);
+                                EDamageSourceType damageSource, CEventDamage* pEvent);
 
     bool VerifySADataFiles(int iEnableClientChecks = 0);
     void DebugElementRender();
