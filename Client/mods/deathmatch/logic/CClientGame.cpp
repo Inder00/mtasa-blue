@@ -4406,7 +4406,7 @@ bool CClientGame::DamageHandler(CPed* pDamagePed, CEventDamage* pEvent)
         // Pass 1 end
         ///////////////////////////////////////////////////////////////////////////
 
-        return ApplyPedDamageFromGame(weaponUsed, fDamage, hitZone, pDamagedPed, pInflictingEntity, damageSource, pEvent);
+        return ApplyPedDamageFromGame(weaponUsed, fDamage, hitZone, pDamagedPed, pInflictingEntity, pEvent);
     }
 
     // No damage anim for fire
@@ -4421,7 +4421,7 @@ bool CClientGame::DamageHandler(CPed* pDamagePed, CEventDamage* pEvent)
 // Check GTA stored health with our stored health and do stuff
 //
 bool CClientGame::ApplyPedDamageFromGame(eWeaponType weaponUsed, float fDamage, uchar hitZone, CClientPed* pDamagedPed, CClientEntity* pInflictingEntity,
-                                         EDamageSourceType damageSource, CEventDamage* pEvent)
+                                         CEventDamage* pEvent)
 {
     float fPreviousHealth = pDamagedPed->m_fHealth;
     float fCurrentHealth = pDamagedPed->GetGamePlayer()->GetHealth();
@@ -4442,6 +4442,7 @@ bool CClientGame::ApplyPedDamageFromGame(eWeaponType weaponUsed, float fDamage, 
         g_fApplyDamageLastAmount = fDamage;
         g_ucApplyDamageLastHitZone = hitZone;
         g_pApplyDamageLastDamagedPed = pDamagedPed;
+        EDamageSourceType damageSource = pEvent->GetDamageSource();
 
         CLuaArguments Arguments;
         if (pInflictingEntity)
