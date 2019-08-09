@@ -62,7 +62,7 @@
 #include <CClientColRectangle.h>
 #include <CClientColPolygon.h>
 #include <CClientColTube.h>
-#include <CClientColLine.h>
+#include <CClientColSpline.h>
 #include <CClientCorona.h>
 #include <CClientDFF.h>
 #include <CClientDummy.h>
@@ -144,6 +144,7 @@
 #include "CLatentTransferManager.h"
 #include "CDebugHookManager.h"
 #include "lua/CLuaShared.h"
+#include "Splines.h"
 
 // Deathmatch includes
 #include "ClientCommands.h"

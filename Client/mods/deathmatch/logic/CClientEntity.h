@@ -123,7 +123,7 @@ enum eCClientEntityClassTypes
     CLASS_CClientColRectangle,
     CLASS_CClientColPolygon,
     CLASS_CClientColTube,
-    CLASS_CClientColLine,
+    CLASS_CClientColSpline,
     CLASS_CClientProjectile,
     CLASS_CClientTXD,
     CLASS_CScriptFile,

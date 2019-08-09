@@ -1,9 +1,9 @@
 /*****************************************************************************
  *
- *  PROJECT:     Multi Theft Auto v1.0
+ *  PROJECT:     Multi Theft Auto
  *  LICENSE:     See LICENSE in the top level directory
- *  FILE:        mods/shared_logic/CClientColPolygon.cpp
- *  PURPOSE:     Polygon-shaped collision entity class
+ *  FILE:        mods/shared_logic/CClientColSpline.cpp
+ *  PURPOSE:     Spline-shaped collision entity class
  *
  *  Multi Theft Auto is available from http://www.multitheftauto.com/
  *
@@ -11,20 +11,31 @@
 
 #include "StdInc.h"
 
-CClientColLine::CClientColLine(CClientManager* pManager, ElementID ID, CVector vecStart, CVector vecEnd,
-                               bool bRoundStart, bool bRoundEnd, float fWidth)
+using namespace SplineLib;
+
+CClientColSpline::CClientColSpline(CClientManager* pManager, ElementID ID, std::vector<CVector> vecPointList, float fWidth)
     : ClassInit(this), CClientColShape(pManager, ID)
 {
     m_pManager = pManager;
-    m_vecPosition = (vecStart + vecEnd) / 2;
+    m_vecPosition = CVector(0, 0, 0);
 
-    g_pCore->GetConsole()->Printf("a %.2f %.2f %.f2", vecStart.fX, vecStart.fY, vecStart.fZ);
-    g_pCore->GetConsole()->Printf("b %.2f %.2f %.f2", vecEnd.fX, vecEnd.fY, vecEnd.fZ);
-    g_pCore->GetConsole()->Printf("a+b/2 %.2f %.2f %.f2", m_vecPosition.fX, m_vecPosition.fY, m_vecPosition.fZ);
-    m_vecStart = vecStart;
-    m_vecEnd = vecEnd;
-    m_bRoundStart = bRoundStart;
-    m_bRoundEnd = bRoundEnd;
+    const int size = vecPointList.size();
+    const int numPoints = sizeof(size) / sizeof(vecPointList[0]);
+
+    cSpline3 splines[numPoints + 1];
+
+    int numSplines = SplinesFromPoints(numPoints, vecPointList.data(), numPoints + 1, splines);
+
+    int   index;
+    Vec3f qp;
+    qp.x = 0;
+    qp.y = 0;
+    qp.z = 0;
+    float t = FindClosestPoint(qp, numSplines, splines, &index);
+
+    Vec3f cp = Position(splines[index], t);
+
+    g_pCore->GetConsole()->Printf("cp %.2f %.2f %.f2", cp.x, cp.y, cp.z);
     m_fWidth = fWidth;
 
     // That's only to speed up things by not checking the polygon collision,
@@ -32,7 +43,7 @@ CClientColLine::CClientColLine(CClientManager* pManager, ElementID ID, CVector v
     m_fRadius = 0;
 }
 
-bool CClientColLine::DoHitDetection(const CVector& vecNowPosition, float fRadius)
+bool CClientColSpline::DoHitDetection(const CVector& vecNowPosition, float fRadius)
 {
     if (!IsInBounds(vecNowPosition))
         return false;
@@ -43,7 +54,7 @@ bool CClientColLine::DoHitDetection(const CVector& vecNowPosition, float fRadius
     return collides;
 }
 
-void CClientColLine::SetPosition(const CVector& vecPosition)
+void CClientColSpline::SetPosition(const CVector& vecPosition)
 {
     g_pCore->GetConsole()->Print("SetPosition");
     CVector vecDifference = m_vecPosition - vecPosition;
@@ -55,7 +66,7 @@ void CClientColLine::SetPosition(const CVector& vecPosition)
     // Add queued collider refresh for v1.1
 }
 
-bool CClientColLine::IsInBounds(CVector vecPoint)
+bool CClientColSpline::IsInBounds(CVector vecPoint)
 {
     g_pCore->GetConsole()->Print("IsInBounds");
     float fDistanceX = vecPoint.fX - m_vecPosition.fX;
@@ -66,7 +77,7 @@ bool CClientColLine::IsInBounds(CVector vecPoint)
     return fDist <= m_fRadius;
 }
 
-CSphere CClientColLine::GetWorldBoundingSphere()
+CSphere CClientColSpline::GetWorldBoundingSphere()
 {
     g_pCore->GetConsole()->Print("GetWorldBoundingSphere");
     CSphere sphere;
@@ -78,7 +89,7 @@ CSphere CClientColLine::GetWorldBoundingSphere()
 //
 // Draw wireframe line
 //
-void CClientColLine::DebugRender(const CVector& vecPosition, float fDrawRadius)
+void CClientColSpline::DebugRender(const CVector& vecPosition, float fDrawRadius)
 {
     g_pCore->GetConsole()->Print("render line");
     SColorARGB          color(151, 51, 255, 0);

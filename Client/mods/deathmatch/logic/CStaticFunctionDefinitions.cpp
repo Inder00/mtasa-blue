@@ -7164,9 +7164,9 @@ CClientColTube* CStaticFunctionDefinitions::CreateColTube(CResource& Resource, c
     return pShape;
 }
 
-CClientColLine* CStaticFunctionDefinitions::CreateColLine(CResource& Resource, CVector vecStart, CVector vecEnd, bool bRoundStart, bool bRoundEnd, float fWidth)
+CClientColSpline* CStaticFunctionDefinitions::CreateColSpline(CResource& Resource, std::vector<CVector> vecPointList, float fWidth)
 {
-    CClientColLine* pShape = new CClientColLine(m_pManager, INVALID_ELEMENT_ID, vecStart, vecEnd, bRoundStart, bRoundEnd, fWidth);
+    CClientColSpline* pShape = new CClientColSpline(m_pManager, INVALID_ELEMENT_ID, vecPointList, fWidth);
     pShape->SetParent(Resource.GetResourceDynamicEntity());
     // CStaticFunctionDefinitions::RefreshColShapeColliders ( pShape );   ** Not applied to maintain compatibility with existing scrips **
     return pShape;

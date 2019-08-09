@@ -11,11 +11,11 @@
 
 #pragma once
 
-class CClientColLine : public CClientColShape
+class CClientColSpline : public CClientColShape
 {
-    DECLARE_CLASS(CClientColLine, CClientColShape)
+    DECLARE_CLASS(CClientColSpline, CClientColShape)
 public:
-    CClientColLine(CClientManager* pManager, ElementID ID, CVector vecStart, CVector vecEnd, bool bRoundStart, bool bRoundEnd, float fWidth);
+    CClientColSpline(CClientManager* pManager, ElementID ID, std::vector<CVector> vecPointList, float fWidth);
 
     virtual CSphere GetWorldBoundingSphere();
     virtual void    DebugRender(const CVector& vecPosition, float fDrawRadius);

@@ -55,7 +55,8 @@ project "Client Deathmatch"
 		"../../../Shared/animation/CPositionRotationAnimation.cpp",
 		"../../version.h",
 		-- Todo: Replace these two by using the CryptoPP functions instead
-		"../../../vendor/bochs/bochs_internal/crc32.cpp"
+		"../../../vendor/bochs/bochs_internal/crc32.cpp",
+		"../../../Shared/sdk/Splines.cpp",
 	}
 
 	configuration "windows"

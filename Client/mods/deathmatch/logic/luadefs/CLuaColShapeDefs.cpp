@@ -20,7 +20,7 @@ void CLuaColShapeDefs::LoadFunctions()
         {"createColRectangle", CreateColRectangle},
         {"createColPolygon", CreateColPolygon},
         {"createColTube", CreateColTube},
-        {"createColLine", CreateColLine},
+        {"createColSpline", CreateColSpline},
 
         {"isInsideColShape", IsInsideColShape},
         {"getColShapeType", GetColShapeType},
@@ -43,7 +43,7 @@ void CLuaColShapeDefs::AddClass(lua_State* luaVM)
     lua_classfunction(luaVM, "Sphere", "createColSphere");
     lua_classfunction(luaVM, "Tube", "createColTube");
     lua_classfunction(luaVM, "Polygon", "createColPolygon");
-    lua_classfunction(luaVM, "Line", "createColLine");
+    lua_classfunction(luaVM, "Line", "createColSpline");
 
     lua_classfunction(luaVM, "getElementsWithin", "getElementsWithinColShape");
     lua_classfunction(luaVM, "isInside", "isInsideColShape");
@@ -360,17 +360,19 @@ int CLuaColShapeDefs::CreateColTube(lua_State* luaVM)
 }
 
 
-int CLuaColShapeDefs::CreateColLine(lua_State* luaVM)
+int CLuaColShapeDefs::CreateColSpline(lua_State* luaVM)
 {
-    CVector          vecStart, vecEnd;
-    bool             bRoundStart, bRoundEnd;
-    float            fWidth;
-    CScriptArgReader argStream(luaVM);
-    argStream.ReadVector3D(vecStart);
-    argStream.ReadVector3D(vecEnd);
-    argStream.ReadBool(bRoundStart);
-    argStream.ReadBool(bRoundEnd);
+    std::vector<CVector> vecPointList;
+    float                fWidth;
+    CScriptArgReader     argStream(luaVM);
     argStream.ReadNumber(fWidth);
+
+    for (uint i = 0; i < 2 || argStream.NextIsVector3D(); i++)
+    {
+        CVector vecPoint;
+        argStream.ReadVector3D(vecPoint);
+        vecPointList.push_back(vecPoint);
+    }
 
     if (!argStream.HasErrors())
     {
@@ -381,7 +383,7 @@ int CLuaColShapeDefs::CreateColLine(lua_State* luaVM)
             if (pResource)
             {
                 // Create it and return it
-                CClientColLine* pShape = CStaticFunctionDefinitions::CreateColLine(*pResource, vecStart, vecEnd, bRoundStart, bRoundEnd, fWidth);
+                CClientColSpline* pShape = CStaticFunctionDefinitions::CreateColSpline(*pResource, fWidth, vecPointList);
                 if (pShape)
                 {
                     CElementGroup* pGroup = pResource->GetElementGroup();
