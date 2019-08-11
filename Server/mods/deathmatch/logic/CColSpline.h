@@ -13,10 +13,10 @@
 
 #include "CColShape.h"
 
-class CColLine : public CColShape
+class CColSpline : public CColShape
 {
 public:
-    CColLine(CColManager* pManager, CElement* pParent, const CVector& vecPosition, float fRadius, float fHeight);
+    CColSpline(CColManager* pManager, CElement* pParent, const CVector& vecPosition, float fRadius, float fHeight);
 
     virtual CSphere GetWorldBoundingSphere();
 

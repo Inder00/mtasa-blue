@@ -196,7 +196,7 @@ struct SAclRequest;
 #include "CColShape.h"
 #include "CColSphere.h"
 #include "CColTube.h"
-#include "CColLine.h"
+#include "CColSpline.h"
 #include "CCommandFile.h"
 #include "CCommandLineParser.h"
 #include "CCommon.h"

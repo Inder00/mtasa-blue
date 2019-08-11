@@ -24,7 +24,7 @@ CClientColSpline::CClientColSpline(CClientManager* pManager, ElementID ID, std::
 
     cSpline3 splines[numPoints + 1];
 
-    int numSplines = SplinesFromPoints(numPoints, vecPointList.data(), numPoints + 1, splines);
+    int numSplines = SplinesFromPoints(numPoints, (Vec3f*)vecPointList.data(), numPoints + 1, splines);
 
     int   index;
     Vec3f qp;

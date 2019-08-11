@@ -383,13 +383,13 @@ int CLuaColShapeDefs::CreateColSpline(lua_State* luaVM)
             if (pResource)
             {
                 // Create it and return it
-                CClientColSpline* pShape = CStaticFunctionDefinitions::CreateColSpline(*pResource, fWidth, vecPointList);
+                CClientColSpline* pShape = CStaticFunctionDefinitions::CreateColSpline(*pResource, vecPointList, fWidth);
                 if (pShape)
                 {
                     CElementGroup* pGroup = pResource->GetElementGroup();
                     if (pGroup)
                     {
-                        pGroup->Add(pShape);
+                        pGroup->Add((CClientEntity*)pShape);
                     }
                     lua_pushelement(luaVM, pShape);
                     return 1;

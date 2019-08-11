@@ -11,7 +11,7 @@
 
 #include "StdInc.h"
 
-CColLine::CColLine(CColManager* pManager, CElement* pParent, const CVector& vecPosition, float fRadius, float fHeight) : CColShape(pManager, pParent)
+CColSpline::CColSpline(CColManager* pManager, CElement* pParent, const CVector& vecPosition, float fRadius, float fHeight) : CColShape(pManager, pParent)
 {
     m_vecPosition = vecPosition;
     m_fRadius = fRadius;
@@ -19,7 +19,7 @@ CColLine::CColLine(CColManager* pManager, CElement* pParent, const CVector& vecP
     UpdateSpatialData();
 }
 
-bool CColLine::DoHitDetection(const CVector& vecNowPosition)
+bool CColSpline::DoHitDetection(const CVector& vecNowPosition)
 {
     // FIXME: What about radius in height?
 
@@ -28,7 +28,7 @@ bool CColLine::DoHitDetection(const CVector& vecNowPosition)
             vecNowPosition.fZ <= m_vecPosition.fZ + m_fHeight);
 }
 
-bool CColLine::ReadSpecialData(const int iLine)
+bool CColSpline::ReadSpecialData(const int iLine)
 {
     int iTemp;
     if (GetCustomDataInt("dimension", iTemp, true))
@@ -40,7 +40,7 @@ bool CColLine::ReadSpecialData(const int iLine)
     return true;
 }
 
-CSphere CColLine::GetWorldBoundingSphere()
+CSphere CColSpline::GetWorldBoundingSphere()
 {
     CSphere sphere;
     sphere.vecPosition.fX = m_vecPosition.fX;
