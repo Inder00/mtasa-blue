@@ -1441,7 +1441,7 @@ bool CStaticFunctionDefinitions::SetElementModel(CClientEntity& Entity, unsigned
         case CCLIENTPLAYER:
         {
             // Grab the model
-            CClientPed& Ped = static_cast<CClientPed&>(Entity);
+            CClientPed&          Ped = static_cast<CClientPed&>(Entity);
             const unsigned short usCurrentModel = Ped.GetModel();
 
             if (usCurrentModel == usModel)
@@ -1458,7 +1458,7 @@ bool CStaticFunctionDefinitions::SetElementModel(CClientEntity& Entity, unsigned
         }
         case CCLIENTVEHICLE:
         {
-            CClientVehicle& Vehicle = static_cast<CClientVehicle&>(Entity);
+            CClientVehicle&      Vehicle = static_cast<CClientVehicle&>(Entity);
             const unsigned short usCurrentModel = Vehicle.GetModel();
 
             if (usCurrentModel == usModel)
@@ -1478,7 +1478,7 @@ bool CStaticFunctionDefinitions::SetElementModel(CClientEntity& Entity, unsigned
         case CCLIENTOBJECT:
         case CCLIENTWEAPON:
         {
-            CClientObject& Object = static_cast<CClientObject&>(Entity);
+            CClientObject&       Object = static_cast<CClientObject&>(Entity);
             const unsigned short usCurrentModel = Object.GetModel();
 
             if (usCurrentModel == usModel)
@@ -1497,7 +1497,7 @@ bool CStaticFunctionDefinitions::SetElementModel(CClientEntity& Entity, unsigned
         }
         case CCLIENTPROJECTILE:
         {
-            CClientProjectile& Projectile = static_cast<CClientProjectile&>(Entity);
+            CClientProjectile&   Projectile = static_cast<CClientProjectile&>(Entity);
             const unsigned short usCurrentModel = Projectile.GetModel();
 
             if (usCurrentModel == usModel)
@@ -2160,7 +2160,7 @@ bool CStaticFunctionDefinitions::SetPedAnimation(CClientEntity& Entity, const SS
                     // Play the gateway animation
                     const SString&              strGateWayBlockName = g_pGame->GetAnimManager()->GetGateWayBlockName();
                     std::unique_ptr<CAnimBlock> pBlock = g_pGame->GetAnimManager()->GetAnimationBlock(strGateWayBlockName);
-                    auto           pCustomAnimBlendHierarchy = pIFP->GetAnimationHierarchy(szAnimName);
+                    auto                        pCustomAnimBlendHierarchy = pIFP->GetAnimationHierarchy(szAnimName);
                     if ((pBlock) && (pCustomAnimBlendHierarchy != nullptr))
                     {
                         Ped.SetNextAnimationCustom(pIFP, szAnimName);
@@ -9739,4 +9739,82 @@ bool CStaticFunctionDefinitions::ResetSurfaceInfo(short sSurfaceID)
         return true;
     }
     return false;
+}
+
+void CStaticFunctionDefinitions::QueryCollision(CVector vecPosition, float fRadius)
+{
+    CClientStreamer*                            pObjectManager = m_pManager->GetObjectStreamer();
+    CClientStreamElement*                       pElement;
+    CClientObject*                              pClientObject;
+    CModelInfo*                                 pModelInfo;
+    CColModelSAInterface*                       pColModelInterface;
+    CObjectSAInterface*                         pObjectInterface;
+    CColDataSA*                                 pCol;
+    CVector                                     vecElementPos;
+    list<CClientStreamElement*>::const_iterator iter = pObjectManager->ActiveElementsBegin();
+    int                                         i = 0;
+    std::vector<CVector>                        vertices;
+    std::vector<CVector>                        triangles;
+    std::vector<CVector>                        boxes;
+    std::vector<CColSphereSA*>                   spheres;
+    CVector                                     elementPosition;
+    for (; iter != pObjectManager->ActiveElementsEnd(); ++iter)
+    {
+        i++;
+        pElement = *iter;
+        switch (pElement->GetType())
+        {
+            case CCLIENTOBJECT:
+                pClientObject = static_cast<CClientObject*>(pElement);
+                if (pClientObject->IsCollisionEnabled())
+                {
+                    pModelInfo = g_pGame->GetModelInfo(pClientObject->GetModel());
+                    if (pModelInfo)
+                    {
+                        pColModelInterface = pModelInfo->GetColData();
+                        if (pColModelInterface)
+                        {
+                            pClientObject->GetPosition(elementPosition);
+                            pCol = pColModelInterface->pColData;
+                            // check bounding box
+                            pClientObject->GetPosition(vecElementPos);
+                            if (DistanceBetweenPoints3D(vecPosition, vecElementPos) <= fRadius + pColModelInterface->boundingBox.fRadius)
+                            {
+                                CColSphereSA* pColSphere;
+                                for (uint i = 0; pCol->numColSpheres > i; i++)
+                                {
+                                    pColSphere = &pCol->pColSpheres[i];
+                                    if (DistanceBetweenPoints3D(pColSphere->vecCenter + elementPosition, vecPosition) < pColSphere->fRadius + fRadius)
+                                    {
+                                        spheres.push_back(pColSphere);
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+    }
+    g_pCore->GetConsole()->Printf("i = %i", i);
+
+    /*
+    CEntity **& ms_aVisibleEntityPtrs = *(CEntity ***)0x553944;
+    int& ms_nNoOfVisibleEntities = *(int*)0xB76844;
+    for (int i = 0; i < ms_nNoOfVisibleEntities; i++)
+    {
+        CEntity* pEntity = ms_aVisibleEntityPtrs[i];
+        if (!pEntity) continue;
+        //CMatrix* matrix;
+        CMatrix* matrix = ((CMatrixLink *(__thiscall *)(CEntity *))0x411990)(pEntity);
+        if (!matrix) continue;
+        CModelInfo* pModelInfo = g_pGame->GetModelInfo(pEntity->GetModelIndex());
+        if (!pModelInfo) continue;
+        CColDataSA* pColData = pModelInfo->GetColData();
+        if (!pColData) continue;
+
+        lua_pushnumber(luaVM, pEntity->GetModelIndex());
+        return 1;
+    }*/
 }

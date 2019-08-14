@@ -799,4 +799,6 @@ public:
     static const char*   GetOperatingSystemName();
     static const char*   GetVersionBuildTag();
     static SString       GetVersionSortable();
+
+    static void QueryCollision(CVector vecPosition, float fRadius);
 };

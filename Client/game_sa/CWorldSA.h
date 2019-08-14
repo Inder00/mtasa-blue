@@ -83,7 +83,6 @@ public:
     bool  GetOcclusionsEnabled();
     void  FindWorldPositionForRailTrackPosition(float fRailTrackPosition, int iTrackId, CVector* pOutVecPosition);
     int   FindClosestRailTrackNode(const CVector& vecPosition, uchar& ucOutTrackId, float& fOutRailDistance);
-
     /**
      * \todo Add FindObjectsKindaColliding (see 0x430577)
      * \todo Add CameraToIgnoreThisObject (0x563F40)

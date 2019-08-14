@@ -37,7 +37,7 @@ void CLuaEngineDefs::LoadFunctions()
         {"engineGetSurfaceProperties", EngineGetSurfaceProperties},
         {"engineSetSurfaceProperties", EngineSetSurfaceProperties},
         {"engineResetSurfaceProperties", EngineResetSurfaceProperties},
-    CLuaCFunctions::AddFunction("engineGetCollisions", EngineGetCollisions);
+        {"engineQueryCollision", EngineQueryCollision},
 
         // CLuaCFunctions::AddFunction ( "engineReplaceMatchingAtomics", EngineReplaceMatchingAtomics );
         // CLuaCFunctions::AddFunction ( "engineReplaceWheelAtomics", EngineReplaceWheelAtomics );
@@ -949,7 +949,7 @@ public:
 
 using std::list;
 
-int CLuaEngineDefs::EngineGetCollisions(lua_State* luaVM)
+int CLuaEngineDefs::EngineQueryCollision(lua_State* luaVM)
 {
     //  table1, table2, table3, table4 = engineGetCollisions ( float x, float y, float z [, float radius = 10.0f ] )
     CVector vecPosition;
@@ -963,63 +963,7 @@ int CLuaEngineDefs::EngineGetCollisions(lua_State* luaVM)
     {
         if ( fRadius > 0 )
         {
-            CClientStreamer* pObjectManager = m_pManager->GetObjectStreamer();
-            CClientStreamElement* pElement;
-            CClientObject* pClientObject;
-            CModelInfo*    pModelInfo;
-            CColModelSAInterface* pColModelInterface;
-            CObjectSAInterface* pObjectInterface;
-            CColDataSA* pCol;
-            CVector vecElementPos;
-            list<CClientStreamElement*>::const_iterator iter = pObjectManager->ActiveElementsBegin();
-            int i = 0;
-            for (; iter != pObjectManager->ActiveElementsEnd(); ++iter)
-            {
-                i++;
-                pElement = *iter;
-                switch (pElement->GetType())
-                {
-                    case CCLIENTOBJECT:
-                        pClientObject = static_cast<CClientObject*>(pElement);
-                        if (pClientObject->IsCollisionEnabled())
-                        {
-                            pModelInfo = g_pGame->GetModelInfo(pClientObject->GetModel());
-                            if (pModelInfo)
-                            {
-                                pColModelInterface = pModelInfo->GetColData();
-                                if (pColModelInterface)
-                                {
-                                    pCol = pColModelInterface->pColData;
-                                    // check bounding box
-                                    pClientObject->GetPosition(vecElementPos);
-                                    if (DistanceBetweenPoints3D(vecPosition, vecElementPos) <= fRadius + pColModelInterface->boundingBox.fRadius)
-                                    {
-                                        g_pCore->GetConsole()->Printf("pCol: %i %i %i", pCol->numColSpheres, pCol->numColBoxes, pCol->numColTriangles);
-                                    }
-                                }
-                            }
-                        }
-                    break;
-                }
-            }
-            /*
-            CEntity **& ms_aVisibleEntityPtrs = *(CEntity ***)0x553944;
-            int& ms_nNoOfVisibleEntities = *(int*)0xB76844;
-            for (int i = 0; i < ms_nNoOfVisibleEntities; i++)
-            {
-                CEntity* pEntity = ms_aVisibleEntityPtrs[i];
-                if (!pEntity) continue;
-                //CMatrix* matrix;
-                CMatrix* matrix = ((CMatrixLink *(__thiscall *)(CEntity *))0x411990)(pEntity);
-                if (!matrix) continue;
-                CModelInfo* pModelInfo = g_pGame->GetModelInfo(pEntity->GetModelIndex());
-                if (!pModelInfo) continue;
-                CColDataSA* pColData = pModelInfo->GetColData();
-                if (!pColData) continue;
-
-                lua_pushnumber(luaVM, pEntity->GetModelIndex());
-                return 1;
-            }*/
+            CStaticFunctionDefinitions::QueryCollision(vecPosition, fRadius);
             lua_pushboolean(luaVM, true);
             return 1;
         }

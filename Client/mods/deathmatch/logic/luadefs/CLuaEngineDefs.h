@@ -47,7 +47,7 @@ public:
     LUA_DECLARE(EngineSetSurfaceProperties);
     LUA_DECLARE(EngineGetSurfaceProperties);
     LUA_DECLARE(EngineResetSurfaceProperties);
-    LUA_DECLARE(EngineGetCollisions);
+    LUA_DECLARE(EngineQueryCollision);
 
 private:
     static void AddEngineColClass(lua_State* luaVM);
