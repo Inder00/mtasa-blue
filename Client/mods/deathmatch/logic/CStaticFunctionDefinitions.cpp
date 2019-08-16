@@ -9753,10 +9753,9 @@ void CStaticFunctionDefinitions::QueryCollision(CVector vecPosition, float fRadi
     CVector                                     vecElementPos;
     list<CClientStreamElement*>::const_iterator iter = pObjectManager->ActiveElementsBegin();
     int                                         i = 0;
-    std::vector<CVector>                        vertices;
-    std::vector<CVector>                        triangles;
-    std::vector<CVector>                        boxes;
-    std::vector<CColSphereSA*>                   spheres;
+    std::vector<CompressedVector*>              vertices;
+    std::vector<CColBoxSA*>                     boxes;
+    std::vector<CColSphereSA*>                  spheres;
     CVector                                     elementPosition;
     for (; iter != pObjectManager->ActiveElementsEnd(); ++iter)
     {
@@ -9790,6 +9789,29 @@ void CStaticFunctionDefinitions::QueryCollision(CVector vecPosition, float fRadi
                                     }
                                 }
 
+                                CColBoxSA* pColBox;
+                                for (uint i = 0; pCol->numColBoxes > i; i++)
+                                {
+                                    pColBox = &pCol->pColBoxes[i];
+                                    if (DistanceBetweenPoints3D(pColBox->min + elementPosition, vecPosition) < fRadius)
+                                    {
+                                        boxes.push_back(pColBox);
+                                    }
+                                    else if (DistanceBetweenPoints3D(pColBox->max + elementPosition, vecPosition) < fRadius)
+                                    {
+                                        boxes.push_back(pColBox);
+                                    }
+                                }
+
+                                CompressedVector* pColVertex;
+                                for (uint i = 0; pCol->getNumVertices() > i; i++)
+                                {
+                                    pColVertex = &pCol->pVertices[i];
+                                    if (DistanceBetweenPoints3D(pColVertex->getVector() + elementPosition, vecPosition) < fRadius)
+                                    {
+                                        vertices.push_back(pColVertex);
+                                    }
+                                }
                             }
                         }
                     }
