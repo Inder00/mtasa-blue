@@ -51,6 +51,7 @@ CClientManager::CClientManager()
     m_pWaterManager = new CClientWaterManager(this);
     m_pWeaponManager = new CClientWeaponManager(this);
     m_pEffectManager = new CClientEffectManager(this);
+    m_pPhysicsManager = new CClientPhysicsManager(this);
     m_pPointLightsManager = new CClientPointLightsManager(this);
     m_pModelManager = new CClientModelManager(this);
     m_pPacketRecorder = new CClientPacketRecorder(this);
@@ -81,6 +82,9 @@ CClientManager::~CClientManager()
 
     delete m_pColModelManager;
     m_pColModelManager = NULL;
+
+    delete m_pPhysicsManager;
+    m_pPhysicsManager = NULL;
 
     delete m_pDFFManager;
     m_pDFFManager = NULL;
@@ -214,6 +218,7 @@ void CClientManager::DoPulse(bool bDoStandardPulses, bool bDoVehicleManagerPulse
             m_pColManager->DoPulse();
             m_pGUIManager->DoPulse();
             m_pWeaponManager->DoPulse();
+            m_pPhysicsManager->DoPulse();
         }
         else
         {
