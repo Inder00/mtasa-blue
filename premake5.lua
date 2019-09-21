@@ -36,6 +36,7 @@ workspace "MTASA"
 	includedirs {
 		"vendor",
 		"Shared/sdk",
+		"vendor/reactphysics3d",
 	}
 
 	defines {
@@ -171,3 +172,4 @@ workspace "MTASA"
 		include "vendor/unrar"
 		include "vendor/zip"
 		include "vendor/zlib"
+		include "vendor/reactphysics3d"

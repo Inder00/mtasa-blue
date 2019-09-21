@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{C196CD9C-2D76-4C38-368E-D70EA2ECB299}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{89565304-F535-D29F-FE4D-5D766AAC3801}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\body\Body.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\body\CollisionBody.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\body\RigidBody.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\CollisionCallback.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\CollisionDetection.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\ContactManifold.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\ContactManifoldInfo.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\ContactManifoldSet.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\ContactPointInfo.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\HalfEdgeStructure.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\MiddlePhaseTriangleCallback.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\NarrowPhaseInfo.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\OverlapCallback.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\PolygonVertexArray.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\PolyhedronMesh.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\ProxyShape.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\RaycastInfo.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\TriangleMesh.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\TriangleVertexArray.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\broadphase\BroadPhaseAlgorithm.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\broadphase\DynamicAABBTree.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\narrowphase\CapsuleVsCapsuleAlgorithm.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\narrowphase\CapsuleVsConvexPolyhedronAlgorithm.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\narrowphase\CollisionDispatch.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\narrowphase\ConvexPolyhedronVsConvexPolyhedronAlgorithm.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\narrowphase\DefaultCollisionDispatch.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\narrowphase\GJK\GJKAlgorithm.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\narrowphase\GJK\VoronoiSimplex.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\narrowphase\NarrowPhaseAlgorithm.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\narrowphase\SAT\SATAlgorithm.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\narrowphase\SphereVsCapsuleAlgorithm.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\narrowphase\SphereVsConvexPolyhedronAlgorithm.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\narrowphase\SphereVsSphereAlgorithm.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\shapes\AABB.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\shapes\BoxShape.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\shapes\CapsuleShape.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\shapes\CollisionShape.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\shapes\ConcaveMeshShape.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\shapes\ConcaveShape.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\shapes\ConvexMeshShape.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\shapes\ConvexPolyhedronShape.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\shapes\ConvexShape.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\shapes\HeightFieldShape.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\shapes\SphereShape.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\collision\shapes\TriangleShape.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\configuration.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\constraint\BallAndSocketJoint.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\constraint\ContactPoint.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\constraint\FixedJoint.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\constraint\HingeJoint.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\constraint\Joint.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\constraint\SliderJoint.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\LinkedList.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\List.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\Map.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\Pair.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\Set.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\Stack.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\containers_common.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\decimal.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\CollisionWorld.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\ConstraintSolver.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\ContactSolver.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\DynamicsWorld.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\EventListener.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\Island.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\Material.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\OverlappingPair.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\Timer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mathematics\Matrix2x2.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mathematics\Matrix3x3.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mathematics\Quaternion.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mathematics\Ray.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mathematics\Transform.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mathematics\Vector2.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mathematics\Vector3.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mathematics\mathematics.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mathematics\mathematics_functions.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\memory\DefaultAllocator.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\memory\DefaultPoolAllocator.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\memory\DefaultSingleFrameAllocator.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\memory\MemoryAllocator.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\memory\MemoryManager.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\reactphysics3d.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\utils\Logger.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\utils\Profiler.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\body\Body.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\body\CollisionBody.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\body\RigidBody.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\CollisionCallback.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\CollisionDetection.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\ContactManifold.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\ContactManifoldInfo.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\ContactManifoldSet.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\HalfEdgeStructure.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\MiddlePhaseTriangleCallback.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\NarrowPhaseInfo.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\PolygonVertexArray.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\PolyhedronMesh.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\ProxyShape.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\RaycastInfo.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\TriangleMesh.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\TriangleVertexArray.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\broadphase\BroadPhaseAlgorithm.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\broadphase\DynamicAABBTree.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\narrowphase\CapsuleVsCapsuleAlgorithm.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\narrowphase\CapsuleVsConvexPolyhedronAlgorithm.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\narrowphase\ConvexPolyhedronVsConvexPolyhedronAlgorithm.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\narrowphase\DefaultCollisionDispatch.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\narrowphase\GJK\GJKAlgorithm.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\narrowphase\GJK\VoronoiSimplex.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\narrowphase\SAT\SATAlgorithm.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\narrowphase\SphereVsCapsuleAlgorithm.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\narrowphase\SphereVsConvexPolyhedronAlgorithm.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\narrowphase\SphereVsSphereAlgorithm.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\shapes\AABB.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\shapes\BoxShape.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\shapes\CapsuleShape.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\shapes\CollisionShape.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\shapes\ConcaveMeshShape.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\shapes\ConcaveShape.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\shapes\ConvexMeshShape.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\shapes\ConvexPolyhedronShape.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\shapes\ConvexShape.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\shapes\HeightFieldShape.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\shapes\SphereShape.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\collision\shapes\TriangleShape.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\constraint\BallAndSocketJoint.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\constraint\ContactPoint.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\constraint\FixedJoint.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\constraint\HingeJoint.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\constraint\Joint.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\constraint\SliderJoint.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\CollisionWorld.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\ConstraintSolver.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\ContactSolver.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\DynamicsWorld.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\Island.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\Material.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\OverlappingPair.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\Timer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mathematics\Matrix2x2.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mathematics\Matrix3x3.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mathematics\Quaternion.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mathematics\Transform.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mathematics\Vector2.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mathematics\Vector3.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mathematics\mathematics_functions.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\memory\DefaultPoolAllocator.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\memory\DefaultSingleFrameAllocator.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\memory\MemoryManager.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\utils\Logger.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\utils\Profiler.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
