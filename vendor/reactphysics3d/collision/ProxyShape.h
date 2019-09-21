@@ -103,8 +103,6 @@ class ProxyShape {
 
 		// -------------------- Methods -------------------- //
 
-		/// Return the collision shape
-		CollisionShape* getCollisionShape();
 
     public:
 
@@ -124,7 +122,7 @@ class ProxyShape {
         ProxyShape& operator=(const ProxyShape& proxyShape) = delete;
 
         /// Return the collision shape
-        const CollisionShape* getCollisionShape() const;
+        CollisionShape* getCollisionShape() const;
 
         /// Return the parent body
         CollisionBody* getBody() const;
@@ -214,16 +212,8 @@ class ProxyShape {
 /**
  * @return Pointer to the internal collision shape
  */
-inline const CollisionShape* ProxyShape::getCollisionShape() const {
+inline CollisionShape* ProxyShape::getCollisionShape() const {
     return mCollisionShape;
-}
-
-// Return the collision shape
-/**
-* @return Pointer to the internal collision shape
-*/
-inline CollisionShape* ProxyShape::getCollisionShape() {
-	return mCollisionShape;
 }
 
 // Return the parent body

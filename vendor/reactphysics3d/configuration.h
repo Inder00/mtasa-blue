@@ -90,7 +90,7 @@ const decimal DECIMAL_LARGEST = std::numeric_limits<decimal>::max();
 const decimal MACHINE_EPSILON = std::numeric_limits<decimal>::epsilon();
 
 /// Pi constant
-constexpr decimal PI = decimal(3.14159265);
+constexpr decimal PI_ = decimal(3.14159265);
 
 /// 2*Pi constant
 constexpr decimal PI_TIMES_2 = decimal(6.28318530);
@@ -150,7 +150,7 @@ struct WorldSettings {
 
     /// A body with angular velocity smaller than the sleep angular velocity (in rad/s)
     /// might enter sleeping mode
-    decimal defaultSleepAngularVelocity = decimal(3.0) * (PI / decimal(180.0));
+    decimal defaultSleepAngularVelocity = decimal(3.0) * (PI_ / decimal(180.0));
 
     /// Maximum number of contact manifolds in an overlapping pair that involves two
     /// convex collision shapes.
