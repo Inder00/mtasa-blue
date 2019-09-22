@@ -35,7 +35,9 @@ public:
     static CLuaPhysicsRigidBody* GetFromScriptID(unsigned int uiScriptID);
 
     void CreateBox(const CVector& size, float fMass);
+    void CreateSphere(float fRadius, float fMass);
     void GetMatrix(CMatrix& matrix);
+
     rp3d::ProxyShape* GetProxyShapesList() { return m_pRigidBody->getProxyShapesList(); };
 
 private:

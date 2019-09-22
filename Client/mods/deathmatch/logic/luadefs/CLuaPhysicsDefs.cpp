@@ -93,6 +93,7 @@ int CLuaPhysicsDefs::PhysicsAddCollisionShape(lua_State* luaVM)
     {
         CVector vector1, vector2;
         float   fMass; // in kilograms
+        float   fRadius;
         switch (physiscShapeType)
         {
             case PHYSICAL_SHAPE_BOX:
@@ -101,6 +102,20 @@ int CLuaPhysicsDefs::PhysicsAddCollisionShape(lua_State* luaVM)
                 if (!argStream.HasErrors())
                 {
                     pRigidBody->CreateBox(vector1, fMass);
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                else
+                {
+                
+                }
+                break;
+            case PHYSICAL_SHAPE_SPHERE:
+                argStream.ReadNumber(fRadius);
+                argStream.ReadNumber(fMass, 10);
+                if (!argStream.HasErrors())
+                {
+                    pRigidBody->CreateSphere(fRadius, fMass);
                     lua_pushboolean(luaVM, true);
                     return 1;
                 }

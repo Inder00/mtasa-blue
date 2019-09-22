@@ -38,19 +38,18 @@ void CClientPhysics::Update()
     m_LastTimeMs = tickCountNow;
     const float timeStep = 1.0 / 60.0;
     m_pDynamicsWorld->update(((float)iDeltaTimeMs) / 1000.0f);
-    float       angle;
-    CMatrix     matrix;
+
+    CMatrix     rigidBoxyMatrix;
     ProxyShape* pShapeList;
 
     for (const auto& body : vecRigidBodies)
     {
-        body->GetMatrix(matrix);
-
         pShapeList = body->GetProxyShapesList();
         do
         {
-            matrix.SetPosition(matrix.GetPosition() + *(CVector*)&pShapeList->getLocalToBodyTransform().getPosition());
-            RenderDebug(pShapeList->getCollisionShape(), matrix);
+            body->GetMatrix(rigidBoxyMatrix);
+            rigidBoxyMatrix.SetPosition(rigidBoxyMatrix.GetPosition() + *(CVector*)&pShapeList->getLocalToBodyTransform().getPosition());
+            RenderDebug(pShapeList->getCollisionShape(), rigidBoxyMatrix);
 
         } while (pShapeList = pShapeList->getNext());
     }
@@ -72,8 +71,6 @@ void CClientPhysics::RenderDebug(rp3d::CollisionShape* pShape, CMatrix& matrix)
     // used if else due switch require declare variables outside
     if (eShapeName == CollisionShapeName::BOX)
     {
-        SColorARGB color1(0, 255, 0, 255);
-        SColorARGB color2(0, 0, 255, 255);
         BoxShape*  eBox = (BoxShape*)pShape;
 
         CVector corners[8];
@@ -105,8 +102,7 @@ void CClientPhysics::RenderDebug(rp3d::CollisionShape* pShape, CMatrix& matrix)
     {
         SphereShape* eShape = (SphereShape*)pShape;
         float        fRadius = eShape->getRadius();
-        m_pGraphics->DrawLine3DQueued(CVector(pos.fX, pos.fY, pos.fZ - fRadius / 2), CVector(pos.fX, pos.fY, pos.fZ + fRadius / 2), fLineWidth, colorBlue,
-                                      false);
+        m_pGraphics->DrawWiredSphere(pos, fRadius, colorBlue, 2, 2);
     }
 }
 

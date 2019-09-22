@@ -65,6 +65,13 @@ void CLuaPhysicsRigidBody::CreateBox(const CVector& size, float fMass)
     m_pRigidBody->addCollisionShape(box, Transform::identity(), decimal(fMass));
 }
 
+void CLuaPhysicsRigidBody::CreateSphere(float fRadius, float fMass)
+{
+    SphereShape* sphere = new SphereShape(decimal(fRadius));
+    Transform    transform(Vector3(0, 0, 0), Quaternion::identity());
+    m_pRigidBody->addCollisionShape(sphere, Transform::identity(), decimal(fMass));
+}
+
 void CLuaPhysicsRigidBody::GetMatrix(CMatrix& matrix)
 {
     matrix.SetPosition(*(CVector*)&m_pRigidBody->getTransform().getPosition());
