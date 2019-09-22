@@ -663,6 +663,17 @@ ADD_ENUM(PHYSICAL_SHAPE_CONCAVE_MESH, "concave")
 ADD_ENUM(PHYSICAL_SHAPE_HEIGHTFIELD, "heightfield")
 IMPLEMENT_ENUM_END("physics-shape-type")
 
+IMPLEMENT_ENUM_BEGIN(ePhysicsRigidBodyProperty)
+ADD_ENUM(PHYSICAL_RIGID_BODY_POSITION, "position")
+ADD_ENUM(PHYSICAL_RIGID_BODY_TYPE, "type")
+IMPLEMENT_ENUM_END("physics-rigid-body-property")
+
+IMPLEMENT_ENUM_BEGIN(ePhysicsRigidBodyType)
+ADD_ENUM(RIGID_BODY_STATIC, "static")
+ADD_ENUM(RIGID_BODY_KINEMATIC, "kinematic")
+ADD_ENUM(RIGID_BODY_DYNAMIC, "dynamic")
+IMPLEMENT_ENUM_END("rigid-body-type")
+
 //
 // Get best guess at name of userdata type
 //

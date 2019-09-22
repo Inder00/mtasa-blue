@@ -20,5 +20,6 @@ public:
 
     LUA_DECLARE(PhysicsCreateWorld);
     LUA_DECLARE(PhysicsCreateRigidBody);
+    LUA_DECLARE(PhysicsSetRigidBodyProperties);
     LUA_DECLARE(PhysicsAddCollisionShape);
 };

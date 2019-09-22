@@ -75,6 +75,21 @@ enum ePhysicsShapeType
 };
 DECLARE_ENUM(ePhysicsShapeType);
 
+enum ePhysicsRigidBodyProperty
+{
+    PHYSICAL_RIGID_BODY_POSITION,
+    PHYSICAL_RIGID_BODY_TYPE,
+};
+DECLARE_ENUM(ePhysicsRigidBodyProperty);
+
+enum ePhysicsRigidBodyType
+{
+    RIGID_BODY_STATIC,
+    RIGID_BODY_KINEMATIC,
+    RIGID_BODY_DYNAMIC,
+};
+DECLARE_ENUM(ePhysicsRigidBodyType);
+
 enum eDXHorizontalAlign
 {
     DX_ALIGN_LEFT = DT_LEFT,
@@ -464,6 +479,14 @@ inline SString GetClassByTypeName(eObjectGroup::BreakMode*)
 inline SString GetClassByTypeName(ePhysicsShapeType*)
 {
     return "physics-shape-type";
+}
+inline SString GetClassByTypeName(ePhysicsRigidBodyProperty*)
+{
+    return "physics-rigid-body-property";
+}
+inline SString GetClassByTypeName(ePhysicsRigidBodyType*)
+{
+    return "rigid-body-type";
 }
 
 //

@@ -72,6 +72,18 @@ void CLuaPhysicsRigidBody::CreateSphere(float fRadius, float fMass)
     m_pRigidBody->addCollisionShape(sphere, Transform::identity(), decimal(fMass));
 }
 
+void CLuaPhysicsRigidBody::SetPosition(CVector vecPosition)
+{
+    auto transform = m_pRigidBody->getTransform();
+    transform.setPosition(Vector3(vecPosition.fX, vecPosition.fY, vecPosition.fZ));
+    m_pRigidBody->setTransform(transform);
+}
+
+void CLuaPhysicsRigidBody::SetType(rp3d::BodyType eType)
+{
+    m_pRigidBody->setType(eType);
+}
+
 void CLuaPhysicsRigidBody::GetMatrix(CMatrix& matrix)
 {
     matrix.SetPosition(*(CVector*)&m_pRigidBody->getTransform().getPosition());

@@ -37,6 +37,8 @@ public:
     void CreateBox(const CVector& size, float fMass);
     void CreateSphere(float fRadius, float fMass);
     void GetMatrix(CMatrix& matrix);
+    void SetPosition(CVector vecPosition);
+    void SetType(rp3d::BodyType eType);
 
     rp3d::ProxyShape* GetProxyShapesList() { return m_pRigidBody->getProxyShapesList(); };
 

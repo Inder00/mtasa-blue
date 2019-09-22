@@ -16,6 +16,7 @@ void CLuaPhysicsDefs::LoadFunctions()
     std::map<const char*, lua_CFunction> functions{
         {"physicsCreateWorld", PhysicsCreateWorld},
         {"physicsCreateRigidBody", PhysicsCreateRigidBody},
+        {"physicsSetRigidBodyProperties", PhysicsSetRigidBodyProperties},
         {"physicsAddCollisionShape", PhysicsAddCollisionShape},
     };
 
@@ -24,6 +25,48 @@ void CLuaPhysicsDefs::LoadFunctions()
     {
         CLuaCFunctions::AddFunction(pair.first, pair.second);
     }
+}
+
+int CLuaPhysicsDefs::PhysicsSetRigidBodyProperties(lua_State* luaVM)
+{
+    CLuaPhysicsRigidBody* pRigidBody;
+    ePhysicsRigidBodyProperty ePhysicsRigidBodyProperty;
+
+    CScriptArgReader argStream(luaVM);
+    argStream.ReadUserData(pRigidBody);
+    argStream.ReadEnumString(ePhysicsRigidBodyProperty);
+
+    if (!argStream.HasErrors())
+    {
+        ePhysicsRigidBodyType eRigidBodyType;
+        CVector               position;
+        switch (ePhysicsRigidBodyProperty)
+        {
+            case PHYSICAL_RIGID_BODY_POSITION:
+                argStream.ReadVector3D(position);
+                if (!argStream.HasErrors())
+                {
+                    pRigidBody->SetPosition(position);
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+            case PHYSICAL_RIGID_BODY_TYPE:
+                argStream.ReadEnumString(eRigidBodyType);
+                if (!argStream.HasErrors())
+                {
+                    pRigidBody->SetType((rp3d::BodyType)eRigidBodyType);
+                    lua_pushboolean(luaVM, true);
+                    return 1;
+                }
+                break;
+        }
+    }
+    if (argStream.HasErrors())
+        m_pScriptDebugging->LogCustom(luaVM, argStream.GetFullErrorMessage());
+
+    lua_pushboolean(luaVM, false);
+    return 1;
 }
 
 int CLuaPhysicsDefs::PhysicsCreateWorld(lua_State* luaVM)
