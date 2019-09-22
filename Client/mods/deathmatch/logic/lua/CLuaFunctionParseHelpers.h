@@ -64,6 +64,17 @@ DECLARE_ENUM(eSurfaceWheelEffect);
 DECLARE_ENUM(eSurfaceSkidMarkType);
 DECLARE_ENUM(eSurfaceAdhesionGroup);
 
+enum ePhysicsShapeType
+{
+    PHYSICAL_SHAPE_BOX,
+    PHYSICAL_SHAPE_SPHERE,
+    PHYSICAL_SHAPE_CAPSULE,
+    PHYSICAL_SHAPE_CONVEX_MESH,
+    PHYSICAL_SHAPE_CONCAVE_MESH,
+    PHYSICAL_SHAPE_HEIGHTFIELD,
+};
+DECLARE_ENUM(ePhysicsShapeType);
+
 enum eDXHorizontalAlign
 {
     DX_ALIGN_LEFT = DT_LEFT,
@@ -426,6 +437,10 @@ inline SString GetClassTypeName(eSurfaceAdhesionGroup*)
 {
     return "surface-adhesion-group";
 }
+inline SString GetClassTypeName(CLuaPhysicsRigidBody*)
+{
+    return "physics-rigid-body";
+}
 inline SString GetClassByTypeName(eObjectGroup::Modifiable*)
 {
     return "objectgroup-modifiable";
@@ -445,6 +460,10 @@ inline SString GetClassByTypeName(eObjectGroup::FxType*)
 inline SString GetClassByTypeName(eObjectGroup::BreakMode*)
 {
     return "objectgroup-breakmode";
+}
+inline SString GetClassByTypeName(ePhysicsShapeType*)
+{
+    return "physics-shape-type";
 }
 
 //
@@ -513,6 +532,15 @@ template <class T>
 CLuaMatrix* UserDataCast(CLuaMatrix*, void* ptr, lua_State* luaVM)
 {
     return CLuaMatrix::GetFromScriptID(reinterpret_cast<unsigned int>(ptr));
+}
+
+//
+// CLuaPhysicsRigidBody from userdata
+//
+template <class T>
+CLuaPhysicsRigidBody* UserDataCast(CLuaPhysicsRigidBody*, void* ptr, lua_State* luaVM)
+{
+    return CLuaPhysicsRigidBody::GetFromScriptID(reinterpret_cast<unsigned int>(ptr));
 }
 
 //

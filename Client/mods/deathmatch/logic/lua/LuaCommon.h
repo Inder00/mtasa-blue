@@ -44,6 +44,7 @@ class CClientRadarArea;
 class CClientPointLights;
 class CClientPhysics;
 class CLuaTimer;
+class CLuaPhysicsRigidBody;
 class CResource;
 class CXMLNode;
 
@@ -63,6 +64,7 @@ void lua_pushvector(lua_State* luaVM, const CVector4D& vector);
 void lua_pushvector(lua_State* luaVM, const CVector& vector);
 void lua_pushvector(lua_State* luaVM, const CVector2D& vector);
 void lua_pushmatrix(lua_State* luaVM, const CMatrix& matrix);
+void lua_pushphysicsrigidbody(lua_State* luaVM, CLuaPhysicsRigidBody* pRigidBody);
 
 // Internal use
 void lua_initclasses(lua_State* luaVM);

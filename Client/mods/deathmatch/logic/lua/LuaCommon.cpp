@@ -98,6 +98,17 @@ void lua_pushxmlnode(lua_State* luaVM, CXMLNode* pElement)
     lua_pushobject(luaVM, szClass, (void*)reinterpret_cast<unsigned int*>(pElement->GetID()));
 }
 
+void lua_pushphysicsrigidbody(lua_State* luaVM, CLuaPhysicsRigidBody* pRigidBody)
+{
+    const char* szClass = NULL;
+    CLuaMain*   pLuaMain = g_pClientGame->GetLuaManager()->GetVirtualMachine(luaVM);
+    // if (pLuaMain && pLuaMain->IsOOPEnabled())
+    //    szClass = CLuaClassDefs::GetTimerClass(pTimer);
+
+    lua_pushobject(luaVM, szClass, (void*)reinterpret_cast<unsigned int*>(pRigidBody->GetScriptID()));
+}
+
+
 void lua_pushuserdata(lua_State* luaVM, void* pData)
 {
     if (CClientEntity* pEntity = UserDataCast<CClientEntity>((CClientEntity*)NULL, pData, luaVM))
@@ -116,6 +127,8 @@ void lua_pushuserdata(lua_State* luaVM, void* pData)
         return lua_pushvector(luaVM, *pVector);
     else if (CLuaMatrix* pMatrix = UserDataCast<CLuaMatrix>((CLuaMatrix*)NULL, pData, luaVM))
         return lua_pushmatrix(luaVM, *pMatrix);
+    else if (CLuaPhysicsRigidBody* pRigidBody = UserDataCast<CLuaPhysicsRigidBody>((CLuaPhysicsRigidBody*)NULL, pData, luaVM))
+        return lua_pushphysicsrigidbody(luaVM, pRigidBody);
 
     lua_pushobject(luaVM, NULL, pData);
 }

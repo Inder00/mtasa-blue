@@ -14,6 +14,7 @@ class CLuaMain;
 #pragma once
 
 #include "CLuaTimerManager.h"
+#include "CLuaPhysicsRigidBodyManager.h"
 #include "lua/CLuaVector2.h"
 #include "lua/CLuaVector3.h"
 #include "lua/CLuaVector4.h"
@@ -51,8 +52,9 @@ public:
     const char* GetScriptName() const { return m_strScriptName; }
     void        SetScriptName(const char* szName) { m_strScriptName.AssignLeft(szName, MAX_SCRIPTNAME_LENGTH); }
 
-    lua_State*        GetVM() { return m_luaVM; };
-    CLuaTimerManager* GetTimerManager() const { return m_pLuaTimerManager; };
+    lua_State*                   GetVM() { return m_luaVM; };
+    CLuaTimerManager*            GetTimerManager() const { return m_pLuaTimerManager; };
+    CLuaPhysicsRigidBodyManager* GetPhysicsRigidBodyManager() const { return m_pLuaPhysicsRigidBodyManager; };
 
     bool       BeingDeleted();
     lua_State* GetVirtualMachine() const { return m_luaVM; };
@@ -86,8 +88,9 @@ private:
 
     SString m_strScriptName;
 
-    lua_State*        m_luaVM;
-    CLuaTimerManager* m_pLuaTimerManager;
+    lua_State*                   m_luaVM;
+    CLuaTimerManager*            m_pLuaTimerManager;
+    CLuaPhysicsRigidBodyManager* m_pLuaPhysicsRigidBodyManager;
 
     bool m_bBeingDeleted;            // prevent it being deleted twice
 

@@ -34,6 +34,7 @@ CLuaMain::CLuaMain(CLuaManager* pLuaManager, CResource* pResourceOwner, bool bEn
     m_luaVM = NULL;
     m_bBeingDeleted = false;
     m_pLuaTimerManager = new CLuaTimerManager;
+    m_pLuaPhysicsRigidBodyManager = new CLuaPhysicsRigidBodyManager;
     m_FunctionEnterTimer.SetMaxIncrement(500);
 
     m_pResource = pResourceOwner;
@@ -57,6 +58,9 @@ CLuaMain::~CLuaMain()
 
     // Delete the timer manager
     delete m_pLuaTimerManager;
+
+    // Delete the physics rigid body manager
+    delete m_pLuaPhysicsRigidBodyManager;
 
     CClientPerfStatLuaMemory::GetSingleton()->OnLuaMainDestroy(this);
     CClientPerfStatLuaTiming::GetSingleton()->OnLuaMainDestroy(this);

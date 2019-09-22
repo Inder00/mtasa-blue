@@ -18,5 +18,7 @@ public:
     static void LoadFunctions();
     static void AddClass(lua_State* luaVM);
 
-    LUA_DECLARE(PhysicsCreate);
+    LUA_DECLARE(PhysicsCreateWorld);
+    LUA_DECLARE(PhysicsCreateRigidBody);
+    LUA_DECLARE(PhysicsAddCollisionShape);
 };

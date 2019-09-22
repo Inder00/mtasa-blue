@@ -654,6 +654,15 @@ ADD_ENUM(SURFACE_ADHESION_GROUP_SAND, "sand")
 ADD_ENUM(SURFACE_ADHESION_GROUP_WET, "wet")
 IMPLEMENT_ENUM_END("surface-adhesion-group")
 
+IMPLEMENT_ENUM_BEGIN(ePhysicsShapeType)
+ADD_ENUM(PHYSICAL_SHAPE_BOX, "box")
+ADD_ENUM(PHYSICAL_SHAPE_SPHERE, "sphere")
+ADD_ENUM(PHYSICAL_SHAPE_CAPSULE, "capsule")
+ADD_ENUM(PHYSICAL_SHAPE_CONVEX_MESH, "convex")
+ADD_ENUM(PHYSICAL_SHAPE_CONCAVE_MESH, "concave")
+ADD_ENUM(PHYSICAL_SHAPE_HEIGHTFIELD, "heightfield")
+IMPLEMENT_ENUM_END("physics-shape-type")
+
 //
 // Get best guess at name of userdata type
 //
@@ -683,6 +692,8 @@ SString GetUserDataClassName(void* ptr, lua_State* luaVM, bool bFindElementType)
     if (auto* pVar = UserDataCast<CLuaVector3D>((CLuaVector3D*)NULL, ptr, luaVM))            // Try 3D Vector
         return GetClassTypeName(pVar);
     if (auto* pVar = UserDataCast<CLuaVector4D>((CLuaVector4D*)NULL, ptr, luaVM))
+        return GetClassTypeName(pVar);
+    if (auto* pVar = UserDataCast<CLuaPhysicsRigidBody>((CLuaPhysicsRigidBody*)NULL, ptr, luaVM))   // Try physics rigid body
         return GetClassTypeName(pVar);
 
     return "";
