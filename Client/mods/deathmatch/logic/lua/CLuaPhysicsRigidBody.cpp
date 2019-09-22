@@ -19,8 +19,8 @@ using namespace reactphysics3d;
 CVector QuaternionToEuler(Quaternion q)
 {
     double q0 = q.w;
-    double q1 = q.y;
-    double q2 = q.x;
+    double q1 = q.x;
+    double q2 = q.y;
     double q3 = q.z;
 
     CVector radAngles;
