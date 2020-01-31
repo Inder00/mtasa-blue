@@ -24,6 +24,7 @@ class CGraphics;
 #define DUMMY_PROGRESS_ANIMATION_INTERVAL   100     // Animation speed
 
 class CTileBatcher;
+class CTileBatcher;
 class CLine3DBatcher;
 class CMaterialLine3DBatcher;
 class CPrimitiveBatcher;

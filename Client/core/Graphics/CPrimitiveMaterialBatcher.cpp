@@ -9,94 +9,9 @@
  *
  *****************************************************************************/
 #include <StdInc.h>
+#include "C2DBatcher.h"
 #include "CPrimitiveMaterialBatcher.h"
-////////////////////////////////////////////////////////////////
-//
-// CPrimitiveMaterialBatcher::CPrimitiveMaterialBatcher
-//
-//
-//
-////////////////////////////////////////////////////////////////
-CPrimitiveMaterialBatcher::CPrimitiveMaterialBatcher(CGraphics* graphics)
-{
-    m_pGraphics = graphics;
-}
-////////////////////////////////////////////////////////////////
-//
-// CPrimitiveMaterialBatcher::~CPrimitiveMaterialBatcher
-//
-//
-//
-////////////////////////////////////////////////////////////////
-CPrimitiveMaterialBatcher::~CPrimitiveMaterialBatcher()
-{
-}
-////////////////////////////////////////////////////////////////
-//
-// CPrimitiveMaterialBatcher::OnDeviceCreate
-//
-//
-//
-////////////////////////////////////////////////////////////////
-void CPrimitiveMaterialBatcher::OnDeviceCreate(IDirect3DDevice9* pDevice, float fViewportSizeX, float fViewportSizeY)
-{
-    m_pDevice = pDevice;
-    // Cache matrices
-    UpdateMatrices(fViewportSizeX, fViewportSizeY);
-}
-////////////////////////////////////////////////////////////////
-//
-// CPrimitiveMaterialBatcher::OnRenderTargetChange
-//
-//
-//
-////////////////////////////////////////////////////////////////
-void CPrimitiveMaterialBatcher::OnChangingRenderTarget(uint uiNewViewportSizeX, uint uiNewViewportSizeY)
-{
-    // Flush dx draws
-    Flush();
-    // Make new projection transform
-    UpdateMatrices(uiNewViewportSizeX, uiNewViewportSizeY);
-}
-////////////////////////////////////////////////////////////////
-//
-// CPrimitiveMaterialBatcher::UpdateMatrices
-//
-//
-//
-////////////////////////////////////////////////////////////////
-void CPrimitiveMaterialBatcher::UpdateMatrices(float fViewportSizeX, float fViewportSizeY)
-{
-    m_fViewportSizeX = fViewportSizeX;
-    m_fViewportSizeY = fViewportSizeY;
-    D3DXMatrixIdentity(&m_MatView);
-    D3DXMatrixIdentity(&m_MatProjection);
-    // Make projection 3D friendly, so shaders can alter the z coord for fancy effects
-    float fFarPlane = 10000;
-    float fNearPlane = 100;
-    float Q = fFarPlane / (fFarPlane - fNearPlane);
-    float fAdjustZFactor = 1000.f;
-    float rcpSizeX = 2.0f / m_fViewportSizeX;
-    float rcpSizeY = -2.0f / m_fViewportSizeY;
-    rcpSizeX *= fAdjustZFactor;
-    rcpSizeY *= fAdjustZFactor;
-    m_MatProjection.m[0][0] = rcpSizeX;
-    m_MatProjection.m[1][1] = rcpSizeY;
-    m_MatProjection.m[2][2] = Q;
-    m_MatProjection.m[2][3] = 1;
-    m_MatProjection.m[3][0] = (-m_fViewportSizeX / 2.0f - 0.5f) * rcpSizeX;
-    m_MatProjection.m[3][1] = (-m_fViewportSizeY / 2.0f - 0.5f) * rcpSizeY;
-    m_MatProjection.m[3][2] = -Q * fNearPlane;
-    m_MatProjection.m[3][3] = 0;
-    m_MatView.m[3][2] = fAdjustZFactor;
-}
-////////////////////////////////////////////////////////////////
-//
-// CPrimitiveMaterialBatcher::SetDeviceStates
-//
-//
-//
-////////////////////////////////////////////////////////////////
+
 void CPrimitiveMaterialBatcher::SetDeviceStates()
 {
     // Set states
@@ -107,13 +22,7 @@ void CPrimitiveMaterialBatcher::SetDeviceStates()
     m_pDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
     m_pDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
 }
-////////////////////////////////////////////////////////////////
-//
-// CPrimitiveMaterialBatcher::Flush
-//
-// Send all buffered vertices to D3D
-//
-////////////////////////////////////////////////////////////////
+
 void CPrimitiveMaterialBatcher::Flush()
 {
     if (m_primitiveList.empty())
@@ -159,13 +68,7 @@ void CPrimitiveMaterialBatcher::Flush()
         SAFE_RELEASE(pSavedStateBlock);
     }
 }
-////////////////////////////////////////////////////////////////
-//
-// CPrimitiveMaterialBatcher::DrawPrimitive
-//
-// Draws the primitives on render target
-//
-////////////////////////////////////////////////////////////////
+
 void CPrimitiveMaterialBatcher::DrawPrimitive(D3DPRIMITIVETYPE eType, size_t iCollectionSize, const void* pDataAddr, size_t uiVertexStride)
 {
     int iSize = 1;
@@ -190,13 +93,7 @@ void CPrimitiveMaterialBatcher::DrawPrimitive(D3DPRIMITIVETYPE eType, size_t iCo
     }
     m_pDevice->DrawPrimitiveUP(eType, iSize, pDataAddr, uiVertexStride);
 }
-////////////////////////////////////////////////////////////////
-//
-// CPrimitiveMaterialBatcher::ClearQueue
-//
-// Clears all primitives in current queue
-//
-////////////////////////////////////////////////////////////////
+
 void CPrimitiveMaterialBatcher::ClearQueue()
 {
     // Clean up
@@ -209,13 +106,7 @@ void CPrimitiveMaterialBatcher::ClearQueue()
     m_primitiveList.clear();
     m_primitiveList.reserve(prevSize);
 }
-////////////////////////////////////////////////////////////////
-//
-// CPrimitiveMaterialBatcher::AddTriangle
-//
-// Add a new primitive to the list
-//
-////////////////////////////////////////////////////////////////
+
 void CPrimitiveMaterialBatcher::AddPrimitive(D3DPRIMITIVETYPE eType, CMaterialItem* pMaterial, std::vector<PrimitiveMaterialVertice>* pVecVertices)
 {
     m_primitiveList.push_back({eType, pMaterial, pVecVertices});
