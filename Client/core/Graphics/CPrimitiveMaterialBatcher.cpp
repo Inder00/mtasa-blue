@@ -137,8 +137,6 @@ void CPrimitiveMaterialBatcher::Flush()
 
     // Draw
     m_pDevice->SetTexture(0, nullptr);
-    // Cache last used material, so we don't set directx parameters needlessly
-    CMaterialItem* pLastMaterial = nullptr;
 
     for (auto& primitive : m_primitiveList)
     {
@@ -146,62 +144,9 @@ void CPrimitiveMaterialBatcher::Flush()
         uint        uiVertexStreamZeroStride = sizeof(PrimitiveMaterialVertice);
 
         CMaterialItem* pMaterial = primitive.pMaterial;
-        if (pMaterial != pLastMaterial)
-        {
-            // Set texture addressing mode
-            m_pDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, pMaterial->m_TextureAddress);
-            m_pDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, pMaterial->m_TextureAddress);
-
-            if (pMaterial->m_TextureAddress == TADDRESS_BORDER)
-                m_pDevice->SetSamplerState(0, D3DSAMP_BORDERCOLOR, pMaterial->m_uiBorderColor);
-        }
-
-        if (CTextureItem* pTextureItem = DynamicCast<CTextureItem>(pMaterial))
-        {
-            // Draw using texture
-            if (pMaterial != pLastMaterial)
-            {
-                m_pDevice->SetTexture(0, pTextureItem->m_pD3DTexture);
-            }
-
+        pMaterial->Use([primitive, pVertexStreamZeroData, uiVertexStreamZeroStride, this]() {
             DrawPrimitive(primitive.eType, primitive.pVecVertices->size(), pVertexStreamZeroData, uiVertexStreamZeroStride);
-        }
-        else if (CShaderInstance* pShaderInstance = DynamicCast<CShaderInstance>(pMaterial))
-        {
-            // Draw using shader
-            ID3DXEffect* pD3DEffect = pShaderInstance->m_pEffectWrap->m_pD3DEffect;
-
-            if (pMaterial != pLastMaterial)
-            {
-                // Apply custom parameters
-                pShaderInstance->ApplyShaderParameters();
-                // Apply common parameters
-                pShaderInstance->m_pEffectWrap->ApplyCommonHandles();
-                // Apply mapped parameters
-                pShaderInstance->m_pEffectWrap->ApplyMappedHandles();
-            }
-
-            // Do shader passes
-            DWORD dwFlags = D3DXFX_DONOTSAVESHADERSTATE;
-            uint  uiNumPasses = 0;
-            pShaderInstance->m_pEffectWrap->Begin(&uiNumPasses, dwFlags, false);
-
-            for (uint uiPass = 0; uiPass < uiNumPasses; uiPass++)
-            {
-                pD3DEffect->BeginPass(uiPass);
-                DrawPrimitive(primitive.eType, primitive.pVecVertices->size(), pVertexStreamZeroData, uiVertexStreamZeroStride);
-                pD3DEffect->EndPass();
-            }
-            pShaderInstance->m_pEffectWrap->End();
-
-            // If we didn't get the effect to save the shader state, clear some things here
-            if (dwFlags & D3DXFX_DONOTSAVESHADERSTATE)
-            {
-                m_pDevice->SetVertexShader(NULL);
-                m_pDevice->SetPixelShader(NULL);
-            }
-        }
-        pLastMaterial = pMaterial;
+        });
         m_pGraphics->RemoveQueueRef(pMaterial);
     }
 

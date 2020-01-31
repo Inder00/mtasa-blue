@@ -83,6 +83,8 @@ public:
 
     IDirect3DDevice9* m_pDevice;
 
+    static CMaterialItem* pLastMaterial;
+
 protected:
     std::set<CRenderItem*>   m_CreatedItemList;
     IDirect3DSurface9*       m_pDefaultD3DRenderTarget;

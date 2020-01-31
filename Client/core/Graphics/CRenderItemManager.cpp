@@ -1267,3 +1267,64 @@ void CRenderItemManager::HandleStretchRect(IDirect3DSurface9* pSourceSurface, CO
         m_pDevice->StretchRect(pSourceSurface, pSourceRect, pDestSurface, pDestRect, (D3DTEXTUREFILTERTYPE)Filter);
     }
 }
+
+CMaterialItem* CRenderItemManager::pLastMaterial;
+
+void CMaterialItem::Use(const std::function<void()>& cb)
+{
+    if (this != CRenderItemManager::pLastMaterial)
+    {
+        // Set texture addressing mode
+        m_pDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, m_TextureAddress);
+        m_pDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, m_TextureAddress);
+
+        if (m_TextureAddress == TADDRESS_BORDER)
+            m_pDevice->SetSamplerState(0, D3DSAMP_BORDERCOLOR, m_uiBorderColor);
+    }
+
+    if (CTextureItem* pTextureItem = DynamicCast<CTextureItem>(this))
+    {
+        // Draw using texture
+        if (this != CRenderItemManager::pLastMaterial)
+        {
+            m_pDevice->SetTexture(0, pTextureItem->m_pD3DTexture);
+        }
+        cb();
+    }
+    else if (CShaderInstance* pShaderInstance = DynamicCast<CShaderInstance>(this))
+    {
+        // Draw using shader
+        ID3DXEffect* pD3DEffect = pShaderInstance->m_pEffectWrap->m_pD3DEffect;
+
+        if (this != CRenderItemManager::pLastMaterial)
+        {
+            // Apply custom parameters
+            pShaderInstance->ApplyShaderParameters();
+            // Apply common parameters
+            pShaderInstance->m_pEffectWrap->ApplyCommonHandles();
+            // Apply mapped parameters
+            pShaderInstance->m_pEffectWrap->ApplyMappedHandles();
+        }
+
+        // Do shader passes
+        DWORD dwFlags = D3DXFX_DONOTSAVESHADERSTATE;
+        uint  uiNumPasses = 0;
+        pShaderInstance->m_pEffectWrap->Begin(&uiNumPasses, dwFlags, false);
+
+        for (uint uiPass = 0; uiPass < uiNumPasses; uiPass++)
+        {
+            pD3DEffect->BeginPass(uiPass);
+            cb();
+            pD3DEffect->EndPass();
+        }
+        pShaderInstance->m_pEffectWrap->End();
+
+        // If we didn't get the effect to save the shader state, clear some things here
+        if (dwFlags & D3DXFX_DONOTSAVESHADERSTATE)
+        {
+            m_pDevice->SetVertexShader(NULL);
+            m_pDevice->SetPixelShader(NULL);
+        }
+    }
+    CRenderItemManager::pLastMaterial = this;
+}

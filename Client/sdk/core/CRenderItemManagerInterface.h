@@ -337,7 +337,7 @@ class CMaterialItem : public CRenderItem
 {
     DECLARE_CLASS(CMaterialItem, CRenderItem)
     CMaterialItem() : ClassInit(this), m_TextureAddress(TADDRESS_WRAP), m_uiBorderColor(0) {}
-
+    void            Use(const std::function<void()>& cb);
     uint            m_uiSizeX;
     uint            m_uiSizeY;
     ETextureAddress m_TextureAddress;

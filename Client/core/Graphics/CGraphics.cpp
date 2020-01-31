@@ -1479,6 +1479,7 @@ void CGraphics::OnDeviceCreate(IDirect3DDevice9* pDevice)
     m_pLine3DBatcherPostGUI->OnDeviceCreate(pDevice, GetViewportWidth(), GetViewportHeight());
     m_pMaterialLine3DBatcherPreGUI->OnDeviceCreate(pDevice, GetViewportWidth(), GetViewportHeight());
     m_pMaterialLine3DBatcherPostGUI->OnDeviceCreate(pDevice, GetViewportWidth(), GetViewportHeight());
+    m_pPrimitiveMaterialBatcher->OnDeviceCreate(pDevice, GetViewportWidth(), GetViewportHeight());
     m_pPrimitiveBatcher->OnDeviceCreate(pDevice, GetViewportWidth(), GetViewportHeight());
     m_pPrimitive3DBatcherPreGUI->OnDeviceCreate(pDevice, GetViewportWidth(), GetViewportHeight());
     m_pPrimitive3DBatcherPostGUI->OnDeviceCreate(pDevice, GetViewportWidth(), GetViewportHeight());
