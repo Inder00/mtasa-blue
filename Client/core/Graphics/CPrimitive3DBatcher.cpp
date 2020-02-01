@@ -10,36 +10,9 @@
  *
  *****************************************************************************/
 #include <StdInc.h>
+#include "C3DBatcher.h"
 #include "CPrimitive3DBatcher.h"
-////////////////////////////////////////////////////////////////
-//
-// CPrimitive3DBatcher::CPrimitive3DBatcher
-//
-//
-//
-////////////////////////////////////////////////////////////////
-CPrimitive3DBatcher::CPrimitive3DBatcher(bool bPreGUI)
-    : m_bPreGUI(bPreGUI)
-{
-}
-////////////////////////////////////////////////////////////////
-//
-// CPrimitive3DBatcher::OnDeviceCreate
-//
-//
-//
-////////////////////////////////////////////////////////////////
-void CPrimitive3DBatcher::OnDeviceCreate(IDirect3DDevice9* pDevice, float fViewportSizeX, float fViewportSizeY)
-{
-    m_pDevice = pDevice;
-}
-////////////////////////////////////////////////////////////////
-//
-// CPrimitive3DBatcher::Flush
-//
-// Send all buffered vertices to D3D
-//
-////////////////////////////////////////////////////////////////
+
 void CPrimitive3DBatcher::Flush()
 {
     if (m_primitiveList.empty())
@@ -114,13 +87,7 @@ void CPrimitive3DBatcher::Flush()
         SAFE_RELEASE(pSavedStateBlock);
     }
 }
-////////////////////////////////////////////////////////////////
-//
-// CPrimitiveMaterialBatcher::DrawPrimitive
-//
-// Draws the primitives on render target
-//
-////////////////////////////////////////////////////////////////
+
 void CPrimitive3DBatcher::DrawPrimitive(D3DPRIMITIVETYPE eType, size_t iCollectionSize, const void* pDataAddr, size_t uiVertexStride)
 {
     int iSize = 1;
@@ -145,13 +112,7 @@ void CPrimitive3DBatcher::DrawPrimitive(D3DPRIMITIVETYPE eType, size_t iCollecti
     }
     m_pDevice->DrawPrimitiveUP(eType, iSize, pDataAddr, uiVertexStride);
 }
-////////////////////////////////////////////////////////////////
-//
-// CPrimitive3DBatcher::AddTriangle
-//
-// Add a new primitive to the list
-//
-////////////////////////////////////////////////////////////////
+
 void CPrimitive3DBatcher::AddPrimitive(D3DPRIMITIVETYPE eType, std::vector<PrimitiveVertice>* pVecVertices)
 {
     m_primitiveList.push_back({eType, pVecVertices});

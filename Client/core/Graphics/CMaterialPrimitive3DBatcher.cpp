@@ -10,36 +10,9 @@
  *
  *****************************************************************************/
 #include <StdInc.h>
+#include "C3DBatcher.h"
 #include "CMaterialPrimitive3DBatcher.h"
-////////////////////////////////////////////////////////////////
-//
-// CMaterialPrimitive3DBatcher::CMaterialPrimitive3DBatcher
-//
-//
-//
-////////////////////////////////////////////////////////////////
-CMaterialPrimitive3DBatcher::CMaterialPrimitive3DBatcher(bool bPreGUI, CGraphics* pGraphics)
-    : m_bPreGUI(bPreGUI), m_pGraphics(pGraphics)
-{
-}
-////////////////////////////////////////////////////////////////
-//
-// CMaterialPrimitive3DBatcher::OnDeviceCreate
-//
-//
-//
-////////////////////////////////////////////////////////////////
-void CMaterialPrimitive3DBatcher::OnDeviceCreate(IDirect3DDevice9* pDevice, float fViewportSizeX, float fViewportSizeY)
-{
-    m_pDevice = pDevice;
-}
-////////////////////////////////////////////////////////////////
-//
-// CMaterialPrimitive3DBatcher::Flush
-//
-// Send all buffered vertices to D3D
-//
-////////////////////////////////////////////////////////////////
+
 void CMaterialPrimitive3DBatcher::Flush()
 {
     if (m_primitiveList.empty())
@@ -107,57 +80,9 @@ void CMaterialPrimitive3DBatcher::Flush()
         size_t iCollectionSize = primitive.pVecVertices->size();
 
         CMaterialItem* pMaterial = primitive.pMaterial;
-        if (pMaterial != pLastMaterial)
-        {
-            // Set texture addressing mode
-            m_pDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, pMaterial->m_TextureAddress);
-            m_pDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, pMaterial->m_TextureAddress);
-
-            if (pMaterial->m_TextureAddress == TADDRESS_BORDER)
-                m_pDevice->SetSamplerState(0, D3DSAMP_BORDERCOLOR, pMaterial->m_uiBorderColor);
-        }
-
-        if (CTextureItem* pTextureItem = DynamicCast<CTextureItem>(pMaterial))
-        {
-            m_pDevice->SetTexture(0, pTextureItem->m_pD3DTexture);
+        pMaterial->Use([primitive, pVertexStreamZeroData, uiVertexStreamZeroStride, this]() {
             DrawPrimitive(primitive.eType, primitive.pVecVertices->size(), pVertexStreamZeroData, uiVertexStreamZeroStride);
-        }
-        else if (CShaderInstance* pShaderInstance = DynamicCast<CShaderInstance>(pMaterial))
-        {
-            // Draw using shader
-            ID3DXEffect* pD3DEffect = pShaderInstance->m_pEffectWrap->m_pD3DEffect;
-
-            if (pMaterial != pLastMaterial)
-            {
-                // Apply custom parameters
-                pShaderInstance->ApplyShaderParameters();
-                // Apply common parameters
-                pShaderInstance->m_pEffectWrap->ApplyCommonHandles();
-                // Apply mapped parameters
-                pShaderInstance->m_pEffectWrap->ApplyMappedHandles();
-            }
-
-            // Do shader passes
-            DWORD dwFlags = D3DXFX_DONOTSAVESHADERSTATE;
-            uint  uiNumPasses = 0;
-            pShaderInstance->m_pEffectWrap->Begin(&uiNumPasses, dwFlags, false);
-
-            for (uint uiPass = 0; uiPass < uiNumPasses; uiPass++)
-            {
-                pD3DEffect->BeginPass(uiPass);
-                DrawPrimitive(primitive.eType, primitive.pVecVertices->size(), pVertexStreamZeroData, uiVertexStreamZeroStride);
-                pD3DEffect->EndPass();
-            }
-            pShaderInstance->m_pEffectWrap->End();
-
-            // If we didn't get the effect to save the shader state, clear some things here
-            if (dwFlags & D3DXFX_DONOTSAVESHADERSTATE)
-            {
-                m_pDevice->SetVertexShader(NULL);
-                m_pDevice->SetPixelShader(NULL);
-            }
-        }
-        pLastMaterial = pMaterial;
+        });
         pMaterial->Release();
     }
 
@@ -181,13 +106,7 @@ void CMaterialPrimitive3DBatcher::ClearQueue()
 
     m_primitiveList.clear();
 }
-////////////////////////////////////////////////////////////////
-//
-// CPrimitiveMaterialBatcher::DrawPrimitive
-//
-// Draws the primitives on render target
-//
-////////////////////////////////////////////////////////////////
+
 void CMaterialPrimitive3DBatcher::DrawPrimitive(D3DPRIMITIVETYPE eType, size_t iCollectionSize, const void* pDataAddr, size_t uiVertexStride)
 {
     int iSize = 1;
@@ -212,13 +131,7 @@ void CMaterialPrimitive3DBatcher::DrawPrimitive(D3DPRIMITIVETYPE eType, size_t i
     }
     m_pDevice->DrawPrimitiveUP(eType, iSize, pDataAddr, uiVertexStride);
 }
-////////////////////////////////////////////////////////////////
-//
-// CMaterialPrimitive3DBatcher::AddPrimitive
-//
-// Add a new primitive to the list
-//
-////////////////////////////////////////////////////////////////
+
 void CMaterialPrimitive3DBatcher::AddPrimitive(D3DPRIMITIVETYPE eType, CMaterialItem* pMaterial, std::vector<PrimitiveMaterialVertice>* pVecVertices)
 {
     if (!pMaterial)

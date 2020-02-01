@@ -14,14 +14,12 @@
 class C3DBatcher
 {
     friend CGraphics;
-    friend CPrimitiveMaterialBatcher;
 
 public:
     ZERO_ON_NEW
     C3DBatcher(CGraphics* graphics);
     ~C3DBatcher();
     void OnDeviceCreate(IDirect3DDevice9* pDevice, float fViewportSizeX, float fViewportSizeY);
-    void OnChangingRenderTarget(uint uiNewViewportSizeX, uint uiNewViewportSizeY);
     void UpdateMatrices(float fViewportSizeX, float fViewportSizeY);
     virtual void Flush() = 0;
 protected:

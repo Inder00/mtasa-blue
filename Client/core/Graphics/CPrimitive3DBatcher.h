@@ -21,11 +21,10 @@ struct sPrimitive3D
 //
 // Batches primitives drawing
 //
-class CPrimitive3DBatcher
+class CPrimitive3DBatcher : public C3DBatcher
 {
 public:
-    CPrimitive3DBatcher(bool bPreGUI);
-    void OnDeviceCreate(IDirect3DDevice9* pDevice, float fViewportSizeX, float fViewportSizeY);
+    CPrimitive3DBatcher(bool bPreGUI, CGraphics* pGraphics) : C3DBatcher(pGraphics), m_bPreGUI(bPreGUI) {}
     void Flush();
     void AddPrimitive(D3DPRIMITIVETYPE eType, std::vector<PrimitiveVertice>* pVecVertices);
     void DrawPrimitive(D3DPRIMITIVETYPE eType, size_t iCollectionSize, const void* pDataAddr, size_t uiVertexStride);
@@ -33,6 +32,5 @@ public:
 
 protected:
     bool m_bPreGUI;
-    IDirect3DDevice9*         m_pDevice;
     std::vector<sPrimitive3D> m_primitiveList;
 };

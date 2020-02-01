@@ -27,14 +27,6 @@ void C3DBatcher::OnDeviceCreate(IDirect3DDevice9* pDevice, float fViewportSizeX,
     UpdateMatrices(fViewportSizeX, fViewportSizeY);
 }
 
-void C3DBatcher::OnChangingRenderTarget(uint uiNewViewportSizeX, uint uiNewViewportSizeY)
-{
-    // Flush dx draws
-    Flush();
-    // Make new projection transform
-    UpdateMatrices(uiNewViewportSizeX, uiNewViewportSizeY);
-}
-
 void C3DBatcher::UpdateMatrices(float fViewportSizeX, float fViewportSizeY)
 {
     m_fViewportSizeX = fViewportSizeX;

@@ -59,11 +59,11 @@ CGraphics::CGraphics(CLocalGUI* pGUI)
     m_pLine3DBatcherPostGUI = new CLine3DBatcher(false);
     m_pMaterialLine3DBatcherPreGUI = new CMaterialLine3DBatcher(true);
     m_pMaterialLine3DBatcherPostGUI = new CMaterialLine3DBatcher(false);
-    m_pPrimitive3DBatcherPreGUI = new CPrimitive3DBatcher(true);
-    m_pPrimitive3DBatcherPostGUI = new CPrimitive3DBatcher(false);
+    m_pPrimitive3DBatcherPreGUI = new CPrimitive3DBatcher(true, this);
+    m_pPrimitive3DBatcherPostGUI = new CPrimitive3DBatcher(false, this);
     m_pMaterialPrimitive3DBatcherPreGUI = new CMaterialPrimitive3DBatcher(true, this);
     m_pMaterialPrimitive3DBatcherPostGUI = new CMaterialPrimitive3DBatcher(false, this);
-    m_pPrimitiveBatcher = new CPrimitiveBatcher();
+    m_pPrimitiveBatcher = new CPrimitiveBatcher(this);
     m_pPrimitiveMaterialBatcher = new CPrimitiveMaterialBatcher(this);
 
     m_pScreenGrabber = NewScreenGrabber();
@@ -1577,6 +1577,7 @@ void CGraphics::DrawLine3DPreGUIQueue()
 
 void CGraphics::DrawPrimitive3DPreGUIQueue(void)
 {
+    CRenderItemManager::pLastMaterial = nullptr;
     m_pPrimitive3DBatcherPreGUI->Flush();
     m_pMaterialPrimitive3DBatcherPreGUI->Flush();
 }

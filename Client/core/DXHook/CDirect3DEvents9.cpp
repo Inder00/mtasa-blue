@@ -165,6 +165,7 @@ void CDirect3DEvents9::OnPresent(IDirect3DDevice9* pDevice)
     // Draw post-GUI primitives
     CGraphics::GetSingleton().DrawPostGUIQueue();
 
+
     // Redraw the mouse cursor so it will always be over other elements
     CLocalGUI::GetSingleton().DrawMouseCursor();
 
@@ -172,10 +173,9 @@ void CDirect3DEvents9::OnPresent(IDirect3DDevice9* pDevice)
 
     CGraphics::GetSingleton().LeavingMTARenderZone();
 
-    CRenderItemManager::pLastMaterial = nullptr;
-
     // End the scene that we started.
     pDevice->EndScene();
+
     g_bInMTAScene = false;
 
     // Update incase settings changed
