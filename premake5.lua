@@ -135,6 +135,7 @@ workspace "MTASA"
 		include "vendor/libspeex"
 		include "vendor/assimp"
 		include "vendor/ogre"
+		include "vendor/RenderSystem_Direct3D11"
 	end
 
 	filter {}

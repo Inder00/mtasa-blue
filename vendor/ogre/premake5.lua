@@ -3,7 +3,7 @@ project "ogre"
 	language "C++"
 	kind "StaticLib"
 
-	defines { "OGRE_STATIC_LIB", "OGRE_NO_ZIP_ARCHIVE", "OGRE_NO_TBB_SCHEDULER" }
+	defines { "OGRE_STATIC_LIB", "OGRE_NO_ZIP_ARCHIVE", "OGRE_NO_TBB_SCHEDULER", "OGRE_DEPRECATED_2_2" }
   --WIN32;_WINDOWS;OGRE_NONCLIENT_BUILD;FREEIMAGE_LIB;_MT;_USRDLL;CMAKE_INTDIR="Debug";OgreMain_EXPORTS;%(PreprocessorDefinitions)
 	includedirs { ".",
 		"include",
@@ -48,7 +48,6 @@ project "ogre"
 		"src/WIN32",
 		"src/Android",
 		"src/Android/JNI",
-		"src/Deprecated",
 	}
 	
 	warnings "Off";
