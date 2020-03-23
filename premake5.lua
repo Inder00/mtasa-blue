@@ -134,6 +134,7 @@ workspace "MTASA"
 		include "vendor/pthreads"
 		include "vendor/libspeex"
 		include "vendor/assimp"
+		include "vendor/ogre"
 	end
 
 	filter {}
