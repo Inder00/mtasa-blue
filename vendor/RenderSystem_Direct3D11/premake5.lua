@@ -63,5 +63,4 @@ project "RenderSystem_Direct3D11"
 		"../ogre/include/Deprecated/*.h",
 	}
 
-	--pchheader "OgreStableHeaders.h"
-	--pchsource "src/stdafx.cpp"
+  -- remember to exclude directx9 from additional include directory ( C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Include )

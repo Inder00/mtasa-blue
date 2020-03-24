@@ -27,7 +27,7 @@ THE SOFTWARE.
 */
 #ifndef __D3D11PREREQUISITES_H__
 #define __D3D11PREREQUISITES_H__
-
+#define OGRE_STATIC_LIB
 
 
 #include "OgrePrerequisites.h"
