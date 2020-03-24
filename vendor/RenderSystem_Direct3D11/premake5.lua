@@ -41,6 +41,10 @@ project "RenderSystem_Direct3D11"
 		"../ogre/include/Deprecated",
 	}
 
+	removeincludedirs {
+		path.join(dxdir, "Include")
+	}
+
 	vpaths { 
 		["Headers"] = "include/*.h",
 		["Sources"] = "src/*.cpp",

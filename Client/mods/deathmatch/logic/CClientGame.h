@@ -44,6 +44,7 @@
 #include "CVoiceRecorder.h"
 #include "CSingularFileDownloadManager.h"
 #include "CObjectRespawner.h"
+#include "ogre/COgre.h"
 
 #define HeliKill_List_Clear_Rate 500
 #define MIN_PUSH_ANTISPAM_RATE 1500

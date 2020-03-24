@@ -1,16 +1,11 @@
 project "Ogre test"
 	language "C++"
 	kind "ConsoleApp"
-	targetname "client"
-	targetdir(buildpath("mods/deathmatch"))
+	targetname "OgreTest"
+	targetdir(buildpath("ogretest"))
 
-	defines { "LUA_USE_APICHECK", "SDK_WITH_BCRYPT" }
-	links {
-		"Lua_Client", "pcre", "json-c", "ws2_32", "portaudio", "zlib",
-		"RenderSystem_Direct3D11", "ogre",
-		"dxgi.lib",
-		"dxguid.lib",
-	}
+	defines { "OGRE_TEST" }
+	links { "RenderSystem_Direct3D11", "ogre", "dxgi.lib", "dxguid.lib" }
 
 	vpaths {
 		["Headers/*"] = {"**.h"},
@@ -24,10 +19,17 @@ project "Ogre test"
 			"../../vendor/assimp/include",
 			"../../vendor/ogre/include",
 			"../../vendor/RenderSystem_Direct3D11/include",
+			"../../Client/mods/deathmatch/logic/ogre"
 	}
 
 	files {
 		"premake5.lua",
 		"**.h",
 		"**.cpp",
+		"../../Client/mods/deathmatch/logic/ogre/**.h",
+		"../../Client/mods/deathmatch/logic/ogre/**.cpp",
+	}
+
+	removeincludedirs {
+		path.join(dxdir, "Include")
 	}

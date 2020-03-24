@@ -33,6 +33,7 @@ project "Client Deathmatch"
 		includedirs {
 			".",
 			"./logic",
+			"./logic/ogre",
 			"../../sdk/",
 			"../../../vendor/pthreads/include",
 			"../../../vendor/bochs",
@@ -49,6 +50,10 @@ project "Client Deathmatch"
 			"../../../vendor/assimp/include",
 			"../../../vendor/ogre/include",
 			"../../../vendor/RenderSystem_Direct3D11/include",
+	}
+
+	removeincludedirs {
+		path.join(dxdir, "Include")
 	}
 
 	files {
