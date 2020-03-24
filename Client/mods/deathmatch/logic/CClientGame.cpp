@@ -349,6 +349,10 @@ CClientGame::CClientGame(bool bLocalPlay)
 
     // Setup builtin Lua events
     SetupGlobalLuaEvents();
+
+    m_pOgre = new COgre();
+    
+    g_pCore->GetConsole()->Printf("start game");
 }
 
 CClientGame::~CClientGame()
@@ -643,7 +647,6 @@ bool CClientGame::StartGame(const char* szNick, const char* szPassword, eServerT
                                 MB_BUTTON_OK | MB_ICON_ERROR);
         g_pCore->GetModManager()->RequestUnload();
     }
-
     return false;
 }
 

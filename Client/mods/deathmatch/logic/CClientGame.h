@@ -845,6 +845,8 @@ private:
     AnimAssociations_type                                m_mapOfCustomAnimationAssociations;
     // Key is the task and value is the CClientPed*
     RunNamedAnimTask_type m_mapOfRunNamedAnimTasks;
+
+    COgre* m_pOgre;
 };
 
 extern CClientGame* g_pClientGame;

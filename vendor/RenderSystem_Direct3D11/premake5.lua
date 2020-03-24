@@ -62,5 +62,5 @@ project "RenderSystem_Direct3D11"
 		"include/**.h",
 		"../ogre/include/Deprecated/*.h",
 	}
-
+	--removeincludes("C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include")
   -- remember to exclude directx9 from additional include directory ( C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Include )

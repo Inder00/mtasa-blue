@@ -142,6 +142,7 @@
 #include <luadefs/CLuaWeaponDefs.h>
 #include <luadefs/CLuaAssetModel.h>
 #include <CRemoteCalls.h>
+#include <COgre.h>
 
 // Shared includes
 #include "TInterpolation.h"
