@@ -137,6 +137,7 @@ workspace "MTASA"
 		include "vendor/ogre"
 		include "vendor/ogretest"
 		include "vendor/RenderSystem_Direct3D11"
+		include "vendor/OgreHlmsUnlit"
 	end
 
 	filter {}

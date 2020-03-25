@@ -11,11 +11,29 @@
 
 #pragma once
 
+#include <string>
+
+namespace Ogre
+{
+    class Root;
+    class SceneManager;
+    class Camera;
+    class Material;
+}
+
 class COgre
 {
 public:
     COgre();
     ~COgre();
+    void CreateCamera();
+    void CreateTexture();
+    void loadResources(std::string path, std::string name);
+    void RegisterHlms();
 
 private:
+    Ogre::Root* m_pRoot;
+    Ogre::SceneManager* m_pSceneManager;
+    Ogre::Camera* m_pCamera;
+    Ogre::Material*   mat;
 };
