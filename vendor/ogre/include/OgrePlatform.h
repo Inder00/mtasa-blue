@@ -216,7 +216,9 @@ namespace Ogre {
 //----------------------------------------------------------------------------
 // Windows Settings
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32 || OGRE_PLATFORM == OGRE_PLATFORM_WINRT
+#ifndef OGRE_STATIC_LIB
 #define OGRE_STATIC_LIB
+#endif
 // If we're not including this from a client build, specify that the stuff
 // should get exported. Otherwise, import it.
 #   if defined( OGRE_STATIC_LIB )

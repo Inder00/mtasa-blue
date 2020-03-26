@@ -11,14 +11,14 @@
 
 #pragma once
 
-#include <string>
-
 namespace Ogre
 {
     class Root;
     class SceneManager;
     class Camera;
     class Material;
+    class Vector3;
+    class ManualObject;
 }
 
 class COgre
@@ -35,5 +35,5 @@ private:
     Ogre::Root* m_pRoot;
     Ogre::SceneManager* m_pSceneManager;
     Ogre::Camera* m_pCamera;
-    Ogre::Material*   mat;
+    Ogre::Material*            mat;
 };

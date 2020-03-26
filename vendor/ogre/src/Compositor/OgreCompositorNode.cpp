@@ -886,8 +886,7 @@ namespace Ogre
                     ++itExposed;
                 }
 
-                //Execute pass
-                pass->execute( lodCamera );
+                //Execute pas                pass->execute( lodCamera );
 
                 //Remove our textures
                 sceneManager->_removeCompositorTextures( oldNumTextures );

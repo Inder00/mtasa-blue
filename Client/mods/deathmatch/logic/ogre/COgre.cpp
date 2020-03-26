@@ -14,10 +14,10 @@
 #ifdef PI
     #undef PI
 #endif
-
 #include "COgre.h"
 #include "Ogre/include/Ogre.h"
 #include "Ogre/include/OgreRoot.h"
+#include "Ogre/include/OgreCodec.h"
 #include "Ogre/include/OgreMaterial.h"
 #include "Ogre/include/OgreMaterialManager.h"
 #include "Ogre/include/OgreResourceGroupManager.h"
@@ -40,17 +40,24 @@
 #include "ogre/include/OgreAlignedAllocator.h"
 #include "ogre/include/OgreHlms.h"
 #include "ogre/include/OgreHlmsManager.h"
+#include "ogre/include/OgreTextureGpuManager.h"
 #include "ogre/include/OgreDynLib.h"
+#include "ogre/include/OgreTextureFilters.h"
+
+#include "D:\mtablue\mtasa-blue\vendor\ogre\include\Compositor\OgreCompositorWorkspace.h"
 
 #include "OgreHlmsUnlit/include/OgreHlmsUnlit.h"
+#include "OgreHlmsPbs/include/OgreHlmsPbs.h"
+#include "OgreHlmsPbs/include/OgreHlmsPbsDatablock.h"
 
 #include "RenderSystem_Direct3D11/include/OgreD3D11RenderSystem.h"
 
+void createHlmsFromMaterial(const Ogre::String materialName);
 COgre::COgre()
 {
     Ogre::Root*         m_pRoot = new Ogre::Root("", "", "Ogre.log");
     Ogre::RenderSystem* renderSystem = new Ogre::D3D11RenderSystem();
-
+    
     m_pRoot->setRenderSystem(renderSystem);
     m_pRoot->initialise(false);
     Ogre::NameValuePairList params;
@@ -60,20 +67,23 @@ COgre::COgre()
     RegisterHlms();
     loadResources("D:/mtablue/mtasa-blue/Bin/ogretest/textures/", "textures");
     loadResources("D:/mtablue/mtasa-blue/Bin/ogretest/shaders/", "shaders");
-    m_pRoot->getHlmsManager()->useDefaultDatablockFrom(Ogre::HlmsTypes::HLMS_UNLIT);
+    //Ogre::ResourceGroupManager::getSingletonPtr()->initialiseAllResourceGroups(false);
+    m_pRoot->getHlmsManager()->useDefaultDatablockFrom(Ogre::HlmsTypes::HLMS_LOW_LEVEL);
 
     Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
-    Ogre::v1::MeshManager::getSingleton().createPlane("plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 4500, 4500, 10, 10, true, 1, 5,
-                                                      5, Ogre::Vector3::UNIT_Z);
 
     m_pSceneManager = m_pRoot->createSceneManager(Ogre::ST_GENERIC, 1, "ExampleInstance");
 
     Ogre::SceneNode* pNode = m_pSceneManager->getRootSceneNode()->createChildSceneNode();
 
-    Ogre::v1::Entity* pPlaneEnt = m_pSceneManager->createEntity("plane");
-
-    pPlaneEnt->setMaterialName("GrassMaterial");
     // pNode->attachObject(pPlaneEnt);
+    Ogre::ResourceManager::ResourceMapIterator materialIterator = Ogre::MaterialManager::getSingleton().getResourceIterator();
+
+    while (materialIterator.hasMoreElements())
+    {
+        auto name = materialIterator.peekNextValue();
+        materialIterator.moveNext();
+    }
 
     CreateCamera();
     Ogre::Light* l = m_pSceneManager->createLight();
@@ -92,30 +102,123 @@ COgre::COgre()
 
     Ogre::v1::Entity* entPlano = m_pSceneManager->createEntity("ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     entPlano->setRenderQueueGroup(5);
+
+    createHlmsFromMaterial("RockWall");
+    entPlano->setDatablock("RockWall");            // BaseWhite
     //ln->attachObject(entPlano);
 
     // Setup a basic compositor with a blue clear colour
-    Ogre::CompositorManager2* compositorManager = m_pRoot->getCompositorManager2();
-    const Ogre::String        workspaceName("Demo Workspace");
-    const Ogre::ColourValue   backgroundColour(0.2f, 0.4f, 0.6f);
-    compositorManager->createBasicWorkspaceDef(workspaceName, backgroundColour, Ogre::IdString());
-    compositorManager->addWorkspace(m_pSceneManager, window->getTexture(), m_pCamera, workspaceName, true);
-
-    Ogre::ManualObject* myManualObject = m_pSceneManager->createManualObject();
-    Ogre::SceneNode*    myManualObjectNode = m_pSceneManager->getRootSceneNode()->createChildSceneNode();
+    //Ogre::CompositorManager2* compositorManager = m_pRoot->getCompositorManager2();
+    //const Ogre::String        workspaceName("Demo Workspace");
+    //const Ogre::ColourValue   backgroundColour(0.2f, 0.4f, 0.6f);
+    //compositorManager->createBasicWorkspaceDef(workspaceName, backgroundColour, Ogre::IdString());
+    //compositorManager->addWorkspace(m_pSceneManager, window->getTexture(), m_pCamera, workspaceName, true);
 
     //CreateTexture();
-    m_pRoot->renderOneFrame();
+    while (true)
+    {
+        
+        m_pRoot->renderOneFrame();
+    }
+}
+
+void createHlmsFromMaterial(const Ogre::String materialName)
+{
+    // load the material
+    Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName(materialName);
+
+    // check datablock does not already exists
+    Ogre::HlmsManager*   hlmsManager = Ogre::Root::getSingleton().getHlmsManager();
+    Ogre::HlmsDatablock* block = hlmsManager->getDatablockNoDefault(materialName);
+    if (block == NULL)
+    {
+        if (mat.isNull() == false)
+        {
+            Ogre::HlmsPbs*          hlmsPbs = dynamic_cast<Ogre::HlmsPbs*>(Ogre::Root::getSingleton().getHlmsManager()->getHlms(Ogre::HLMS_PBS));
+            Ogre::HlmsPbsDatablock* datablock = static_cast<Ogre::HlmsPbsDatablock*>(
+                hlmsPbs->createDatablock(materialName, materialName, Ogre::HlmsMacroblock(), Ogre::HlmsBlendblock(), Ogre::HlmsParamVec()));
+
+            datablock->setSpecular(Ogre::Vector3(0.2));
+            datablock->setRoughness(0.8);
+            datablock->setFresnel(Ogre::Vector3(0.015), false);
+
+            Ogre::Technique* matTech = mat->getBestTechnique();
+
+            if (matTech == NULL)
+            {
+                // if best technique is not valid just grab the first one
+                Ogre::Material::TechniqueIterator techItr = mat->getTechniqueIterator();
+                if (techItr.hasMoreElements())
+                {
+                    matTech = techItr.getNext();
+                }
+            }
+
+            if (matTech)
+            {
+                Ogre::Technique::PassIterator passItr = matTech->getPassIterator();
+                while (passItr.hasMoreElements())
+                {
+                    // itterate through all defined textures in this pass. Currently assume they are all the diffuse texture
+                    Ogre::Pass::TextureUnitStateIterator texItr = passItr.getNext()->getTextureUnitStateIterator();
+                    while (texItr.hasMoreElements())
+                    {
+                        Ogre::TextureUnitState*                   tex = texItr.getNext();
+                        Ogre::TextureGpuManager* textureMgr = Ogre::Root::getSingletonPtr()->getRenderSystem()->getTextureGpuManager();
+                        Ogre::TextureGpu*                         texLoc = textureMgr->createOrRetrieveTexture(
+                            tex->getFrameTextureName(0), Ogre::GpuPageOutStrategy::Discard, Ogre::TextureFlags::PrefersLoadingFromFileAsSRGB,
+                            Ogre::TextureTypes::TypeCube, Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
+                            Ogre::TextureFilter::TypeGenerateDefaultMipmaps);
+                        datablock->setTexture(Ogre::PBSM_DIFFUSE, texLoc);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void COgre::RegisterHlms()
 {
-    Ogre::Hlms* hlmsUnlit = new Ogre::HlmsUnlit(nullptr, 0);
-    Ogre::Root::getSingleton().getHlmsManager()->registerHlms(hlmsUnlit);
+    Ogre::String hlmsFolder = "I:/ogre-next-master/Scripts/BuildScripts/output/Ogre/ogre-next/Samples/Media/";
+    Ogre::String shadingLanguage = "HLSL";
+    auto hlmsManager = Ogre::Root::getSingleton().getHlmsManager();
 
-    //Ogre::Archive* archivePbs = Ogre::ArchiveManager::getSingletonPtr()->load(dataFolder + "Hlms/Pbs/" + shaderSyntax, "FileSystem", true);
-    //Ogre::HlmsPbs* hlmsPbs = new Ogre::HlmsPbs(archivePbs, &library);
-    //Ogre::Root::getSingleton().getHlmsManager()->registerHlms(hlmsPbs);
+    // Shader library
+    auto library = Ogre::ArchiveVec();
+
+    // Common archive
+    auto archiveLibrary = Ogre::ArchiveManager::getSingleton().load(hlmsFolder + "Hlms\\Common\\" + shadingLanguage, "FileSystem", true);
+    auto archiveLibraryAny = Ogre::ArchiveManager::getSingleton().load(hlmsFolder + "Hlms\\Common\\Any", "FileSystem", true);
+
+    // Unlit archive
+    auto archiveUnlitAny = Ogre::ArchiveManager::getSingleton().load(hlmsFolder + "Hlms\\Unlit\\Any", "FileSystem", true);
+    auto archiveUnlit = Ogre::ArchiveManager::getSingleton().load(hlmsFolder + "Hlms\\Unlit\\" + shadingLanguage, "FileSystem", true);
+
+    // PBS archive
+    auto archivePbsAny = Ogre::ArchiveManager::getSingleton().load(hlmsFolder + "Hlms\\Pbs\\Any", "FileSystem", true);
+    auto archivePbs = Ogre::ArchiveManager::getSingleton().load(hlmsFolder + "Hlms\\Pbs\\" + shadingLanguage, "FileSystem", true);
+
+    // Push Common and Unlit archives to library
+    library.push_back(archiveLibrary);
+    library.push_back(archiveLibraryAny);
+    library.push_back(archiveUnlitAny);
+    library.push_back(archiveUnlit);
+
+    // HLMS Unlit
+    auto hlmsUnlit = new Ogre::HlmsUnlit(archiveUnlit, &library);
+
+    // Keep the Common and push the Pbs archives
+    library.pop_back();
+    library.pop_back();
+    library.push_back(archivePbsAny);
+    library.push_back(archivePbs);
+
+    // HLMS PBS
+    auto hlmsPbs = new Ogre::HlmsPbs(archivePbs, &library);
+
+    // Register HLMS
+    hlmsManager->registerHlms(hlmsUnlit);
+    hlmsManager->registerHlms(hlmsPbs);
 }
 
 void COgre::loadResources(std::string path, std::string name)

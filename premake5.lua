@@ -138,6 +138,8 @@ workspace "MTASA"
 		include "vendor/ogretest"
 		include "vendor/RenderSystem_Direct3D11"
 		include "vendor/OgreHlmsUnlit"
+		include "vendor/OgreHlmsPbs"
+		--include "vendor/OgreRTShaderSystem"
 	end
 
 	filter {}

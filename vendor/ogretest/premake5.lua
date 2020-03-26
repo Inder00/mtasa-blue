@@ -5,7 +5,7 @@ project "Ogre test"
 	targetdir(buildpath("ogretest"))
 
 	defines { "OGRE_TEST" }
-	links { "RenderSystem_Direct3D11", "ogre", "OgreHlmsUnlit", "dxgi.lib", "dxguid.lib" }
+	links { "RenderSystem_Direct3D11", "ogre", "OgreHlmsUnlit","OgreHlmsPbs", "dxgi.lib", "dxguid.lib" }
 
 	vpaths {
 		["Headers/*"] = {"**.h"},
@@ -19,6 +19,7 @@ project "Ogre test"
 			"../../vendor/assimp/include",
 			"../../vendor/ogre/include",
 			"../../vendor/OgreHlmsUnlit/include",
+			"../../vendor/OgreHlmsPbs/include",
 			"../../vendor/RenderSystem_Direct3D11/include",
 			"../../Client/mods/deathmatch/logic/ogre"
 	}

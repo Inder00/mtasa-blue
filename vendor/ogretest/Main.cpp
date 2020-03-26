@@ -18,6 +18,6 @@
 int main()
 {
     new COgre();
-    getchar();
+    //getchar();
     return 0;
 }
