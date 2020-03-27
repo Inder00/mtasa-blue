@@ -425,7 +425,10 @@ namespace Ogre {
                             // If its not a varying param check if a uniform is written
                             if(!isVarying)
                             {
-                                UniformParameterList::const_iterator itFound = std::find_if( parameterList.begin(), parameterList.end(), std::bind2nd( CompareUniformByName(), paramName ) );
+                                UniformParameterList::const_iterator itFound = std::find_if(
+                                    parameterList.begin(), parameterList.end(),
+                                    std::bind([](const UniformParameterPtr& uniform, const String& name) { return uniform->getName() == name; },
+                                                 paramName));
                                 if(itFound != parameterList.end())
                                 {   
                                     // Declare the copy variable

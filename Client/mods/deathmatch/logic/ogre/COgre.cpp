@@ -43,9 +43,11 @@
 #include "ogre/include/OgreTextureGpuManager.h"
 #include "ogre/include/OgreDynLib.h"
 #include "ogre/include/OgreTextureFilters.h"
+#include "ogre/include/OgreRectangle2D2.h"
 
 #include "D:\mtablue\mtasa-blue\vendor\ogre\include\Compositor\OgreCompositorWorkspace.h"
 
+#include "RenderSystem_Direct3D11/include/OgreD3D11Plugin.h"
 #include "OgreHlmsUnlit/include/OgreHlmsUnlit.h"
 #include "OgreHlmsPbs/include/OgreHlmsPbs.h"
 #include "OgreHlmsPbs/include/OgreHlmsPbsDatablock.h"
@@ -55,71 +57,87 @@
 void createHlmsFromMaterial(const Ogre::String materialName);
 COgre::COgre()
 {
-    Ogre::Root*         m_pRoot = new Ogre::Root("", "", "Ogre.log");
-    Ogre::RenderSystem* renderSystem = new Ogre::D3D11RenderSystem();
-    
-    m_pRoot->setRenderSystem(renderSystem);
+
+    m_pRoot = new Ogre::Root("", "", "Ogre.log");
+    Ogre::D3D11Plugin* plugin = new Ogre::D3D11Plugin();
+    Ogre::Root::getSingleton().installPlugin(plugin);
+    plugin->initialise();
+
+    m_pRenderSystem = m_pRoot->getRenderSystemByName("Direct3D11 Rendering Subsystem");
+    m_pRoot->setRenderSystem(m_pRenderSystem);
+
     m_pRoot->initialise(false);
     Ogre::NameValuePairList params;
+    params.insert(Ogre::NameValuePairList::value_type("resolution", "800x600"));
+    params.insert(Ogre::NameValuePairList::value_type("fullscreen", "false"));
+    params.insert(Ogre::NameValuePairList::value_type("vsync", "false"));
 
-    Ogre::MaterialManager::getSingletonPtr()->create("default", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-    Ogre::Window* window = m_pRoot->createRenderWindow("MTA:SA", 1000, 1000, false, &params);
+    m_pWindow = m_pRoot->createRenderWindow("MTA:SA", 800, 600, false, &params);
+
     RegisterHlms();
     loadResources("D:/mtablue/mtasa-blue/Bin/ogretest/textures/", "textures");
     loadResources("D:/mtablue/mtasa-blue/Bin/ogretest/shaders/", "shaders");
-    //Ogre::ResourceGroupManager::getSingletonPtr()->initialiseAllResourceGroups(false);
-    m_pRoot->getHlmsManager()->useDefaultDatablockFrom(Ogre::HlmsTypes::HLMS_LOW_LEVEL);
+    loadResources("D:/mtablue/mtasa-blue/Bin/ogretest/meshes/", "meshes");
 
-    Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
+    //m_pRoot->getHlmsManager()->useDefaultDatablockFrom(Ogre::HlmsTypes::HLMS_PBS);
+
 
     m_pSceneManager = m_pRoot->createSceneManager(Ogre::ST_GENERIC, 1, "ExampleInstance");
-
-    Ogre::SceneNode* pNode = m_pSceneManager->getRootSceneNode()->createChildSceneNode();
-
-    // pNode->attachObject(pPlaneEnt);
-    Ogre::ResourceManager::ResourceMapIterator materialIterator = Ogre::MaterialManager::getSingleton().getResourceIterator();
-
-    while (materialIterator.hasMoreElements())
-    {
-        auto name = materialIterator.peekNextValue();
-        materialIterator.moveNext();
-    }
-
+    m_pRoot->_pushCurrentSceneManager(m_pSceneManager);
     CreateCamera();
-    Ogre::Light* l = m_pSceneManager->createLight();
-    l->setType(Ogre::Light::LT_DIRECTIONAL);
-    l->setDiffuseColour(Ogre::ColourValue::White);
-    l->setSpecularColour(Ogre::ColourValue(0.4, 0.4, 0.4));
-    Ogre::SceneNode* ln = m_pSceneManager->getRootSceneNode()->createChildSceneNode();
-    ln->setDirection(Ogre::Vector3(0.55, -0.3, 0.75).normalisedCopy());
-    ln->attachObject(l);
-    m_pSceneManager->getRenderQueue()->setRenderQueueMode(5, Ogre::RenderQueue::V1_FAST);
+    CreateDefaultLight();
+    CreteSceneObjects();
+    ManualObject();
+
+    auto b = m_pSceneManager->createEntity("WoodPallet.mesh", "meshes");
+    Ogre::SceneNode* pNode = m_pSceneManager->getRootSceneNode()->createChildSceneNode(Ogre::SCENE_DYNAMIC);
+
+    pNode->attachObject(b);
+
+    auto a = SetupCompositor();
 
 
-    Ogre::v1::MeshManager::getSingletonPtr()->createPlane("ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 50, 50, 20, 20, true, 1, 5,
-                                                          5,
-                                                          Ogre::Vector3::UNIT_Z);
+    Ogre::ManualObject* manualLine = m_pSceneManager->createManualObject();
+    m_pSceneManager->getRootSceneNode()->attachObject(manualLine);
+    manualLine->clear();
+    manualLine->begin("lineMat", Ogre::OperationType::OT_LINE_LIST);
+    manualLine->position(Ogre::Vector3(0, 0, 0));
+    manualLine->position(Ogre::Vector3(100, 100, 100));
 
-    Ogre::v1::Entity* entPlano = m_pSceneManager->createEntity("ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-    entPlano->setRenderQueueGroup(5);
+    manualLine->position(0, 0, 0.0);
+    manualLine->position(100, 100, 0.0);
+    manualLine->position(0, 100, 0.0);
+    manualLine->position(100, 0, 0.0);
 
-    createHlmsFromMaterial("RockWall");
-    entPlano->setDatablock("RockWall");            // BaseWhite
-    //ln->attachObject(entPlano);
+    manualLine->index(0);
+    manualLine->index(1);
+    manualLine->index(2);
+    manualLine->index(3);
+    manualLine->index(0);
+    manualLine->end();
 
-    // Setup a basic compositor with a blue clear colour
-    //Ogre::CompositorManager2* compositorManager = m_pRoot->getCompositorManager2();
-    //const Ogre::String        workspaceName("Demo Workspace");
-    //const Ogre::ColourValue   backgroundColour(0.2f, 0.4f, 0.6f);
-    //compositorManager->createBasicWorkspaceDef(workspaceName, backgroundColour, Ogre::IdString());
-    //compositorManager->addWorkspace(m_pSceneManager, window->getTexture(), m_pCamera, workspaceName, true);
-
-    //CreateTexture();
+    m_pRenderSystem->updateCompositorManager(m_pRoot->getCompositorManager2());
     while (true)
     {
-        
+        Ogre::WindowEventUtilities::messagePump();
+        a->setEnabled(true);
         m_pRoot->renderOneFrame();
+        m_pCamera->setFOVy(Ogre::Radian(180));
+        a->setEnabled(false);
     }
+}
+
+Ogre::CompositorWorkspace* COgre::SetupCompositor()
+{
+    Ogre::CompositorManager2* compositorManager = m_pRoot->getCompositorManager2();
+
+    const Ogre::String workspaceName("Demo Workspace");
+    if (!compositorManager->hasWorkspaceDefinition(workspaceName))
+    {
+        compositorManager->createBasicWorkspaceDef(workspaceName, Ogre::ColourValue(0.2f, 0.5f, 0.8f));
+    }
+
+    return compositorManager->addWorkspace(m_pSceneManager, m_pWindow->getTexture(), m_pCamera, workspaceName, true);
 }
 
 void createHlmsFromMaterial(const Ogre::String materialName)
@@ -177,6 +195,26 @@ void createHlmsFromMaterial(const Ogre::String materialName)
     }
 }
 
+void COgre::CreteSceneObjects()
+{
+    createHlmsFromMaterial("RockWall");
+    createHlmsFromMaterial("BaseWhite");
+    createHlmsFromMaterial("WoodPallet");
+    createHlmsFromMaterial("lineMat");
+
+    Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
+    Ogre::v1::MeshManager::getSingletonPtr()->createPlane("ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 5, 50, 20, 20, true, 1, 5,
+                                                          5, Ogre::Vector3::UNIT_Z);
+
+    Ogre::v1::Entity* plane1 = m_pSceneManager->createEntity("ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    Ogre::v1::Entity* plane2 = m_pSceneManager->createEntity("ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    Ogre::SceneNode*  pNode = m_pSceneManager->getRootSceneNode()->createChildSceneNode(Ogre::SCENE_DYNAMIC);
+    pNode->attachObject(plane1);
+    pNode->attachObject(plane2);
+    plane1->setDatablock("RockWall");
+    plane2->setDatablock("BaseWhite");
+}
+
 void COgre::RegisterHlms()
 {
     Ogre::String hlmsFolder = "I:/ogre-next-master/Scripts/BuildScripts/output/Ogre/ogre-next/Samples/Media/";
@@ -216,6 +254,15 @@ void COgre::RegisterHlms()
     // HLMS PBS
     auto hlmsPbs = new Ogre::HlmsPbs(archivePbs, &library);
 
+    bool supportsNoOverwriteOnTextureBuffers;
+    m_pRenderSystem->getCustomAttribute("MapNoOverwriteOnDynamicBufferSRV", &supportsNoOverwriteOnTextureBuffers);
+
+    if (!supportsNoOverwriteOnTextureBuffers)
+    {
+        hlmsPbs->setTextureBufferDefaultSize(512 * 1024);
+        hlmsUnlit->setTextureBufferDefaultSize(512 * 1024);
+    }
+
     // Register HLMS
     hlmsManager->registerHlms(hlmsUnlit);
     hlmsManager->registerHlms(hlmsPbs);
@@ -229,36 +276,52 @@ void COgre::loadResources(std::string path, std::string name)
     Ogre::ResourceGroupManager::getSingletonPtr()->loadResourceGroup(name);
 }
 
+void COgre::CreateDefaultLight()
+{
+    Ogre::Light* l = m_pSceneManager->createLight();
+    l->setType(Ogre::Light::LT_DIRECTIONAL);
+    l->setDiffuseColour(Ogre::ColourValue::White);
+    l->setSpecularColour(Ogre::ColourValue(0.4, 0.4, 0.4));
+    Ogre::SceneNode* ln = m_pSceneManager->getRootSceneNode()->createChildSceneNode();
+    ln->setDirection(Ogre::Vector3(0.55, -0.3, 0.75).normalisedCopy());
+    ln->attachObject(l);
+
+    m_pSceneManager->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5), Ogre::ColourValue(0.6, 0.6, 0.6), Ogre::Vector3(1.0));
+}
+
 void COgre::CreateCamera()
 {
     m_pCamera = m_pSceneManager->createCamera("Main Camera");
+
+    // Position it at 500 in Z direction
     m_pCamera->setPosition(Ogre::Vector3(0, 5, 15));
+    // Look back along -Z
     m_pCamera->lookAt(Ogre::Vector3(0, 0, 0));
     m_pCamera->setNearClipDistance(0.2f);
     m_pCamera->setFarClipDistance(1000.0f);
     m_pCamera->setAutoAspectRatio(true);
 }
 
-void COgre::CreateTexture()
+void COgre::ManualObject()
 {
     Ogre::ManualObject* myManualObject = m_pSceneManager->createManualObject();
     Ogre::SceneNode*    myManualObjectNode = m_pSceneManager->getRootSceneNode()->createChildSceneNode();
     // NOTE: The second parameter to the create method is the resource group the material will be added to.
     // If the group you name does not exist (in your resources.cfg file) the library will assert() and your program will crash
-    Ogre::MaterialPtr myManualObjectMaterial =
-        Ogre::MaterialManager::getSingleton().create("manual1Material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-    myManualObjectMaterial->setReceiveShadows(false);
+    //Ogre::MaterialPtr myManualObjectMaterial =
+    //    Ogre::MaterialManager::getSingleton().create("manual1Material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    //myManualObjectMaterial->setReceiveShadows(false);
 
-    //myManualObjectMaterial->getTechnique(0)->setLightingEnabled(true);
-    myManualObjectMaterial->getTechnique(0)->getPass(0)->setDiffuse(0, 0, 1, 0);
-    myManualObjectMaterial->getTechnique(0)->getPass(0)->setAmbient(0, 0, 1);
-    myManualObjectMaterial->getTechnique(0)->getPass(0)->setSelfIllumination(0, 0, 1);
-    //myManualObjectMaterial->dispose();            // dispose pointer, not the material
+    ////myManualObjectMaterial->getTechnique(0)->setLightingEnabled(true);
+    //myManualObjectMaterial->getTechnique(0)->getPass(0)->setDiffuse(0, 0, 1, 0);
+    //myManualObjectMaterial->getTechnique(0)->getPass(0)->setAmbient(0, 0, 1);
+    //myManualObjectMaterial->getTechnique(0)->getPass(0)->setSelfIllumination(0, 0, 1);
+    ////myManualObjectMaterial->dispose();            // dispose pointer, not the material
 
-    myManualObject->begin("manual1Material", Ogre::OT_LINE_LIST);
+    myManualObject->begin("RockWall", Ogre::OT_LINE_LIST);
     myManualObject->position(-0.2, -0.2, 0.0);
-    myManualObject->position(0.2, -0.2, 0.0);
-    myManualObject->position(0.2, 0.2, 0.0);
+    myManualObject->position(0.2, -10, 0.0);
+    myManualObject->position(0.2, 10, 0.0);
     myManualObject->position(-0.2, 0.2, 0.0);
 
     myManualObject->index(0);

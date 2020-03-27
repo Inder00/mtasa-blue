@@ -4,7 +4,7 @@ project "Ogre test"
 	targetname "OgreTest"
 	targetdir(buildpath("ogretest"))
 
-	defines { "OGRE_TEST" }
+	defines { "OGRE_TEST", "DEBUG"}
 	links { "RenderSystem_Direct3D11", "ogre", "OgreHlmsUnlit","OgreHlmsPbs", "dxgi.lib", "dxguid.lib" }
 
 	vpaths {
