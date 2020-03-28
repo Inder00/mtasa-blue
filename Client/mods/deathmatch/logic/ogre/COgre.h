@@ -9,39 +9,56 @@
  *
  *****************************************************************************/
 
-#pragma once
-
+#ifndef COgre_H
+#define COgre_H
 namespace Ogre
 {
-    class Root;
-    class SceneManager;
-    class Camera;
-    class Material;
-    class Vector3;
-    class ManualObject;
-    class ColourValue;
-    class RenderSystem;
-    class CompositorWorkspace;
-    class Window;
+    class PixelBox;
 }
+#include "OgrePrerequisites.h"
+#include "Deprecated/OgrePixelBox.h"
+#include "Ogre.h"
+#include "OgreRoot.h"
+#include "Deprecated/OgreRenderTargetListener.h"
+#include "Compositor/OgreCompositorManager2.h"
+#include "Compositor/OgreCompositorWorkspace.h"
 
-class COgre
+#include "OgreHlmsPbs.h"
+#include "OgreHlmsUnlit.h"
+#include "OgreHlmsManager.h"
+#include "OgreHlmsPbsDatablock.h"
+#include "OgreHlmsUnlitDatablock.h"
+
+#include "OgreMesh2.h"
+#include "OgreMeshManager2.h"
+#include "OgreItem.h"
+#include "Deprecated/OgreRenderWindow.h"
+#include "OgreWindow.h"
+#include "Compositor/OgreCompositorManager2.h"
+
+//#include "OgreBoxEmitter.h"
+
+#include <iostream>
+
+class COgre : public Ogre::FrameListener
 {
 public:
     COgre();
-    ~COgre();
-    void CreateCamera();
-    void ManualObject();
+    virtual ~COgre();
+    virtual void init();
     void loadResources(std::string path, std::string name);
-    void CreateDefaultLight();
-    void RegisterHlms();
-    void CreteSceneObjects();
-    Ogre::CompositorWorkspace* SetupCompositor();
 
 private:
-    Ogre::Root* m_pRoot;
-    Ogre::SceneManager* m_pSceneManager;
-    Ogre::Camera* m_pCamera;
-    Ogre::RenderSystem* m_pRenderSystem;
-    Ogre::Window*       m_pWindow;
+    bool                frameRenderingQueued(const Ogre::FrameEvent& evt);
+    Ogre::SceneManager* sceneManager;
+    Ogre::SceneNode*    mainCameraNode;
+    Ogre::SceneNode*    cubeNode;
+    Ogre::MeshPtr       cubeMeshV2;
+
+    Ogre::Quaternion sensorOrientation;
+    float            lastTime;
+    Ogre::HlmsPbs*   mHlmsPbs;
+    Ogre::HlmsUnlit* mHlmsUnlit;
 };
+
+#endif            // COgre_H
