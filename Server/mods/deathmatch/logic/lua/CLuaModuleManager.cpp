@@ -40,7 +40,14 @@ void CLuaModuleManager::RegisterFunctions(lua_State* luaVM)
     list<CLuaModule*>::iterator iter = m_Modules.begin();
     for (; iter != m_Modules.end(); ++iter)
     {
-        (*iter)->_RegisterFunctions(luaVM);
+        if((*iter)->IsLuaModule())
+        {
+            luaL_dofile(luaVM, (*iter)->GetFileName().c_str());
+        }
+        else
+        {
+            (*iter)->_RegisterFunctions(luaVM);
+        }
     }
 }
 
@@ -74,27 +81,36 @@ int CLuaModuleManager::LoadModule(const char* szShortFileName, const char* szFil
     // Initialize
     CLuaModule* pModule = new CLuaModule(this, m_pScriptDebugging, szFileName, szShortFileName);
     // Load the module
-    int iSuccess = pModule->_LoadModule();
-    if (iSuccess != 0)
+    if (pModule->IsLuaModule())
     {
-        delete pModule;
+        m_Modules.push_back(pModule);
+        pModule->LoadLuaModule();
+    }
+    else
+    {
+        int iSuccess = pModule->_LoadModule();
+        if (iSuccess != 0)
+        {
+            delete pModule;
+            return iSuccess;
+        }
+
+        m_Modules.push_back(pModule);
+
+        // Perform registering for late loaded modules
+        if (bLateLoad)
+        {
+            list<CLuaMain*>::const_iterator iter = m_pLuaManager->IterBegin();
+            for (; iter != m_pLuaManager->IterEnd(); ++iter)
+            {
+                lua_State* luaVM = (*iter)->GetVM();
+                pModule->_RegisterFunctions(luaVM);
+            }
+        }
+
         return iSuccess;
     }
-
-    m_Modules.push_back(pModule);
-
-    // Perform registering for late loaded modules
-    if (bLateLoad)
-    {
-        list<CLuaMain*>::const_iterator iter = m_pLuaManager->IterBegin();
-        for (; iter != m_pLuaManager->IterEnd(); ++iter)
-        {
-            lua_State* luaVM = (*iter)->GetVM();
-            pModule->_RegisterFunctions(luaVM);
-        }
-    }
-
-    return iSuccess;
+    return 0;
 }
 
 int CLuaModuleManager::ReloadModule(const char* szShortFileName, const char* szFileName, bool bLateLoad)

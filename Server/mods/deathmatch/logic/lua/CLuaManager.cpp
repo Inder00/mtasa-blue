@@ -66,6 +66,9 @@ CLuaMain* CLuaManager::CreateVirtualMachine(CResource* pResourceOwner, bool bEna
 
     m_pLuaModuleManager->RegisterFunctions(pLuaMain->GetVirtualMachine());
 
+    // Initialize security restrictions. Very important to prevent lua trojans and viruses!
+    pLuaMain->InitSecurity();
+
     return pLuaMain;
 }
 

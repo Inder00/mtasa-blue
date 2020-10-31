@@ -24,6 +24,15 @@ CLuaModule::CLuaModule(CLuaModuleManager* pLuaModuleManager, CScriptDebugging* p
     m_szShortFileName = SString("%s", szShortFileName);
     // set as uninitialised
     m_bInitialised = false;
+
+    if (m_szFileName.substr(m_szFileName.find_last_of(".") + 1) == "lua")
+    {
+        m_bIsLuaModule = true;
+    }
+    else
+    {
+        m_bIsLuaModule = false;
+    }
 }
 
 CLuaModule::~CLuaModule()
@@ -32,13 +41,22 @@ CLuaModule::~CLuaModule()
     {
         if (m_bInitialised)
         {
+            if (!IsLuaModule())
             // Shutdown module
             m_FunctionInfo.ShutdownModule();
 
             // Unregister Functions
             _UnregisterFunctions();
 
-            CLogger::LogPrintf("MODULE: Unloaded \"%s\" (%.2f) by \"%s\"\n", m_FunctionInfo.szModuleName, m_FunctionInfo.fVersion, m_FunctionInfo.szAuthor);
+            if (IsLuaModule())
+            {
+                CLogger::LogPrintf("LUA MODULE: Unloaded \"%s\"\n", m_szShortFileName.c_str());
+            }
+            else
+
+            {
+                CLogger::LogPrintf("MODULE: Unloaded \"%s\" (%.2f) by \"%s\"\n", m_FunctionInfo.szModuleName, m_FunctionInfo.fVersion, m_FunctionInfo.szAuthor);
+            }
         }
 
         // Unload Module
@@ -60,6 +78,12 @@ bool IsModule32Bit(const SString& strExpectedPathFilename)
     return type == 0x010b;
 }
 #endif
+
+int CLuaModule::LoadLuaModule()
+{
+    CLogger::LogPrintf("LUA MODULE: Loaded \"%s\"\n", m_szShortFileName.c_str());
+    return 0;
+}
 
 int CLuaModule::_LoadModule()
 {
@@ -185,6 +209,7 @@ void CLuaModule::_UnloadModule()
 
 void CLuaModule::_RegisterFunctions(lua_State* luaVM)
 {
+    if (!IsLuaModule())
     m_FunctionInfo.RegisterFunctions(luaVM);
 }
 
@@ -209,17 +234,20 @@ void CLuaModule::_UnregisterFunctions()
 
 void CLuaModule::_DoPulse()
 {
+    if (!IsLuaModule())
     m_FunctionInfo.DoPulse();
 }
 
 void CLuaModule::_ResourceStopping(lua_State* luaVM)
 {
+    if (!IsLuaModule())
     if (m_FunctionInfo.ResourceStopping)
         m_FunctionInfo.ResourceStopping(luaVM);
 }
 
 void CLuaModule::_ResourceStopped(lua_State* luaVM)
 {
+    if (!IsLuaModule())
     if (m_FunctionInfo.ResourceStopped)
         m_FunctionInfo.ResourceStopped(luaVM);
 
