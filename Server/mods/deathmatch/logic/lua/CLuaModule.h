@@ -77,9 +77,12 @@ public:
     void _ResourceStopped(lua_State* luaVM);
     bool _DoesFunctionExist(const char* szFunctionName);
 
+    int  LoadLuaModule();
     HMODULE      _GetHandle() { return m_hModule; };
     SString      _GetName() { return m_szShortFileName; };
     FunctionInfo _GetFunctions() { return m_FunctionInfo; };
+    bool         IsLuaModule() const { return m_bIsLuaModule; };
+    SString         GetFileName() const { return m_szFileName; };
 
 private:
     SString         m_szFileName;
@@ -88,6 +91,7 @@ private:
     HMODULE         m_hModule;
     vector<SString> m_Functions;
     bool            m_bInitialised;
+    bool            m_bIsLuaModule;
 
     CScriptDebugging*  m_pScriptDebugging;
     CLuaModuleManager* m_pLuaModuleManager;
