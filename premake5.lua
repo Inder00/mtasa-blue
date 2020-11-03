@@ -166,3 +166,7 @@ workspace "MTASA"
 		include "vendor/unrar"
 		include "vendor/zip"
 		include "vendor/zlib"
+		include "vendor/bulletphysics3d/BulletDynamics"
+		include "vendor/bulletphysics3d/BulletCollision"
+		include "vendor/bulletphysics3d/LinearMath"
+
