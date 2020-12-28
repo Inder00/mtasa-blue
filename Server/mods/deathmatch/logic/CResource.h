@@ -316,6 +316,7 @@ public:
     const CMtaVersion& GetMinClientFromMetaXml() const noexcept { return m_strMinClientFromMetaXml; }
 
     bool IsOOPEnabledInMetaXml() const noexcept { return m_bOOPEnabledInMetaXml; }
+    bool IsMultithreadingEnabledInMetaXml() const noexcept { return m_bMultithreaded; }
 
     bool CheckFunctionRightCache(lua_CFunction f, bool* pbOutAllowed);
     void UpdateFunctionRightCache(lua_CFunction f, bool bAllowed);
@@ -420,6 +421,7 @@ private:
     bool m_bDoneDbConnectMysqlScan = false;
     bool m_bUsingDbConnectMysql = false;
 
+    bool m_bMultithreaded = false;
     bool m_bOOPEnabledInMetaXml = false;
     bool m_bLinked = false;                  // if true, the included resources are already linked to this resource
     bool m_bIsPersistent = false;            // if true, the resource will remain even if it has no Dependents, mainly if started by the user or the startup

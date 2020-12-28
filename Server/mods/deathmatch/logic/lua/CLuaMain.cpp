@@ -28,7 +28,8 @@ extern CNetServer* g_pRealNetServer;
 #include "luascripts/inspect.lua.h"
 
 CLuaMain::CLuaMain(CLuaManager* pLuaManager, CObjectManager* pObjectManager, CPlayerManager* pPlayerManager, CVehicleManager* pVehicleManager,
-                   CBlipManager* pBlipManager, CRadarAreaManager* pRadarAreaManager, CMapManager* pMapManager, CResource* pResourceOwner, bool bEnableOOP)
+                   CBlipManager* pBlipManager, CRadarAreaManager* pRadarAreaManager, CMapManager* pMapManager, CResource* pResourceOwner, bool bEnableOOP,
+                   bool bEnabledMultitreading)
 {
     // Initialise everything to be setup in the Start function
     m_pLuaManager = pLuaManager;
@@ -50,13 +51,22 @@ CLuaMain::CLuaMain(CLuaManager* pLuaManager, CObjectManager* pObjectManager, CPl
     m_pMapManager = pMapManager;
 
     m_bEnableOOP = bEnableOOP;
+    m_bEnabledMultitreading = bEnabledMultitreading;
 
     CPerfStatLuaMemory::GetSingleton()->OnLuaMainCreate(this);
     CPerfStatLuaTiming::GetSingleton()->OnLuaMainCreate(this);
+
+    if (bEnabledMultitreading)
+        m_mtTasks = new SharedUtil::CAsyncTaskScheduler(1);
 }
 
 CLuaMain::~CLuaMain()
 {
+    if (m_luaThread.joinable())
+        m_luaThread.join();
+
+    SAFE_DELETE(m_mtTasks);
+
     // remove all current remote calls originating from this VM
     g_pGame->GetRemoteCalls()->OnLuaMainDestroy(this);
     g_pGame->GetLuaCallbackManager()->OnLuaMainDestroy(this);
@@ -241,8 +251,24 @@ void CLuaMain::InstructionCountHook(lua_State* luaVM, lua_Debug* pDebug)
     }
 }
 
-bool CLuaMain::LoadScriptFromBuffer(const char* cpInBuffer, unsigned int uiInSize, const char* szFileName)
+bool CLuaMain::LoadScriptFromBuffer(const char* cpInBuffer, unsigned int uiInSize, const char* szFileName, bool bMultithreading)
 {
+    if (!bMultithreading)
+    {
+        if (m_bEnabledMultitreading)
+        {
+            std::string str = std::string(cpInBuffer);
+            m_mtTasks->PushTask<bool>([this, str, uiInSize, szFileName] {
+                return this->LoadScriptFromBuffer(str.c_str(), uiInSize, szFileName, true);
+            },
+                                      [](bool b) {});
+            return true;
+        }
+    }
+    if (bMultithreading)
+    {
+        int a = 5;
+    }
     SString strNiceFilename = ConformResourcePath(szFileName);
 
     // Deobfuscate if required
@@ -320,8 +346,18 @@ bool CLuaMain::LoadScriptFromBuffer(const char* cpInBuffer, unsigned int uiInSiz
     return false;
 }
 
-bool CLuaMain::LoadScript(const char* szLUAScript)
+bool CLuaMain::LoadScript(const char* szLUAScript, bool bMultithreading)
 {
+    if (!bMultithreading)
+    {
+        if (m_bEnabledMultitreading)
+        {
+            std::string str = std::string(szLUAScript);
+            m_mtTasks->PushTask<bool>([&, str] { return LoadScript(str.c_str(), true); }, [](bool b) {});
+            return true;
+        }
+    }
+
     if (m_luaVM && !IsLuaCompiledScript(szLUAScript, strlen(szLUAScript)))
     {
         // Run the script

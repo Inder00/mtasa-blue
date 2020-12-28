@@ -176,6 +176,14 @@ bool CResource::Load()
                 m_bSyncMapElementDataDefined = true;
             }
 
+            m_bMultithreaded = false;
+            CXMLNode* pNodeMultitheading = pRoot->FindSubNode("multithreading", 0);
+
+            if (pNodeMultitheading)
+            {
+                m_bMultithreaded = StringToBool(pNodeMultitheading->GetTagContent().c_str());
+            }
+
             m_bOOPEnabledInMetaXml = false;
             CXMLNode* pNodeClientOOP = pRoot->FindSubNode("oop", 0);
 

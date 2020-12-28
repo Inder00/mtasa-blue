@@ -42,12 +42,12 @@ class CLuaMain            //: public CClient
 public:
     ZERO_ON_NEW
     CLuaMain(class CLuaManager* pLuaManager, CObjectManager* pObjectManager, CPlayerManager* pPlayerManager, CVehicleManager* pVehicleManager,
-             CBlipManager* pBlipManager, CRadarAreaManager* pRadarAreaManager, CMapManager* pMapManager, CResource* pResourceOwner, bool bEnableOOP);
+             CBlipManager* pBlipManager, CRadarAreaManager* pRadarAreaManager, CMapManager* pMapManager, CResource* pResourceOwner, bool bEnableOOP, bool bEnabledMultitreading);
 
     ~CLuaMain();
 
-    bool LoadScriptFromBuffer(const char* cpBuffer, unsigned int uiSize, const char* szFileName);
-    bool LoadScript(const char* szLUAScript);
+    bool LoadScriptFromBuffer(const char* cpBuffer, unsigned int uiSize, const char* szFileName, bool bMultithreading = false);
+    bool LoadScript(const char* szLUAScript, bool bMultithreading = false);
     void UnloadScript();
 
     void Start();
@@ -139,6 +139,8 @@ private:
     list<CTextItem*>                                m_TextItems;
 
     bool m_bEnableOOP;
+    bool m_bEnabledMultitreading;
+    bool m_bLuaVMReady = false;
 
     bool m_bBeingDeleted;            // prevent it being deleted twice
 
@@ -149,6 +151,10 @@ private:
     uint                 m_uiOpenFileCountWarnThresh;
     uint                 m_uiOpenXMLFileCountWarnThresh;
     static SString       ms_strExpectedUndumpHash;
+
+    std::thread m_luaThread;
+    std::mutex  lock;
+    SharedUtil::CAsyncTaskScheduler* m_mtTasks = nullptr;
 
 public:
     CFastHashMap<const void*, CRefInfo> m_CallbackTable;
