@@ -155,25 +155,26 @@ CResource* CLuaManager::GetVirtualMachineResource(lua_State* luaVM)
 
 void CLuaManager::LoadCFunctions()
 {
-    constexpr static const std::pair<const char*, lua_CFunction> functions[]{
-        {"addEvent", CLuaFunctionDefs::AddEvent},
-        {"addEventHandler", CLuaFunctionDefs::AddEventHandler},
-        {"removeEventHandler", CLuaFunctionDefs::RemoveEventHandler},
-        {"getEventHandlers", CLuaFunctionDefs::GetEventHandlers},
-        {"triggerEvent", CLuaFunctionDefs::TriggerEvent},
-        {"triggerClientEvent", CLuaFunctionDefs::TriggerClientEvent},
-        {"cancelEvent", CLuaFunctionDefs::CancelEvent},
-        {"wasEventCancelled", CLuaFunctionDefs::WasEventCancelled},
-        {"getCancelReason", CLuaFunctionDefs::GetCancelReason},
-        {"triggerLatentClientEvent", CLuaFunctionDefs::TriggerLatentClientEvent},
-        {"getLatentEventHandles", CLuaFunctionDefs::GetLatentEventHandles},
-        {"getLatentEventStatus", CLuaFunctionDefs::GetLatentEventStatus},
-        {"cancelLatentEvent", CLuaFunctionDefs::CancelLatentEvent},
-        {"addDebugHook", CLuaFunctionDefs::AddDebugHook},
-        {"removeDebugHook", CLuaFunctionDefs::RemoveDebugHook},
+    constexpr static const std::tuple<const char*, lua_CFunction, bool> functions[]
+    {
+        {"addEvent", CLuaFunctionDefs::AddEvent, false},
+        {"addEventHandler", CLuaFunctionDefs::AddEventHandler, false},
+        {"removeEventHandler", CLuaFunctionDefs::RemoveEventHandler, false},
+        {"getEventHandlers", CLuaFunctionDefs::GetEventHandlers, false},
+        {"triggerEvent", CLuaFunctionDefs::TriggerEvent, true},
+        {"triggerClientEvent", CLuaFunctionDefs::TriggerClientEvent, true},
+        {"cancelEvent", CLuaFunctionDefs::CancelEvent, false},
+        {"wasEventCancelled", CLuaFunctionDefs::WasEventCancelled, false},
+        {"getCancelReason", CLuaFunctionDefs::GetCancelReason, false},
+        {"triggerLatentClientEvent", CLuaFunctionDefs::TriggerLatentClientEvent, false},
+        {"getLatentEventHandles", CLuaFunctionDefs::GetLatentEventHandles, false},
+        {"getLatentEventStatus", CLuaFunctionDefs::GetLatentEventStatus, false},
+        {"cancelLatentEvent", CLuaFunctionDefs::CancelLatentEvent, false},
+        {"addDebugHook", CLuaFunctionDefs::AddDebugHook, false},
+        {"removeDebugHook", CLuaFunctionDefs::RemoveDebugHook, false},
 
         // Explosion create funcs
-        {"createExplosion", CLuaFunctionDefs::CreateExplosion},
+        {"createExplosion", CLuaFunctionDefs::CreateExplosion, false},
 
         // Fire create funcs
         // CLuaCFunctions::AddFunction ( "createFire", CLuaFunctionDefinitions::CreateFire );
@@ -182,77 +183,77 @@ void CLuaManager::LoadCFunctions()
         // CLuaCFunctions::AddFunction ( "createNode", CLuaFunctionDefinitions::CreateNode );
 
         // Ped body funcs?
-        {"getBodyPartName", CLuaFunctionDefs::GetBodyPartName},
-        {"getClothesByTypeIndex", CLuaFunctionDefs::GetClothesByTypeIndex},
-        {"getTypeIndexFromClothes", CLuaFunctionDefs::GetTypeIndexFromClothes},
-        {"getClothesTypeName", CLuaFunctionDefs::GetClothesTypeName},
+        {"getBodyPartName", CLuaFunctionDefs::GetBodyPartName, true},
+        {"getClothesByTypeIndex", CLuaFunctionDefs::GetClothesByTypeIndex, true},
+        {"getTypeIndexFromClothes", CLuaFunctionDefs::GetTypeIndexFromClothes, true},
+        {"getClothesTypeName", CLuaFunctionDefs::GetClothesTypeName, true},
 
         // Weapon funcs
-        {"getWeaponNameFromID", CLuaFunctionDefs::GetWeaponNameFromID},
-        {"getWeaponIDFromName", CLuaFunctionDefs::GetWeaponIDFromName},
-        {"getWeaponProperty", CLuaFunctionDefs::GetWeaponProperty},
-        {"getOriginalWeaponProperty", CLuaFunctionDefs::GetOriginalWeaponProperty},
-        {"setWeaponProperty", CLuaFunctionDefs::SetWeaponProperty},
-        {"setWeaponAmmo", CLuaFunctionDefs::SetWeaponAmmo},
-        {"getSlotFromWeapon", CLuaFunctionDefs::GetSlotFromWeapon},
+        {"getWeaponNameFromID", CLuaFunctionDefs::GetWeaponNameFromID, true},
+        {"getWeaponIDFromName", CLuaFunctionDefs::GetWeaponIDFromName, true},
+        {"getWeaponProperty", CLuaFunctionDefs::GetWeaponProperty, false},
+        {"getOriginalWeaponProperty", CLuaFunctionDefs::GetOriginalWeaponProperty, true},
+        {"setWeaponProperty", CLuaFunctionDefs::SetWeaponProperty, false},
+        {"setWeaponAmmo", CLuaFunctionDefs::SetWeaponAmmo, false},
+        {"getSlotFromWeapon", CLuaFunctionDefs::GetSlotFromWeapon, false},
 
-    #if MTASA_VERSION_TYPE < VERSION_TYPE_RELEASE
-        {"createWeapon", CLuaFunctionDefs::CreateWeapon},
-        {"fireWeapon", CLuaFunctionDefs::FireWeapon},
-        {"setWeaponState", CLuaFunctionDefs::SetWeaponState},
-        {"getWeaponState", CLuaFunctionDefs::GetWeaponState},
-        {"setWeaponTarget", CLuaFunctionDefs::SetWeaponTarget},
-        {"getWeaponTarget", CLuaFunctionDefs::GetWeaponTarget},
-        {"setWeaponOwner", CLuaFunctionDefs::SetWeaponOwner},
-        {"getWeaponOwner", CLuaFunctionDefs::GetWeaponOwner},
-        {"setWeaponFlags", CLuaFunctionDefs::SetWeaponFlags},
-        {"getWeaponFlags", CLuaFunctionDefs::GetWeaponFlags},
-        {"setWeaponFiringRate", CLuaFunctionDefs::SetWeaponFiringRate},
-        {"getWeaponFiringRate", CLuaFunctionDefs::GetWeaponFiringRate},
-        {"resetWeaponFiringRate", CLuaFunctionDefs::ResetWeaponFiringRate},
-        {"getWeaponAmmo", CLuaFunctionDefs::GetWeaponAmmo},
-        {"getWeaponClipAmmo", CLuaFunctionDefs::GetWeaponClipAmmo},
-        {"setWeaponClipAmmo", CLuaFunctionDefs::SetWeaponClipAmmo},
-    #endif
+        #if MTASA_VERSION_TYPE < VERSION_TYPE_RELEASE
+        {"createWeapon", CLuaFunctionDefs::CreateWeapon, false},
+        {"fireWeapon", CLuaFunctionDefs::FireWeapon, false},
+        {"setWeaponState", CLuaFunctionDefs::SetWeaponState, false},
+        {"getWeaponState", CLuaFunctionDefs::GetWeaponState, false},
+        {"setWeaponTarget", CLuaFunctionDefs::SetWeaponTarget, false},
+        {"getWeaponTarget", CLuaFunctionDefs::GetWeaponTarget, false},
+        {"setWeaponOwner", CLuaFunctionDefs::SetWeaponOwner, false},
+        {"getWeaponOwner", CLuaFunctionDefs::GetWeaponOwner, false},
+        {"setWeaponFlags", CLuaFunctionDefs::SetWeaponFlags, false},
+        {"getWeaponFlags", CLuaFunctionDefs::GetWeaponFlags, false},
+        {"setWeaponFiringRate", CLuaFunctionDefs::SetWeaponFiringRate, false},
+        {"getWeaponFiringRate", CLuaFunctionDefs::GetWeaponFiringRate, false},
+        {"resetWeaponFiringRate", CLuaFunctionDefs::ResetWeaponFiringRate, false},
+        {"getWeaponAmmo", CLuaFunctionDefs::GetWeaponAmmo, false},
+        {"getWeaponClipAmmo", CLuaFunctionDefs::GetWeaponClipAmmo, false},
+        {"setWeaponClipAmmo", CLuaFunctionDefs::SetWeaponClipAmmo, false},
+        #endif
 
         // Console funcs
-        {"addCommandHandler", CLuaFunctionDefs::AddCommandHandler},
-        {"removeCommandHandler", CLuaFunctionDefs::RemoveCommandHandler},
-        {"executeCommandHandler", CLuaFunctionDefs::ExecuteCommandHandler},
-        {"getCommandHandlers", CLuaFunctionDefs::GetCommandHandlers},
+        {"addCommandHandler", CLuaFunctionDefs::AddCommandHandler, false},
+        {"removeCommandHandler", CLuaFunctionDefs::RemoveCommandHandler, false},
+        {"executeCommandHandler", CLuaFunctionDefs::ExecuteCommandHandler, false},
+        {"getCommandHandlers", CLuaFunctionDefs::GetCommandHandlers, false},
 
         // Server standard funcs
-        {"getMaxPlayers", CLuaFunctionDefs::GetMaxPlayers},
-        {"setMaxPlayers", CLuaFunctionDefs::SetMaxPlayers},
-        {"outputChatBox", CLuaFunctionDefs::OutputChatBox},
-        {"outputConsole", CLuaFunctionDefs::OutputConsole},
-        {"outputDebugString", CLuaFunctionDefs::OutputDebugString},
-        {"outputServerLog", CLuaFunctionDefs::OutputServerLog},
-        {"getServerName", CLuaFunctionDefs::GetServerName},
-        {"getServerHttpPort", CLuaFunctionDefs::GetServerHttpPort},
-        {"getServerPassword", CLuaFunctionDefs::GetServerPassword},
-        {"setServerPassword", CLuaFunctionDefs::SetServerPassword},
-        {"getServerConfigSetting", CLuaFunctionDefs::GetServerConfigSetting},
-        {"clearChatBox", CLuaFunctionDefs::ClearChatBox},
+        {"getMaxPlayers", CLuaFunctionDefs::GetMaxPlayers, true},
+        {"setMaxPlayers", CLuaFunctionDefs::SetMaxPlayers, false},
+        {"outputChatBox", CLuaFunctionDefs::OutputChatBox, true},
+        {"outputConsole", CLuaFunctionDefs::OutputConsole, true},
+        {"outputDebugString", CLuaFunctionDefs::OutputDebugString, true},
+        {"outputServerLog", CLuaFunctionDefs::OutputServerLog, true},
+        {"getServerName", CLuaFunctionDefs::GetServerName, false},
+        {"getServerHttpPort", CLuaFunctionDefs::GetServerHttpPort, true},
+        {"getServerPassword", CLuaFunctionDefs::GetServerPassword, true},
+        {"setServerPassword", CLuaFunctionDefs::SetServerPassword, false},
+        {"getServerConfigSetting", CLuaFunctionDefs::GetServerConfigSetting, false},
+        {"clearChatBox", CLuaFunctionDefs::ClearChatBox, true},
 
         // Loaded map funcs
-        {"getRootElement", CLuaFunctionDefs::GetRootElement},
-        {"loadMapData", CLuaFunctionDefs::LoadMapData},
-        {"saveMapData", CLuaFunctionDefs::SaveMapData},
+        {"getRootElement", CLuaFunctionDefs::GetRootElement, true},
+        {"loadMapData", CLuaFunctionDefs::LoadMapData, false},
+        {"saveMapData", CLuaFunctionDefs::SaveMapData, false},
 
         // All-Seeing Eye Functions
-        {"getGameType", CLuaFunctionDefs::GetGameType},
-        {"getMapName", CLuaFunctionDefs::GetMapName},
-        {"setGameType", CLuaFunctionDefs::SetGameType},
-        {"setMapName", CLuaFunctionDefs::SetMapName},
-        {"getRuleValue", CLuaFunctionDefs::GetRuleValue},
-        {"setRuleValue", CLuaFunctionDefs::SetRuleValue},
-        {"removeRuleValue", CLuaFunctionDefs::RemoveRuleValue},
+        {"getGameType", CLuaFunctionDefs::GetGameType, false},
+        {"getMapName", CLuaFunctionDefs::GetMapName, false},
+        {"setGameType", CLuaFunctionDefs::SetGameType, false},
+        {"setMapName", CLuaFunctionDefs::SetMapName, false},
+        {"getRuleValue", CLuaFunctionDefs::GetRuleValue, false},
+        {"setRuleValue", CLuaFunctionDefs::SetRuleValue, false},
+        {"removeRuleValue", CLuaFunctionDefs::RemoveRuleValue, false},
 
         // Registry functions
-        {"getPerformanceStats", CLuaFunctionDefs::GetPerformanceStats},
+        {"getPerformanceStats", CLuaFunctionDefs::GetPerformanceStats, false},
 
-         // Admin functions
+        // Admin functions
         /*
         CLuaCFunctions::AddFunction ( "aexec", CLuaFunctionDefinitions::Aexec },
         CLuaCFunctions::AddFunction ( "kickPlayer", CLuaFunctionDefinitions::KickPlayer },
@@ -266,27 +267,27 @@ void CLuaManager::LoadCFunctions()
         */
 
         // Misc funcs
-        {"resetMapInfo", CLuaFunctionDefs::ResetMapInfo},
-        {"getServerPort", CLuaFunctionDefs::GetServerPort},
+        {"resetMapInfo", CLuaFunctionDefs::ResetMapInfo, false},
+        {"getServerPort", CLuaFunctionDefs::GetServerPort, false},
 
         // Settings registry funcs
-        {"get", CLuaFunctionDefs::Get},
-        {"set", CLuaFunctionDefs::Set},
+        {"get", CLuaFunctionDefs::Get, false},
+        {"set", CLuaFunctionDefs::Set, false},
 
         // Utility
-        {"getVersion", CLuaFunctionDefs::GetVersion},
-        {"getNetworkUsageData", CLuaFunctionDefs::GetNetworkUsageData},
-        {"getNetworkStats", CLuaFunctionDefs::GetNetworkStats},
-        {"getLoadedModules", CLuaFunctionDefs::GetModules},
-        {"getModuleInfo", CLuaFunctionDefs::GetModuleInfo},
+        {"getVersion", CLuaFunctionDefs::GetVersion, false},
+        {"getNetworkUsageData", CLuaFunctionDefs::GetNetworkUsageData, false},
+        {"getNetworkStats", CLuaFunctionDefs::GetNetworkStats, false},
+        {"getLoadedModules", CLuaFunctionDefs::GetModules, false},
+        {"getModuleInfo", CLuaFunctionDefs::GetModuleInfo, false},
 
-        {"setDevelopmentMode", CLuaFunctionDefs::SetDevelopmentMode},
-        {"getDevelopmentMode", CLuaFunctionDefs::GetDevelopmentMode},
+        {"setDevelopmentMode", CLuaFunctionDefs::SetDevelopmentMode, false},
+        {"getDevelopmentMode", CLuaFunctionDefs::GetDevelopmentMode, false},
     };
 
     // Add all functions
-    for (const auto& [name, func] : functions)
-        CLuaCFunctions::AddFunction(name, func);
+    for (const auto& [name, func, threadSafe] : functions)
+        CLuaCFunctions::AddFunction(name, func, threadSafe);
     
     // Restricted functions
     CLuaCFunctions::AddFunction("setServerConfigSetting", CLuaFunctionDefs::SetServerConfigSetting, true);

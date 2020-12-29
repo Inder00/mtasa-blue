@@ -46,11 +46,19 @@ void CLuaUtilDefs::LoadFunctions()
         // Utility functions
         {"gettok", GetTok, true},
         {"tocolor", tocolor, true},
+#ifndef MTA_CLIENT
+        {"channelPushData", ArgumentParser<ChannelPushData>, true},
+        {"channelTryRecive", ArgumentParser<ChannelTryRecive>, true},
+#endif
     };
 
     // Add functions
     for (const auto& [name, func, bThreadSafe] : functions)
-        CLuaCFunctions::AddFunction(name, func, false);
+#ifdef MTA_CLIENT
+        CLuaCFunctions::AddFunction(name, func);
+#else
+        CLuaCFunctions::AddFunction(name, func, false, bThreadSafe);
+#endif
 }
 
 int CLuaUtilDefs::DisabledFunction(lua_State* luaVM)
@@ -711,3 +719,26 @@ int CLuaUtilDefs::tocolor(lua_State* luaVM)
     lua_pushnumber(luaVM, static_cast<lua_Number>(ulColor));
     return 1;
 }
+
+#ifndef MTA_CLIENT
+CLuaArgument CLuaUtilDefs::ChannelTryRecive(lua_State* luaVM)
+{
+    CLuaMain* pLuaMain = m_pLuaManager->GetVirtualMachine(luaVM);
+    if (!pLuaMain->IsMultithreadingEnabled())            // don't let use in non-multithreading resource
+        throw new std::invalid_argument("Resource is not multithreaded");
+
+    CLuaArgument argument = pLuaMain->TryRecive();
+
+    return argument;
+}
+
+bool CLuaUtilDefs::ChannelPushData(CResource* pResource, CLuaArgument argument)
+{
+    if (pResource->IsActive())
+    {
+        CLuaMain* pLuaMain = pResource->GetVirtualMachine();
+        return pResource->GetVirtualMachine()->Push(argument);
+    }
+    return false;
+}
+#endif

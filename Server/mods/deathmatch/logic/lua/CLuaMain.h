@@ -115,6 +115,12 @@ private:
 
 public:
     bool IsOOPEnabled() { return m_bEnableOOP; }
+    bool IsMultithreadingEnabled() { return m_bEnabledMultitreading; }
+
+    // Sends data to multithreaded resource
+    bool         Push(CLuaArgument argument);
+    CLuaArgument TryRecive();
+    bool         IsStopping() const { return m_resourceStopping; }
 
 private:
     static void InstructionCountHook(lua_State* luaVM, lua_Debug* pDebug);
@@ -153,8 +159,10 @@ private:
     static SString       ms_strExpectedUndumpHash;
 
     std::thread m_luaThread;
-    std::mutex  lock;
+    std::mutex  m_lock;
     SharedUtil::CAsyncTaskScheduler* m_mtTasks = nullptr;
+    std::deque<CLuaArgument>         m_mtChannel;
+    std::atomic<bool>         m_resourceStopping;
 
 public:
     CFastHashMap<const void*, CRefInfo> m_CallbackTable;

@@ -52,4 +52,10 @@ public:
     // Utility functions
     LUA_DECLARE(GetTok);
     LUA_DECLARE(tocolor);
+
+    // Used to recive and send data to and from multithreaded resource
+#ifndef MTA_CLIENT
+    static CLuaArgument ChannelTryRecive(lua_State* luaVM);
+    static bool          ChannelPushData(CResource* pResource, CLuaArgument argument);
+#endif
 };

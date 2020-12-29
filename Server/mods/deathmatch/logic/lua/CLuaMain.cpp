@@ -57,11 +57,25 @@ CLuaMain::CLuaMain(CLuaManager* pLuaManager, CObjectManager* pObjectManager, CPl
     CPerfStatLuaTiming::GetSingleton()->OnLuaMainCreate(this);
 
     if (bEnabledMultitreading)
+    {
+        SString name = SString("Resource: %s", *(pResourceOwner->GetName()));
         m_mtTasks = new SharedUtil::CAsyncTaskScheduler(1);
+        m_mtTasks->PushTask<bool>(
+            [name] {
+                wchar_t wDescription[255];
+                mbstowcs(wDescription, name.c_str(), name.length() + 1);
+                SetThreadDescription(GetCurrentThread(), wDescription);
+                return true;
+            },
+            [](bool _) {
+
+            });
+    }
 }
 
 CLuaMain::~CLuaMain()
 {
+    m_resourceStopping = true;
     if (m_luaThread.joinable())
         m_luaThread.join();
 
@@ -696,4 +710,40 @@ int CLuaMain::OnUndump(const char* p, size_t n)
         return 0;
     }
     return 1;
+}
+
+bool CLuaMain::Push(CLuaArgument argument)
+{
+    if (IsStopping())
+        return false;
+    std::lock_guard guard(m_lock);
+    m_mtChannel.push_back(argument);
+    return true;
+}
+
+CLuaArgument CLuaMain::TryRecive()
+{
+    while (true)
+    {
+        {
+            std::lock_guard guard(m_lock);
+            if (m_mtChannel.size() > 0)
+                break;
+        }
+        if (m_resourceStopping)
+        {
+            CLuaArgument argument;
+            argument.ReadString("onResourceStop");
+            return argument;
+        }
+        else
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(4));
+        }
+    }
+
+    std::lock_guard guard(m_lock);
+    CLuaArgument argument = m_mtChannel.front();
+    m_mtChannel.pop_front();
+    return argument;
 }

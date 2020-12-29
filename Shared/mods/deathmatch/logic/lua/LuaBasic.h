@@ -121,7 +121,7 @@ namespace lua
 
     // Overload for pointers to classes. We boldly assume that these are script entities
     template <typename T>
-    std::enable_if_t<std::is_class_v<T>, int> Push(lua_State* L, T* val)
+    std::enable_if_t<std::is_class_v<T>, int> Push(lua_State* L, T& val)
     {
         lua_pushelement(L, val);
         return 1;
