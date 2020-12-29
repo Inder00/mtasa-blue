@@ -12,45 +12,45 @@
 
 void CLuaUtilDefs::LoadFunctions()
 {
-    constexpr static const std::pair<const char*, lua_CFunction> functions[]{
+    constexpr static const std::tuple<const char*, lua_CFunction, bool> functions[]{
         // Util functions to make scripting easier for the end user
         // Some of these are based on standard mIRC script funcs as a lot of people will be used to them
-        {"deref", Dereference},
-        {"ref", Reference},
-        {"getTickCount", GetTickCount_},
-        {"getRealTime", GetCTime},
-        {"split", Split},
-        {"isOOPEnabled", IsOOPEnabled},
-        {"getUserdataType", GetUserdataType},
-        {"print", luaB_print},
-        {"getColorFromString", GetColorFromString},
+        {"deref", Dereference, true},
+        {"ref", Reference, true},
+        {"getTickCount", GetTickCount_, true},
+        {"getRealTime", GetCTime, true},
+        {"split", Split, true},
+        {"isOOPEnabled", IsOOPEnabled, true},
+        {"getUserdataType", GetUserdataType, true},
+        {"print", luaB_print, true},
+        {"getColorFromString", GetColorFromString, true},
 
         // Utility vector math functions
-        {"getDistanceBetweenPoints2D", GetDistanceBetweenPoints2D},
-        {"getDistanceBetweenPoints3D", GetDistanceBetweenPoints3D},
-        {"getEasingValue", GetEasingValue},
-        {"interpolateBetween", InterpolateBetween},
+        {"getDistanceBetweenPoints2D", GetDistanceBetweenPoints2D, true},
+        {"getDistanceBetweenPoints3D", GetDistanceBetweenPoints3D, true},
+        {"getEasingValue", GetEasingValue, true},
+        {"interpolateBetween", InterpolateBetween, true},
 
         // JSON funcs
-        {"toJSON", toJSON},
-        {"fromJSON", fromJSON},
+        {"toJSON", toJSON, true},
+        {"fromJSON", fromJSON, true},
 
         // PCRE functions
-        {"pregFind", PregFind},
-        {"pregReplace", PregReplace},
-        {"pregMatch", PregMatch},
+        {"pregFind", PregFind, true},
+        {"pregReplace", PregReplace, true},
+        {"pregMatch", PregMatch, true},
 
         // Debug functions
-        {"debugSleep", DebugSleep},
+        {"debugSleep", DebugSleep, true},
 
         // Utility functions
-        {"gettok", GetTok},
-        {"tocolor", tocolor},
+        {"gettok", GetTok, true},
+        {"tocolor", tocolor, true},
     };
 
     // Add functions
-    for (const auto& [name, func] : functions)
-        CLuaCFunctions::AddFunction(name, func);
+    for (const auto& [name, func, bThreadSafe] : functions)
+        CLuaCFunctions::AddFunction(name, func, false);
 }
 
 int CLuaUtilDefs::DisabledFunction(lua_State* luaVM)

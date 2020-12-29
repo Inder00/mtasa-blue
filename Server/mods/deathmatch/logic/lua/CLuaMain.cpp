@@ -199,9 +199,9 @@ void CLuaMain::InitVM()
 
     // Initialize security restrictions. Very important to prevent lua trojans and viruses!
     InitSecurity();
-
+    
     // Registering C functions
-    CLuaCFunctions::RegisterFunctionsWithVM(m_luaVM);
+    CLuaCFunctions::RegisterFunctionsWithVM(m_luaVM, m_bEnabledMultitreading);
 
     // Create class metatables
     InitClasses(m_luaVM);

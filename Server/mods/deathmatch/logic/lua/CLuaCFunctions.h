@@ -18,7 +18,7 @@ class CLuaCFunctions;
 class CLuaCFunction
 {
 public:
-    CLuaCFunction(const char* szName, lua_CFunction f, bool bRestricted);
+    CLuaCFunction(const char* szName, lua_CFunction f, bool bRestricted, bool bThreadSafe);
 
     lua_CFunction GetAddress() { return m_Function; }
 
@@ -26,11 +26,13 @@ public:
     void           SetName(std::string& strName) { m_strName = strName; }
 
     bool IsRestricted() { return m_bRestricted; }
+    bool IsThreadSafe() { return m_bThreadSafe; }
 
 private:
     lua_CFunction m_Function;
     SString       m_strName;
     bool          m_bRestricted;
+    bool          m_bThreadSafe;
 };
 
 class CLuaCFunctions
@@ -39,13 +41,13 @@ public:
     CLuaCFunctions();
     ~CLuaCFunctions();
 
-    static CLuaCFunction* AddFunction(const char* szName, lua_CFunction f, bool bRestricted = false);
+    static CLuaCFunction* AddFunction(const char* szName, lua_CFunction f, bool bRestricted = false, bool bThreadSafe = false);
     static void           RemoveFunction(const SString& strName);
     static CLuaCFunction* GetFunction(lua_CFunction f);
     static CLuaCFunction* GetFunction(const char* szName);
     static bool           IsNotFunction(lua_CFunction f);
 
-    static void RegisterFunctionsWithVM(lua_State* luaVM);
+    static void RegisterFunctionsWithVM(lua_State* luaVM, bool bEnabledMultithreading);
 
     static void RemoveAllFunctions();
 

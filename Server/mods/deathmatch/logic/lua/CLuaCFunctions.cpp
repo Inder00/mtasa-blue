@@ -26,11 +26,12 @@ static lua_CFunction GetDeletedMapKey(lua_CFunction*)
     return (lua_CFunction)0xFFFFFFFF;
 }
 
-CLuaCFunction::CLuaCFunction(const char* szName, lua_CFunction f, bool bRestricted)
+CLuaCFunction::CLuaCFunction(const char* szName, lua_CFunction f, bool bRestricted, bool bThreadSafe)
 {
     m_strName = szName ? szName : "";
     m_Function = f;
     m_bRestricted = bRestricted;
+    m_bThreadSafe = bThreadSafe;
 }
 
 CLuaCFunctions::CLuaCFunctions()
@@ -42,7 +43,7 @@ CLuaCFunctions::~CLuaCFunctions()
     RemoveAllFunctions();
 }
 
-CLuaCFunction* CLuaCFunctions::AddFunction(const char* szName, lua_CFunction f, bool bRestricted)
+CLuaCFunction* CLuaCFunctions::AddFunction(const char* szName, lua_CFunction f, bool bRestricted, bool bThreadSafe)
 {
     ms_pFunctionPtrLow = std::min<void*>(ms_pFunctionPtrLow, (void*)f);
     ms_pFunctionPtrHigh = std::max<void*>(ms_pFunctionPtrHigh, (void*)f);
@@ -56,7 +57,7 @@ CLuaCFunction* CLuaCFunctions::AddFunction(const char* szName, lua_CFunction f, 
     pFunction = GetFunction(f);
     if (!pFunction)
     {
-        pFunction = new CLuaCFunction(szName, f, bRestricted);
+        pFunction = new CLuaCFunction(szName, f, bRestricted, bThreadSafe);
         ms_Functions[f] = pFunction;
     }
     ms_FunctionsByName[szName] = pFunction;
@@ -108,12 +109,17 @@ bool CLuaCFunctions::IsNotFunction(lua_CFunction f)
     return (reinterpret_cast<void*>(f) < ms_pFunctionPtrLow || reinterpret_cast<void*>(f) > ms_pFunctionPtrHigh);
 }
 
-void CLuaCFunctions::RegisterFunctionsWithVM(lua_State* luaVM)
+void CLuaCFunctions::RegisterFunctionsWithVM(lua_State* luaVM, bool bEnabledMultithreading)
 {
     // Register all our functions to a lua VM
     CFastHashMap<SString, CLuaCFunction*>::iterator it;
     for (it = ms_FunctionsByName.begin(); it != ms_FunctionsByName.end(); ++it)
     {
+        if (bEnabledMultithreading)
+        {
+            if (!it->second->IsThreadSafe())
+                continue;
+        }
         lua_pushstring(luaVM, it->first.c_str());
         lua_pushcclosure(luaVM, it->second->GetAddress(), 1);
         lua_setglobal(luaVM, it->first.c_str());
