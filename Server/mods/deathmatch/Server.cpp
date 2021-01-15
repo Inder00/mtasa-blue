@@ -18,6 +18,7 @@ MTAEXPORT CServerBase* InitServer(void)
     // Create a server and return it
     if (!g_pServer)
     {
+  //      test();
         g_pServer = new CServer;
     }
 

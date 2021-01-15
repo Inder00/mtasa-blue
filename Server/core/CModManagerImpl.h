@@ -38,7 +38,7 @@ public:
     bool         IsModLoaded();
     CServerBase* GetCurrentMod();
 
-    bool Load(const char* szModName, int iArgumentCount, char* szArguments[]);
+    bool Load(const char* szModName, int iArgumentCount, char* szArguments[], bool isServer = true);
     void Unload(bool bKeyPressBeforeTerm = false);
 
     void HandleInput(const char* szCommand);

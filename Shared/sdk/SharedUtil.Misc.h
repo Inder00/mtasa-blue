@@ -157,7 +157,7 @@ namespace SharedUtil
     SString GetClipboardText();
 
     // Version checks
-    bool IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor);
+    bool IsWindowsVersionOrGreaterMta(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor);
     bool IsWindowsXPSP3OrGreater();
     bool IsWindowsVistaOrGreater();
     bool IsWindows7OrGreater();

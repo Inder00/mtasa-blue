@@ -1041,13 +1041,13 @@ bool SharedUtil::ShellExecuteNonBlocking(const SString& strAction, const SString
 #define _WIN32_WINNT_WIN8                   0x0602
 ///////////////////////////////////////////////////////////////////////////
 //
-// SharedUtil::IsWindowsVersionOrGreater
+// SharedUtil::IsWindowsVersionOrGreaterMta
 //
 // From Windows Kits\8.1 VersionHelpers.h
 // (Ignores compatibility mode)
 //
 ///////////////////////////////////////////////////////////////////////////
-bool SharedUtil::IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
+bool SharedUtil::IsWindowsVersionOrGreaterMta(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
 {
     OSVERSIONINFOEXW osvi = {sizeof(osvi), 0, 0, 0, 0, {0}, 0, 0};
     DWORDLONG const  dwlConditionMask =
@@ -1063,22 +1063,22 @@ bool SharedUtil::IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersio
 
 bool SharedUtil::IsWindowsXPSP3OrGreater()
 {
-    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINXP), LOBYTE(_WIN32_WINNT_WINXP), 3);
+    return IsWindowsVersionOrGreaterMta(HIBYTE(_WIN32_WINNT_WINXP), LOBYTE(_WIN32_WINNT_WINXP), 3);
 }
 
 bool SharedUtil::IsWindowsVistaOrGreater()
 {
-    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0);
+    return IsWindowsVersionOrGreaterMta(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0);
 }
 
 bool SharedUtil::IsWindows7OrGreater()
 {
-    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN7), LOBYTE(_WIN32_WINNT_WIN7), 0);
+    return IsWindowsVersionOrGreaterMta(HIBYTE(_WIN32_WINNT_WIN7), LOBYTE(_WIN32_WINNT_WIN7), 0);
 }
 
 bool SharedUtil::IsWindows8OrGreater()
 {
-    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0);
+    return IsWindowsVersionOrGreaterMta(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0);
 }
 #endif  // WIN32
 

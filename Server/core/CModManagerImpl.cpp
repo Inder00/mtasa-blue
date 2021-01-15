@@ -50,7 +50,7 @@ CServerBase* CModManagerImpl::GetCurrentMod()
     return m_pBase;
 }
 
-bool CModManagerImpl::Load(const char* szModName, int iArgumentCount, char* szArguments[])
+bool CModManagerImpl::Load(const char* szModName, int iArgumentCount, char* szArguments[], bool isServer)
 {
     // Fail if no server path is specified
     if (m_strServerPath == "")
@@ -70,6 +70,20 @@ bool CModManagerImpl::Load(const char* szModName, int iArgumentCount, char* szAr
         return false;
     }
 
+    if (!isServer)
+    {
+        typedef void(RunFunc)();
+        RunFunc* pfnRunFunc = (RunFunc*)(m_Library.GetProcedureAddress("Run"));
+        if (pfnRunFunc)
+        {
+            pfnRunFunc();
+        }
+        else
+        {
+            Print("\nERROR: Run export not found in: %s!\n", strFilename.c_str());
+            return false;
+        }
+    }
     // Grab the initialization procedure
     InitServer* pfnInitServer = (InitServer*)(m_Library.GetProcedureAddress("InitServer"));
     if (!pfnInitServer)

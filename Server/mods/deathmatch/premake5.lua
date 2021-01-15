@@ -26,14 +26,16 @@ project "Deathmatch"
 			"../../../Shared/animation",
 			"../../../Shared/publicsdk/include",
 			"../../../vendor/sparsehash/src/",
+			"../../../vendor/MtaV8/",
+			"../../../vendor/MtaV8/include/",
 			"logic",
 			"utils",
 			"."
 		}
 
-	defines { "SDK_WITH_BCRYPT" }
+	defines { "SDK_WITH_BCRYPT", "USING_V8_SHARED" }
 	links {
-		"Lua_Server", "sqlite", "ehs", "cryptopp", "pme", "pcre", "json-c", "zip", "zlib", "blowfish_bcrypt",
+		"Lua_Server", "sqlite", "ehs", "cryptopp", "pme", "pcre", "json-c", "zip", "zlib", "blowfish_bcrypt", "MtaV8",
 	}
 
 	vpaths {

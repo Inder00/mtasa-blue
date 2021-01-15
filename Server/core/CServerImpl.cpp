@@ -361,6 +361,7 @@ int CServerImpl::Run(int iArgumentCount, char* szArguments[])
                     // Make the modmanager load our mod
                     if (m_pModManager->Load("deathmatch", iArgumentCount, szArguments))            // Hardcoded for now
                     {
+                        m_pModManager->Load("V8/MtaV8", 0, 0, false);
                         // Enter our mainloop
                         MainLoop();
                     }
