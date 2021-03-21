@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{C196CD9C-2D76-4C38-368E-D70EA2ECB299}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{89565304-F535-D29F-FE4D-5D766AAC3801}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="crypt.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="crypt_blowfish.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="crypt_gensalt.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ow-crypt.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="crypt_blowfish.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt_gensalt.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="wrapper.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="x86.S" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="premake5.lua" />
+  </ItemGroup>
+</Project>

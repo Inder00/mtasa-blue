@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{C196CD9C-2D76-4C38-368E-D70EA2ECB299}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{89565304-F535-D29F-FE4D-5D766AAC3801}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="arraylist.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="config-linux.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="config-macos.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="config-win32.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="debug.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="json.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="json_c_version.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="json_config.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="json_inttypes.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="json_object.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="json_object_iterator.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="json_object_private.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="json_pointer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="json_tokener.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="json_types.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="json_util.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="json_visit.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="linkhash.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="math_compat.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="printbuf.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="random_seed.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="snprintf_compat.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="strdup_compat.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="strerror_override.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="strerror_override_private.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="vasprintf_compat.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="arraylist.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="debug.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="json_c_version.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="json_object.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="json_object_iterator.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="json_pointer.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="json_tokener.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="json_util.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="json_visit.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="libjson.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="linkhash.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="printbuf.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="random_seed.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="strerror_override.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="premake5.lua" />
+  </ItemGroup>
+</Project>

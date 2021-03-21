@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{C196CD9C-2D76-4C38-368E-D70EA2ECB299}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\core">
+      <UniqueIdentifier>{D9A77950-C50A-09F5-6E90-41AB5AD2D477}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\net">
+      <UniqueIdentifier>{77B668E3-E36B-E1D8-6C60-DBAFD814D8DC}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MTAPlatform.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="core\CExceptionInformation.h">
+      <Filter>Headers\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\CModManager.h">
+      <Filter>Headers\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\CServerBase.h">
+      <Filter>Headers\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\CServerInterface.h">
+      <Filter>Headers\core</Filter>
+    </ClInclude>
+    <ClInclude Include="net\CNetServer.h">
+      <Filter>Headers\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\ns_common.h">
+      <Filter>Headers\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\ns_playerid.h">
+      <Filter>Headers\net</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="premake5.lua" />
+  </ItemGroup>
+</Project>

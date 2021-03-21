@@ -137,6 +137,7 @@ workspace "MTASA"
 		include "vendor/pthreads"
 		include "vendor/libspeex"
 		include "vendor/detours"
+		include "vendor/efsw"
 	end
 
 	filter {}

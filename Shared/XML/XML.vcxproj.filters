@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{C196CD9C-2D76-4C38-368E-D70EA2ECB299}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{89565304-F535-D29F-FE4D-5D766AAC3801}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CXMLArray.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="CXMLAttributeImpl.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="CXMLAttributesImpl.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="CXMLFileImpl.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="CXMLImpl.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="CXMLNodeImpl.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="StdInc.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CXMLArray.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="CXMLAttributeImpl.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="CXMLAttributesImpl.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="CXMLFileImpl.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="CXMLImpl.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="CXMLNodeImpl.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="StdInc.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="XML.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="premake5.lua" />
+  </ItemGroup>
+</Project>

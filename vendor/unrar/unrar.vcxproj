@@ -1,0 +1,321 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="debug|Win32">
+      <Configuration>debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|Win32">
+      <Configuration>release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="relwithdbginfo|x64">
+      <Configuration>relwithdbginfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="relwithdbginfo|Win32">
+      <Configuration>relwithdbginfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AD768210-198B-AAC1-E20C-4E214EE0A6F2}</ProjectGuid>
+    <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>unrar</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='relwithdbginfo|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='relwithdbginfo|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='relwithdbginfo|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='relwithdbginfo|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <OutDir>..\efsw\bin\</OutDir>
+    <IntDir>obj\x86_64\debug\</IntDir>
+    <TargetName>unrar</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|Win32'">
+    <OutDir>..\efsw\bin\</OutDir>
+    <IntDir>obj\x86\debug\</IntDir>
+    <TargetName>unrar</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <OutDir>..\efsw\bin\</OutDir>
+    <IntDir>obj\x86_64\release\</IntDir>
+    <TargetName>unrar</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|Win32'">
+    <OutDir>..\efsw\bin\</OutDir>
+    <IntDir>obj\x86\release\</IntDir>
+    <TargetName>unrar</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='relwithdbginfo|x64'">
+    <OutDir>..\efsw\bin\</OutDir>
+    <IntDir>obj\x86_64\relwithdbginfo\</IntDir>
+    <TargetName>unrar</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='relwithdbginfo|Win32'">
+    <OutDir>..\efsw\bin\</OutDir>
+    <IntDir>obj\x86\relwithdbginfo\</IntDir>
+    <TargetName>unrar</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>RARDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>RARDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>RARDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>RARDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='relwithdbginfo|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>RARDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='relwithdbginfo|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>RARDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="archive.hpp" />
+    <ClInclude Include="array.hpp" />
+    <ClInclude Include="blake2s.hpp" />
+    <ClInclude Include="cmddata.hpp" />
+    <ClInclude Include="coder.hpp" />
+    <ClInclude Include="compress.hpp" />
+    <ClInclude Include="consio.hpp" />
+    <ClInclude Include="crc.hpp" />
+    <ClInclude Include="crypt.hpp" />
+    <ClInclude Include="dll.hpp" />
+    <ClInclude Include="encname.hpp" />
+    <ClInclude Include="errhnd.hpp" />
+    <ClInclude Include="extinfo.hpp" />
+    <ClInclude Include="extract.hpp" />
+    <ClInclude Include="filcreat.hpp" />
+    <ClInclude Include="file.hpp" />
+    <ClInclude Include="filefn.hpp" />
+    <ClInclude Include="filestr.hpp" />
+    <ClInclude Include="find.hpp" />
+    <ClInclude Include="getbits.hpp" />
+    <ClInclude Include="global.hpp" />
+    <ClInclude Include="hash.hpp" />
+    <ClInclude Include="headers.hpp" />
+    <ClInclude Include="headers5.hpp" />
+    <ClInclude Include="isnt.hpp" />
+    <ClInclude Include="list.hpp" />
+    <ClInclude Include="loclang.hpp" />
+    <ClInclude Include="log.hpp" />
+    <ClInclude Include="match.hpp" />
+    <ClInclude Include="model.hpp" />
+    <ClInclude Include="options.hpp" />
+    <ClInclude Include="os.hpp" />
+    <ClInclude Include="pathfn.hpp" />
+    <ClInclude Include="qopen.hpp" />
+    <ClInclude Include="rar.hpp" />
+    <ClInclude Include="rardefs.hpp" />
+    <ClInclude Include="rarlang.hpp" />
+    <ClInclude Include="raros.hpp" />
+    <ClInclude Include="rartypes.hpp" />
+    <ClInclude Include="rarvm.hpp" />
+    <ClInclude Include="rawint.hpp" />
+    <ClInclude Include="rawread.hpp" />
+    <ClInclude Include="rdwrfn.hpp" />
+    <ClInclude Include="recvol.hpp" />
+    <ClInclude Include="resource.hpp" />
+    <ClInclude Include="rijndael.hpp" />
+    <ClInclude Include="rs.hpp" />
+    <ClInclude Include="rs16.hpp" />
+    <ClInclude Include="savepos.hpp" />
+    <ClInclude Include="scantree.hpp" />
+    <ClInclude Include="secpassword.hpp" />
+    <ClInclude Include="sha1.hpp" />
+    <ClInclude Include="sha256.hpp" />
+    <ClInclude Include="smallfn.hpp" />
+    <ClInclude Include="strfn.hpp" />
+    <ClInclude Include="strlist.hpp" />
+    <ClInclude Include="suballoc.hpp" />
+    <ClInclude Include="system.hpp" />
+    <ClInclude Include="threadpool.hpp" />
+    <ClInclude Include="timefn.hpp" />
+    <ClInclude Include="ui.hpp" />
+    <ClInclude Include="unicode.hpp" />
+    <ClInclude Include="unpack.hpp" />
+    <ClInclude Include="version.hpp" />
+    <ClInclude Include="volume.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="archive.cpp" />
+    <ClCompile Include="arcread.cpp" />
+    <ClCompile Include="blake2s.cpp" />
+    <ClCompile Include="cmddata.cpp" />
+    <ClCompile Include="consio.cpp" />
+    <ClCompile Include="crc.cpp" />
+    <ClCompile Include="crypt.cpp" />
+    <ClCompile Include="dll.cpp" />
+    <ClCompile Include="encname.cpp" />
+    <ClCompile Include="errhnd.cpp" />
+    <ClCompile Include="extinfo.cpp" />
+    <ClCompile Include="extract.cpp" />
+    <ClCompile Include="filcreat.cpp" />
+    <ClCompile Include="file.cpp" />
+    <ClCompile Include="filefn.cpp" />
+    <ClCompile Include="filestr.cpp" />
+    <ClCompile Include="find.cpp" />
+    <ClCompile Include="getbits.cpp" />
+    <ClCompile Include="global.cpp" />
+    <ClCompile Include="hash.cpp" />
+    <ClCompile Include="headers.cpp" />
+    <ClCompile Include="isnt.cpp" />
+    <ClCompile Include="list.cpp" />
+    <ClCompile Include="match.cpp" />
+    <ClCompile Include="options.cpp" />
+    <ClCompile Include="pathfn.cpp" />
+    <ClCompile Include="qopen.cpp" />
+    <ClCompile Include="rar.cpp" />
+    <ClCompile Include="rarpch.cpp" />
+    <ClCompile Include="rarvm.cpp" />
+    <ClCompile Include="rawread.cpp" />
+    <ClCompile Include="rdwrfn.cpp" />
+    <ClCompile Include="recvol.cpp" />
+    <ClCompile Include="rijndael.cpp" />
+    <ClCompile Include="rs.cpp" />
+    <ClCompile Include="rs16.cpp" />
+    <ClCompile Include="scantree.cpp" />
+    <ClCompile Include="secpassword.cpp" />
+    <ClCompile Include="sha1.cpp" />
+    <ClCompile Include="sha256.cpp" />
+    <ClCompile Include="smallfn.cpp" />
+    <ClCompile Include="strfn.cpp" />
+    <ClCompile Include="strlist.cpp" />
+    <ClCompile Include="system.cpp" />
+    <ClCompile Include="threadpool.cpp" />
+    <ClCompile Include="timefn.cpp" />
+    <ClCompile Include="ui.cpp" />
+    <ClCompile Include="unicode.cpp" />
+    <ClCompile Include="unpack.cpp" />
+    <ClCompile Include="volume.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="premake5.lua" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

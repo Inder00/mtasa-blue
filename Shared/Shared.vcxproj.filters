@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{C196CD9C-2D76-4C38-368E-D70EA2ECB299}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\animation">
+      <UniqueIdentifier>{1095889B-7CAB-8631-C522-1253317857B9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\gta">
+      <UniqueIdentifier>{8C9A68E3-F84F-E1D8-8144-DBAFEDF8D7DC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\sdk">
+      <UniqueIdentifier>{92CB68E3-FE80-E1D8-8775-DBAFF329D8DC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\sdk\net">
+      <UniqueIdentifier>{C8EB43BB-3477-B17F-3D88-3474A9920D80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\sdk\profiler">
+      <UniqueIdentifier>{44ADF6F8-303C-80C2-D95A-94BDC5C89068}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\sdk\xml">
+      <UniqueIdentifier>{521744BB-BEA2-B17F-C7B3-347433BE0D80}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="animation\CEasingCurve.h">
+      <Filter>Headers\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="animation\CPositionRotationAnimation.h">
+      <Filter>Headers\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="animation\EasingDeclarations.hpp">
+      <Filter>Headers\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="animation\EasingEquations.hpp">
+      <Filter>Headers\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="animation\TInterpolation.h">
+      <Filter>Headers\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="build_overrides.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="gta\TrackNodes.h">
+      <Filter>Headers\gta</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CBox.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CChecksum.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CDuplicateLineFilter.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CFastList.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CMatrix.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CMatrix4.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CMatrix_Pad.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CMtaVersion.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CRect.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CRect2D.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CScriptArgReader.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CSphere.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CStringMap.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CVector.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CVector2D.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CVector4D.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\Common.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\RTree.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SString.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SString.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.AllocTracking.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.AllocTracking.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.AsyncTaskScheduler.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.AsyncTaskScheduler.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Buffer.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.ClassIdent.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Crypto.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Defines.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Detours.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.FastHashMap.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.FastHashSet.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.File.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.File.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Game.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Game.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Hash.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Hash.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.HashMap.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.IntTypes.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.IntervalCounter.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.IntervalCounter.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Legacy.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Logging.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Logging.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Map.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Math.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.MemAccess.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.MemAccess.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Misc.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Misc.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Profiling.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Profiling.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.SysInfo.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.SysInfo.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Template.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Tests.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Thread.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.ThreadPool.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Time.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Time.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.Win32Utf8FileHooks.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\SharedUtil.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\UTF8.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\UTF8Detect.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\WString.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\WString.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\net\CNetHTTPDownloadManagerInterface.h">
+      <Filter>Headers\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\net\Packets.h">
+      <Filter>Headers\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\net\SyncStructures.h">
+      <Filter>Headers\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\net\bitstream.h">
+      <Filter>Headers\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\net\packetenums.h">
+      <Filter>Headers\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\net\rpc_enums.h">
+      <Filter>Headers\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\profiler\SharedUtil.Profiler.h">
+      <Filter>Headers\sdk\profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\sha1.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\sha1.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\sha2.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\sha2.hpp">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\version.h">
+      <Filter>Headers\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\xml\CXML.h">
+      <Filter>Headers\sdk\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\xml\CXMLAttribute.h">
+      <Filter>Headers\sdk\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\xml\CXMLAttributes.h">
+      <Filter>Headers\sdk\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\xml\CXMLCommon.h">
+      <Filter>Headers\sdk\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\xml\CXMLErrorCodes.h">
+      <Filter>Headers\sdk\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\xml\CXMLFile.h">
+      <Filter>Headers\sdk\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\xml\CXMLNode.h">
+      <Filter>Headers\sdk\xml</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="premake5.lua" />
+  </ItemGroup>
+</Project>

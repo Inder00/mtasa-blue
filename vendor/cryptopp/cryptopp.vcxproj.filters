@@ -1,0 +1,903 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{C196CD9C-2D76-4C38-368E-D70EA2ECB299}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{89565304-F535-D29F-FE4D-5D766AAC3801}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="3way.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="adler32.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="adv_simd.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="aes.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="aes_armv4.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="algebra.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="algparam.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="arc4.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="argnames.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="aria.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="arm_simd.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="asn.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="authenc.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="base32.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="base64.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="basecode.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="bench.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="blake2.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="blowfish.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="blumshub.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="camellia.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="cast.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="cbcmac.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ccm.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="chacha.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="chachapoly.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="cham.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="channels.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="cmac.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="cpu.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="crc.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="cryptlib.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="darn.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="default.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="des.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="dh.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="dh2.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="dll.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="dmac.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="donna.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="donna_32.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="donna_64.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="donna_sse.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="drbg.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="dsa.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="eax.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ec2n.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="eccrypto.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ecp.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ecpoint.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="elgamal.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="emsa2.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="eprecomp.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="esign.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="factory.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="fhmqv.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="files.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="filters.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="fips140.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="fltrimpl.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="gcm.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="gf256.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="gf2_32.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="gf2n.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="gfpcrypt.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="gost.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="gzip.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hashfwd.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hc128.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hc256.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hex.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hight.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hkdf.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hmac.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hmqv.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hrtimer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ida.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="idea.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="integer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="iterhash.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="kalyna.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="keccak.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="lea.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="lubyrack.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="luc.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="mars.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="md2.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="md4.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="md5.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="mdc.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="mersenne.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="misc.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="modarith.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="modes.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="modexppc.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="mqueue.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="mqv.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="naclite.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="nbtheory.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="nr.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="oaep.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="oids.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="osrng.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ossig.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="padlkrng.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="panama.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pkcspad.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="poly1305.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="polynomi.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ppc_simd.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pssr.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pubkey.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pwdbased.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="queue.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rabbit.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rabin.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="randpool.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rc2.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rc5.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rc6.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rdrand.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rijndael.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ripemd.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rng.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rsa.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rw.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="safer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="salsa.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="scrypt.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="seal.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="secblock.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="seckey.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="seed.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="serpent.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="serpentp.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="sha.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="sha3.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="shacal2.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="shake.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="shark.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="simeck.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="simon.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="simple.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="siphash.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="skipjack.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="sm3.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="sm4.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="smartptr.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="sosemanuk.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="speck.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="square.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="stdcpp.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="strciphr.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="tea.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="threefish.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="tiger.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="trap.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="trunhash.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ttmac.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="tweetnacl.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="twofish.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="validate.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="vmac.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="wake.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="whrlpool.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="words.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="xed25519.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="xtr.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="xtrcrypt.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="zdeflate.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="zinflate.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="3way.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="adler32.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="algebra.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="algparam.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="arc4.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="asn.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="authenc.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="base32.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="base64.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="basecode.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="bfinit.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="blowfish.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="blumshub.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="cast.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="casts.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="cbcmac.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ccm.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="channels.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="cmac.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="cpu.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="crc.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="cryptlib.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="default.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="des.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="dessp.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="dh.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="dh2.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="dll.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="dsa.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="eax.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ec2n.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="eccrypto.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ecp.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="elgamal.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="emsa2.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="eprecomp.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="esign.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="files.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="filters.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="fips140.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="gcm.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="gf256.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="gf2_32.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="gf2n.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="gf2n_simd.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="gfpcrypt.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="gost.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="gzip.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="hex.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="hmac.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="hrtimer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ida.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="idea.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="integer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="iterhash.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="keccak_core.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="luc.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="mars.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="marss.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="md2.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="md4.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="md5.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="misc.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modes.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="mqueue.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="mqv.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="nbtheory.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="oaep.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="osrng.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="panama.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="pkcspad.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="polynomi.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="pssr.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="pubkey.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="queue.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="rabin.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="randpool.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="rc2.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="rc5.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="rc6.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="rdtables.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="rijndael.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="rijndael_simd.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ripemd.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="rng.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="rsa.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="rw.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="safer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="salsa.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="seal.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="seed.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="serpent.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sha.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sha3.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sha_simd.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="shacal2.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="shark.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sharkbox.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="simple.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="skipjack.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sosemanuk.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="square.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="squaretb.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sse_simd.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="strciphr.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="tea.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="tftables.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="tiger.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="tigertab.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ttmac.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="twofish.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="vmac.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="wake.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="whrlpool.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="xtr.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="xtrcrypt.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="zdeflate.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="zinflate.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="premake5.lua" />
+  </ItemGroup>
+</Project>
