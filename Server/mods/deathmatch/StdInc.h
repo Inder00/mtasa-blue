@@ -25,6 +25,10 @@
 class CAclRightName;
 struct SAclRequest;
 
+#include <efsw/efsw.hpp>
+#include <efsw/System.hpp>
+#include <efsw/FileSystem.hpp>
+
 // SDK includes
 #include "MTAPlatform.h"
 #define SHARED_UTIL_WITH_FAST_HASH_MAP
