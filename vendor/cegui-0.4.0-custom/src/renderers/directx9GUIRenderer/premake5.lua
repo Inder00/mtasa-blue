@@ -4,12 +4,15 @@ project "DirectX9GUIRenderer"
 	targetname "DirectX9GUIRenderer"
 
 	defines { "_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING" }
-	
+
 	includedirs { 
 		"../sdk",
-		"../../../include"
+		"../../../include",
 	 }
 	 
+	filter "system:windows"
+		includeDx9();
+
 	vpaths { 
 		["Headers/*"] = "**.h",
 		["Sources"] = "**.cpp",
@@ -23,7 +26,7 @@ project "DirectX9GUIRenderer"
 		"../../../include/renderers/d3d9texture.h",
 		"../../../include/renderers/d3d9renderer.h"
 	}
-	
+
 	filter "architecture:x64"
 		flags { "ExcludeFromBuild" } 
 	filter "system:not windows"

@@ -8,6 +8,7 @@ project "Client Core"
 		includedirs { "../../vendor/sparsehash/src/windows" }
 		linkoptions { "/SAFESEH:NO" }
 		buildoptions { "-Zm130" }
+		includeDx9();
 
 	filter {}
 		includedirs {

@@ -16,6 +16,16 @@ else
 end
 GLIBC_COMPAT = os.getenv("GLIBC_COMPAT") == "true"
 
+function includeDx9()
+	dxdir = os.getenv("DXSDK_DIR") or ""
+	includedirs {
+		path.join(dxdir, "Include")
+	}
+	libdirs {
+		path.join(dxdir, "Lib/x86")
+	}
+end
+
 workspace "MTASA"
 	configurations {"Debug", "Release", "Nightly"}
 
@@ -23,7 +33,7 @@ workspace "MTASA"
 	if os.host() == "macosx" then
 		removeplatforms { "x86" }
 	end
-
+   
 	targetprefix ""
 
 	location "Build"
@@ -34,7 +44,6 @@ workspace "MTASA"
 	pic "On"
 	symbols "On"
 
-	dxdir = os.getenv("DXSDK_DIR") or ""
 	includedirs {
 		"vendor",
 	}
@@ -91,12 +100,6 @@ workspace "MTASA"
 		staticruntime "On"
 		defines { "WIN32", "_WIN32", "_WIN32_WINNT=0x601", "_MSC_PLATFORM_TOOLSET=$(PlatformToolsetVersion)" }
 		buildoptions { "/Zc:__cplusplus" }
-		includedirs {
-			path.join(dxdir, "Include")
-		}
-		libdirs {
-			path.join(dxdir, "Lib/x86")
-		}
 
 	filter {"system:windows", "configurations:Debug"}
 		runtime "Release" -- Always use Release runtime
@@ -137,7 +140,10 @@ workspace "MTASA"
 		include "vendor/pthreads"
 		include "vendor/libspeex"
 		include "vendor/detours"
+
+		group "Vendor/Diligent"
 		include "vendor/diligentCore"
+		DEGFX_InitRenderers(true, false, false)
 		DEGFX_IncludeProjects()
 	end
 

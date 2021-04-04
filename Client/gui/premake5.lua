@@ -6,6 +6,7 @@ project "GUI"
 
 	filter "system:windows"
 		includedirs { "../../vendor/sparsehash/src/windows" }
+		includeDx9();
 
 	filter {}
 		includedirs {

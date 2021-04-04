@@ -18,13 +18,13 @@ Usage:
 ]]--
 
 local degfx_baseDir = "bin/"
-local degfx_diligentSourceDir = "D:/VISUAL STUDIO/mtasa-blue/vendor/diligentCore/"
+local degfx_diligentSourceDir = "vendor/diligentCore/"
 
 local degfx_windows = true
 local degfx_android = false
 
 local degfx_useGL = false
-local degfx_useD3D11 = true
+local degfx_useD3D11 = false
 local degfx_useD3D12 = false
 local degfx_useVulkan = false
 
@@ -183,13 +183,12 @@ function DEGFX_Bind()
 end
         
 function DEGFX_IncludeProjects()
-        
+    
     project "DiligentCoreCommon"
         kind "StaticLib"
         language "C++"
         cppdialect "C++11"
         characterset "MBCS"
-        location "Generated"
         targetdir (degfx_baseDir .. "DiligentCoreCommon/%{cfg.buildcfg}")
         dependson {  "DiligentPlatformBasic", "DiligentPrimitives" }
         links { "DiligentPlatformBasic", "DiligentPrimitives" }
@@ -215,7 +214,6 @@ function DEGFX_IncludeProjects()
         language "C++"
         cppdialect "C++11"
         characterset "MBCS"
-        location "Generated"
         targetdir (degfx_baseDir .. "DiligentPrimitives/%{cfg.buildcfg}")
         
         files {
@@ -230,7 +228,6 @@ function DEGFX_IncludeProjects()
         language "C++"
         cppdialect "C++11"
         characterset "MBCS"
-        location "Generated"
         targetdir (degfx_baseDir .. "DiligentGraphics/%{cfg.buildcfg}")
         dependson { "DiligentCoreCommon", "DiligentPrimitives", "DiligentPlatformBasic", "DiligentPlatformWin" }
         links { "DiligentCoreCommon", "DiligentPrimitives", "DiligentPlatformBasic", "DiligentPlatformWin" }
@@ -257,17 +254,20 @@ function DEGFX_IncludeProjects()
         language "C++"
         cppdialect "C++11"
         characterset "MBCS"
-        location "Generated"
         targetdir (degfx_baseDir .. "DiligentGraphicsAcc/%{cfg.buildcfg}")
         dependson { "DiligentCoreCommon", "DiligentPrimitives", "DiligentPlatformBasic", "DiligentPlatformWin" }
         links { "DiligentCoreCommon", "DiligentPrimitives", "DiligentPlatformBasic", "DiligentPlatformWin" }
         
-        files { degfx_diligentSourceDir .. "Graphics/GraphicsAccessories/**.cpp" }
+        files {
+            degfx_diligentSourceDir .. "Graphics/GraphicsAccessories/**.cpp",
+            degfx_diligentSourceDir .. "Common/interface/**.hpp"
+        }
         
         includedirs { 
             degfx_diligentSourceDir .. "Graphics/GraphicsAccessories/interface",
             degfx_diligentSourceDir .. "Primitives/interface",
-            degfx_diligentSourceDir .. "Platforms/Basic/interface"
+            degfx_diligentSourceDir .. "Platforms/Basic/interface",
+            degfx_diligentSourceDir .. "Common/interface"
         }
         
         DEGFX_AttachDefines()
@@ -277,15 +277,20 @@ function DEGFX_IncludeProjects()
         language "C++"
         cppdialect "C++11"
         characterset "MBCS"
-        location "Generated"
         targetdir (degfx_baseDir .. "DiligentGraphicsD3DBase/%{cfg.buildcfg}")
         
         files {
-            degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/src/**.cpp"
+            degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/src/**.cpp",
+            degfx_diligentSourceDir .. "ThirdParty/DirectXShaderCompiler/**.h",
+            degfx_diligentSourceDir .. "Graphics/ShaderTools/include/**.hpp",
+            degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/interface/**.h"
         }
         
         includedirs {
-            degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/include"
+            degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/include",
+            degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/interface",
+            degfx_diligentSourceDir .. "ThirdParty/DirectXShaderCompiler",
+            degfx_diligentSourceDir .. "Graphics/ShaderTools/include"
         }
         
         DEGFX_AttachDefines()
@@ -296,18 +301,21 @@ function DEGFX_IncludeProjects()
         language "C++"
         cppdialect "C++11"
         characterset "MBCS"
-        location "Generated"
         targetdir (degfx_baseDir .. "DiligentGraphicsTools/%{cfg.buildcfg}")
         dependson { "DiligentPrimitives", "DiligentCoreCommon", "DiligentPlatformBasic", "DiligentGraphicsAcc" }
         links { "DiligentPrimitives", "DiligentCoreCommon", "DiligentPlatformBasic", "DiligentGraphicsAcc" }
         
-        files { degfx_diligentSourceDir .. "Graphics/GraphicsTools/src/**.cpp" }
+        files {
+            degfx_diligentSourceDir .. "Graphics/GraphicsTools/src/**.cpp",
+            degfx_diligentSourceDir .. "Graphics/GraphicsTools/interface/**.cpp",
+        }
         includedirs {
             degfx_diligentSourceDir .. "Primitives/interface",
             degfx_diligentSourceDir .. "Common/interface",
             degfx_diligentSourceDir .. "Platforms/Basic/interface",
             degfx_diligentSourceDir .. "Graphics/GraphicsEngine/interface",
             degfx_diligentSourceDir .. "Graphics/GraphicsTools/include",
+            degfx_diligentSourceDir .. "Graphics/GraphicsTools/interface",
             degfx_diligentSourceDir .. "Graphics/GraphicsAccessories/interface",
         }
         
@@ -343,7 +351,6 @@ function DEGFX_IncludeProjects()
         language "C++"
         cppdialect "C++11"
         characterset "MBCS"
-        location "Generated"
         targetdir (degfx_baseDir .. "DiligentPlatformBasic/%{cfg.buildcfg}")
         dependson { "DiligentPrimitives" }
         links { "DiligentPrimitives" }
@@ -370,7 +377,6 @@ function DEGFX_IncludeProjects()
             language "C++"
             cppdialect "C++11"
             characterset "MBCS"
-            location "Generated"
             targetdir (degfx_baseDir .. "DiligentPlatformWin/%{cfg.buildcfg}")
             dependson { "DiligentPlatformBasic", "DiligentPrimitives"  }
             links { "DiligentPlatformBasic", "DiligentPrimitives" }
@@ -392,17 +398,21 @@ function DEGFX_IncludeProjects()
             language "C++"
             cppdialect "C++11"
             characterset "MBCS"
-            location "Generated"
             targetdir (degfx_baseDir .. "DiligentGraphicsD3D11/%{cfg.buildcfg}")
             dependson { "DiligentPrimitives", "DiligentCoreCommon", "DiligentPlatformBasic", "DiligentGraphicsAcc", "DiligentGraphics", "DiligentGraphicsD3DBase" }
             links { "DiligentPrimitives", "DiligentCoreCommon", "DiligentPlatformBasic", "DiligentGraphicsAcc", "DiligentGraphics", "DiligentGraphicsD3DBase" }
             
-            files { degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3D11/src/**.cpp" }
+            files {
+                degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3D11/src/**.cpp",
+                degfx_diligentSourceDir .. "Graphics/ShaderTools/include/**.hpp",
+                degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/interface/**.h",
+            }
             includedirs {
                 degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3D11/include",
                 degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3D11/interface",
                 degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/include",
                 degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/interface",
+                degfx_diligentSourceDir .. "Graphics/ShaderTools/include",
             }
             
             DEGFX_AttachDefines()
@@ -415,7 +425,6 @@ function DEGFX_IncludeProjects()
             language "C++"
             cppdialect "C++11"
             characterset "MBCS"
-            location "Generated"
             targetdir (degfx_baseDir .. "DiligentGraphicsD3D12/%{cfg.buildcfg}")
             dependson { "DiligentPrimitives", "DiligentCoreCommon", "DiligentPlatformBasic", "DiligentGraphicsAcc", "DiligentGraphics", "DiligentGraphicsD3DBase" }
             links { "DiligentPrimitives", "DiligentCoreCommon", "DiligentPlatformBasic", "DiligentGraphicsAcc", "DiligentGraphics", "DiligentGraphicsD3DBase" }
