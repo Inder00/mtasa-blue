@@ -3,6 +3,7 @@ project "Client Core"
 	kind "SharedLib"
 	targetname "core"
 	targetdir(buildpath("mta"))
+    DEGFX_Bind()
 
 	filter "system:windows"
 		includedirs { "../../vendor/sparsehash/src/windows" }
@@ -48,11 +49,15 @@ project "Client Core"
 		"ws2_32", "d3dx9", "Userenv", "DbgHelp", "xinput", "Imagehlp", "dxguid", "dinput8",
 		"strmiids",	"odbc32", "odbccp32", "shlwapi", "winmm", "gdi32", "Imm32", "Psapi",
 		"pthread", "libpng", "jpeg", "zlib", "tinygettext",
+		"DiligentGraphicsD3D11", "D3D11",
+
+		"DiligentPrimitives", "DiligentCoreCommon", "DiligentPlatformBasic", "DiligentGraphicsAcc", "DiligentGraphics", "DiligentGraphicsD3DBase"
+
 	}
 
 	defines {
 		"INITGUID",
-		"PNG_SETJMP_NOT_SUPPORTED"
+		"PNG_SETJMP_NOT_SUPPORTED",
 	}
 
 	filter "architecture:x64"

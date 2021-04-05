@@ -189,7 +189,6 @@ function DEGFX_IncludeProjects()
         language "C++"
         cppdialect "C++11"
         characterset "MBCS"
-        targetdir (degfx_baseDir .. "DiligentCoreCommon/%{cfg.buildcfg}")
         dependson {  "DiligentPlatformBasic", "DiligentPrimitives" }
         links { "DiligentPlatformBasic", "DiligentPrimitives" }
         
@@ -214,8 +213,7 @@ function DEGFX_IncludeProjects()
         language "C++"
         cppdialect "C++11"
         characterset "MBCS"
-        targetdir (degfx_baseDir .. "DiligentPrimitives/%{cfg.buildcfg}")
-        
+
         files {
             degfx_diligentSourceDir .. "Primitives/src/**.cpp"
         }
@@ -228,7 +226,6 @@ function DEGFX_IncludeProjects()
         language "C++"
         cppdialect "C++11"
         characterset "MBCS"
-        targetdir (degfx_baseDir .. "DiligentGraphics/%{cfg.buildcfg}")
         dependson { "DiligentCoreCommon", "DiligentPrimitives", "DiligentPlatformBasic", "DiligentPlatformWin" }
         links { "DiligentCoreCommon", "DiligentPrimitives", "DiligentPlatformBasic", "DiligentPlatformWin" }
         
@@ -254,7 +251,6 @@ function DEGFX_IncludeProjects()
         language "C++"
         cppdialect "C++11"
         characterset "MBCS"
-        targetdir (degfx_baseDir .. "DiligentGraphicsAcc/%{cfg.buildcfg}")
         dependson { "DiligentCoreCommon", "DiligentPrimitives", "DiligentPlatformBasic", "DiligentPlatformWin" }
         links { "DiligentCoreCommon", "DiligentPrimitives", "DiligentPlatformBasic", "DiligentPlatformWin" }
         
@@ -277,7 +273,6 @@ function DEGFX_IncludeProjects()
         language "C++"
         cppdialect "C++11"
         characterset "MBCS"
-        targetdir (degfx_baseDir .. "DiligentGraphicsD3DBase/%{cfg.buildcfg}")
         
         files {
             degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/src/**.cpp",
@@ -301,7 +296,6 @@ function DEGFX_IncludeProjects()
         language "C++"
         cppdialect "C++11"
         characterset "MBCS"
-        targetdir (degfx_baseDir .. "DiligentGraphicsTools/%{cfg.buildcfg}")
         dependson { "DiligentPrimitives", "DiligentCoreCommon", "DiligentPlatformBasic", "DiligentGraphicsAcc" }
         links { "DiligentPrimitives", "DiligentCoreCommon", "DiligentPlatformBasic", "DiligentGraphicsAcc" }
         
@@ -351,7 +345,6 @@ function DEGFX_IncludeProjects()
         language "C++"
         cppdialect "C++11"
         characterset "MBCS"
-        targetdir (degfx_baseDir .. "DiligentPlatformBasic/%{cfg.buildcfg}")
         dependson { "DiligentPrimitives" }
         links { "DiligentPrimitives" }
 
@@ -377,7 +370,6 @@ function DEGFX_IncludeProjects()
             language "C++"
             cppdialect "C++11"
             characterset "MBCS"
-            targetdir (degfx_baseDir .. "DiligentPlatformWin/%{cfg.buildcfg}")
             dependson { "DiligentPlatformBasic", "DiligentPrimitives"  }
             links { "DiligentPlatformBasic", "DiligentPrimitives" }
             
@@ -398,7 +390,6 @@ function DEGFX_IncludeProjects()
             language "C++"
             cppdialect "C++11"
             characterset "MBCS"
-            targetdir (degfx_baseDir .. "DiligentGraphicsD3D11/%{cfg.buildcfg}")
             dependson { "DiligentPrimitives", "DiligentCoreCommon", "DiligentPlatformBasic", "DiligentGraphicsAcc", "DiligentGraphics", "DiligentGraphicsD3DBase" }
             links { "DiligentPrimitives", "DiligentCoreCommon", "DiligentPlatformBasic", "DiligentGraphicsAcc", "DiligentGraphics", "DiligentGraphicsD3DBase" }
             
@@ -425,7 +416,6 @@ function DEGFX_IncludeProjects()
             language "C++"
             cppdialect "C++11"
             characterset "MBCS"
-            targetdir (degfx_baseDir .. "DiligentGraphicsD3D12/%{cfg.buildcfg}")
             dependson { "DiligentPrimitives", "DiligentCoreCommon", "DiligentPlatformBasic", "DiligentGraphicsAcc", "DiligentGraphics", "DiligentGraphicsD3DBase" }
             links { "DiligentPrimitives", "DiligentCoreCommon", "DiligentPlatformBasic", "DiligentGraphicsAcc", "DiligentGraphics", "DiligentGraphicsD3DBase" }
             

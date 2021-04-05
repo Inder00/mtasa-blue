@@ -26,6 +26,8 @@ function includeDx9()
 	}
 end
 
+include "vendor/diligentCore"
+
 workspace "MTASA"
 	configurations {"Debug", "Release", "Nightly"}
 
@@ -142,9 +144,9 @@ workspace "MTASA"
 		include "vendor/detours"
 
 		group "Vendor/Diligent"
-		include "vendor/diligentCore"
 		DEGFX_InitRenderers(true, false, false)
 		DEGFX_IncludeProjects()
+
 	end
 
 	filter {}

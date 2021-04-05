@@ -10,6 +10,14 @@
  *****************************************************************************/
 
 #include "StdInc.h"
+#include <d3d11.h>
+#include <diligentCore/Graphics/GraphicsEngineD3D11/interface/EngineFactoryD3D11.h>
+#include <diligentCore/Platforms/Interface/NativeWindow.h>
+#include <diligentCore/Common/interface/RefCntAutoPtr.hpp>
+#include <diligentCore/Platforms/Win32/interface/Win32NativeWindow.h>
+
+using namespace Diligent;
+
 HRESULT HandleCreateDeviceResult(HRESULT hResult, IDirect3D9* pDirect3D, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags,
                                  D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3DDevice9** ppReturnedDeviceInterface);
 std::vector<IDirect3D9*> ms_CreatedDirect3D9List;
@@ -133,6 +141,19 @@ IDirect3D9* CProxyDirect3D9::StaticGetDirect3D()
     return ms_CreatedDirect3D9List[0];
 }
 
+void InitializeDiligentEngine(HWND NativeWindowHandle)
+{
+    IEngineFactoryD3D11*  pFactoryD3D11 = GetEngineFactoryD3D11();
+    EngineD3D11CreateInfo EngineCI;
+    IRenderDevice*        device;
+    IDeviceContext*       contexts;
+    ISwapChain*           swapChain;
+    SwapChainDesc        chainDesc;
+    auto                  asdf = NativeWindow{NativeWindowHandle};
+    pFactoryD3D11->CreateDeviceAndContextsD3D11(EngineCI, &device, &contexts);
+    pFactoryD3D11->CreateSwapChainD3D11(device, contexts, chainDesc, FullScreenModeDesc{}, asdf, &swapChain);
+}
+
 HRESULT CProxyDirect3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags,
                                       D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3DDevice9** ppReturnedDeviceInterface)
 {
@@ -220,6 +241,7 @@ HRESULT CProxyDirect3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType, HWND 
     hResult =
         HandleCreateDeviceResult(hResult, m_pDevice, Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
 
+    InitializeDiligentEngine(hFocusWindow);
     return hResult;
 }
 
