@@ -1,0 +1,4 @@
+class CDirectx11Base
+{
+
+};

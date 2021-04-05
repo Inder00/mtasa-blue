@@ -14,13 +14,7 @@
 #include "profiler/SharedUtil.Profiler.h"
 #include "SharedUtil.Win32Utf8FileHooks.hpp"
 
- #include <d3d11.h>
-#include <d3dx11.h>
-#include <d3dx10.h>
-#pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "d3dx11.lib")
-#pragma comment(lib, "d3dx10.lib")
-#pragma comment(lib, "d3dcompiler.lib")
+
 // d3dcompiler.lib;dxguid.lib;winmm.lib;comctl32.lib;usp10.lib;imm32.lib;version.lib
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "dxgi.lib")

@@ -22,6 +22,8 @@
 #include <SharedUtil.Detours.h>
 #include <ServerBrowser/CServerCache.h>
 #include "CDiscordManager.h"
+#include "./../directx11/Main.h"
+
 
 using SharedUtil::CalcMTASAPath;
 using namespace std;
@@ -45,6 +47,8 @@ static HMODULE WINAPI SkipDirectPlay_LoadLibraryA(LPCSTR fileName)
     // GTA:SA expects a valid module handle for DirectPlay. We return a handle for an already loaded library.
     return Win32LoadLibraryA("d3d8.dll");
 }
+
+int _declspec(dllimport) InitializeDirectx11();
 
 CCore::CCore() : m_DiscordManager(new CDiscordManager())
 {
@@ -140,6 +144,8 @@ CCore::CCore() : m_DiscordManager(new CDiscordManager())
 
     // Create tray icon
     m_pTrayIcon = new CTrayIcon();
+
+    InitializeDirectx11(GetHookedWindow());
 }
 
 CCore::~CCore()

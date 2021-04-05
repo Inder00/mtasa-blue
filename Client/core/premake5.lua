@@ -3,7 +3,6 @@ project "Client Core"
 	kind "SharedLib"
 	targetname "core"
 	targetdir(buildpath("mta"))
-    DEGFX_Bind()
 
 	filter "system:windows"
 		includedirs { "../../vendor/sparsehash/src/windows" }
@@ -45,14 +44,14 @@ project "Client Core"
 		"**.cpp"
 	}
 
+	libdirs { "D:/VISUAL STUDIO/mtasa-blue/Build/bin/x86/Debug" }
+
 	links {
 		"ws2_32", "d3dx9", "Userenv", "DbgHelp", "xinput", "Imagehlp", "dxguid", "dinput8",
 		"strmiids",	"odbc32", "odbccp32", "shlwapi", "winmm", "gdi32", "Imm32", "Psapi",
 		"pthread", "libpng", "jpeg", "zlib", "tinygettext",
-		"DiligentGraphicsD3D11", "D3D11",
 
-		"DiligentPrimitives", "DiligentCoreCommon", "DiligentPlatformBasic", "DiligentGraphicsAcc", "DiligentGraphics", "DiligentGraphicsD3DBase"
-
+		"directx11"--[[, "DiligentGraphicsD3D11", "DiligentGraphicsD3DBase", "D3D11", "D3DCompiler", "DiligentGraphicsTools"]]
 	}
 
 	defines {
