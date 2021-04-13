@@ -51,7 +51,7 @@ project "Client Core"
 		"strmiids",	"odbc32", "odbccp32", "shlwapi", "winmm", "gdi32", "Imm32", "Psapi",
 		"pthread", "libpng", "jpeg", "zlib", "tinygettext",
 
-		"directx11"--[[, "DiligentGraphicsD3D11", "DiligentGraphicsD3DBase", "D3D11", "D3DCompiler", "DiligentGraphicsTools"]]
+		"directx11"
 	}
 
 	defines {

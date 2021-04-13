@@ -48,8 +48,6 @@ static HMODULE WINAPI SkipDirectPlay_LoadLibraryA(LPCSTR fileName)
     return Win32LoadLibraryA("d3d8.dll");
 }
 
-int _declspec(dllimport) InitializeDirectx11();
-
 CCore::CCore() : m_DiscordManager(new CDiscordManager())
 {
     // Initialize the global pointer
@@ -144,8 +142,6 @@ CCore::CCore() : m_DiscordManager(new CDiscordManager())
 
     // Create tray icon
     m_pTrayIcon = new CTrayIcon();
-
-    InitializeDirectx11(GetHookedWindow());
 }
 
 CCore::~CCore()
