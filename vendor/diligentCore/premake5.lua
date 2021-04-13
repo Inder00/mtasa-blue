@@ -277,15 +277,26 @@ function DEGFX_IncludeProjects()
         files {
             degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/src/**.cpp",
             degfx_diligentSourceDir .. "ThirdParty/DirectXShaderCompiler/**.h",
+            degfx_diligentSourceDir .. "ThirdParty/GPUOpenShaderUtils/DXBCChecksum.cpp",
+            degfx_diligentSourceDir .. "ThirdParty/GPUOpenShaderUtils/DXBCChecksum.h",
             degfx_diligentSourceDir .. "Graphics/ShaderTools/include/**.hpp",
-            degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/interface/**.h"
+            degfx_diligentSourceDir .. "Graphics/ShaderTools/src/ShaderToolsCommon.cpp",
+            degfx_diligentSourceDir .. "Graphics/ShaderTools/src/HLSLUtils.cpp",
+            degfx_diligentSourceDir .. "Graphics/ShaderTools/src/GLSLUtils.cpp",
+            degfx_diligentSourceDir .. "Graphics/ShaderTools/src/DXBCUtils.cpp",
+            degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/interface/**.h",
+            degfx_diligentSourceDir .. "Graphics/HLSL2GLSLConverterLib/*.h",
+            degfx_diligentSourceDir .. "Graphics/HLSL2GLSLConverterLib/*.hpp",
+            degfx_diligentSourceDir .. "Graphics/HLSL2GLSLConverterLib/*.cpp",
         }
         
         includedirs {
             degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/include",
             degfx_diligentSourceDir .. "Graphics/GraphicsEngineD3DBase/interface",
             degfx_diligentSourceDir .. "ThirdParty/DirectXShaderCompiler",
-            degfx_diligentSourceDir .. "Graphics/ShaderTools/include"
+            degfx_diligentSourceDir .. "Graphics/ShaderTools/include",
+            degfx_diligentSourceDir .. "Graphics/HLSL2GLSLConverterLib/include",
+            degfx_diligentSourceDir .. "Graphics/HLSL2GLSLConverterLib/interface",
         }
         
         DEGFX_AttachDefines()

@@ -26,7 +26,7 @@ project "Client Directx11"
 	}
 
 	links {
-		"DiligentGraphicsD3D11", "DiligentGraphicsD3DBase", "D3D11", "D3DCompiler"
+		"DiligentGraphicsD3D11", "DiligentGraphicsD3DBase", "D3D11", "D3DCompiler", "DXGI"
 	}
 
 	filter "architecture:x64"
