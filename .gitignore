@@ -416,3 +416,7 @@ utils/DXFiles/
 !*.dll
 !*.exe
 utils/vswhere.exe
+
+tests/directx11Test/tests/Directx11/
+
+bintests/Directx11/
