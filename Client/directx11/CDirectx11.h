@@ -1,12 +1,15 @@
 class CDirectx11Base;
+class CCoreBasicInterface;
 
 class CDirectx11 : public CDirectx11Base
 {
 public:
-    CDirectx11(HWND nativeWindowHandle);
+    CDirectx11(CCoreBasicInterface* nativeWindowHandle);
 
 private:
-    HWND m_nativeWindowHandle;
+    void                 Create(HWND window);
+
+    CCoreBasicInterface* m_pBasicInterface;
 
     IEngineFactoryD3D11* m_pFactoryD3D11;
     IRenderDevice*  m_device;

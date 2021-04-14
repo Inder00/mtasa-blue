@@ -6,6 +6,8 @@
 
 using namespace Diligent;
 
+#include "../sdk/core/CCoreBasicInterface.h"
 #include "Main.h"
 #include "CDirectx11.h"
+
 
