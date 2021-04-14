@@ -54,7 +54,9 @@ enum eCoreVersion
     #define TIMING_DETAIL(x)            {}
 #endif
 
-class CCoreInterface
+#include "CCoreBasicInterface.h"
+
+class CCoreInterface : public CCoreBasicInterface
 {
 public:
     // Note: Always leave this on the top as the client must use this to verify
@@ -120,7 +122,6 @@ public:
     virtual void ShowErrorMessageBox(const SString& strTitle, SString strMessage, const SString& strTroubleLink = "") = 0;
     virtual void ShowNetErrorMessageBox(const SString& strTitle, SString strMessage, SString strTroubleLink = "", bool bLinkRequiresErrorCode = false) = 0;
     virtual void HideMainMenu() = 0;
-    virtual HWND GetHookedWindow() = 0;
     virtual bool IsFocused() = 0;
     virtual bool IsWindowMinimized() = 0;
 

@@ -74,6 +74,8 @@ extern class CLocalization* g_pLocalization;
 bool                        UsingAltD3DSetup();
 extern SString              g_strJingleBells;
 
+class CDirectx11Base;
+
 class CCore : public CCoreInterface, public CSingleton<CCore>
 {
 public:
@@ -318,6 +320,7 @@ private:
     CModuleLoader m_XMLModule;
     CModuleLoader m_GUIModule;
     CModuleLoader m_WebCoreModule;
+    CModuleLoader m_Directx11Module;
 
     // Mod manager
     CModManager* m_pModManager;
@@ -327,6 +330,7 @@ private:
     CNet*         m_pNet;
     CMultiplayer* m_pMultiplayer;
     CGUI*         m_pGUI;
+    CDirectx11Base* m_pDirectx11;
 
     // Logger utility interface.
     CConsoleLogger* m_pConsoleLogger;

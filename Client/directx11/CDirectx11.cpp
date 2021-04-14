@@ -1,7 +1,9 @@
 #include "StdInc.h"
+#include <cassert>
 
 CDirectx11::CDirectx11(HWND nativeWindowHandle) : m_nativeWindowHandle(nativeWindowHandle)
 {
+    assert(!nativeWindowHandle);
     m_pFactoryD3D11 = GetEngineFactoryD3D11();
     EngineD3D11CreateInfo EngineCI;
     SwapChainDesc         chainDesc;

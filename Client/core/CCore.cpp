@@ -907,6 +907,7 @@ T* CreateModule(CModuleLoader& m_Loader, const SString& strName, const SString& 
 void CCore::CreateGame()
 {
     m_pGame = CreateModule<CGame>(m_GameModule, "Game", "game_sa", "GetGameInterface", this);
+    m_pDirectx11 = CreateModule<CDirectx11Base>(m_Directx11Module, "Directx11", "directx11", "InitializeDirectx11", (CCoreBasicInterface*)this);
     if (m_pGame->GetGameVersion() >= VERSION_11)
     {
         BrowseToSolution("downgrade", TERMINATE_PROCESS,

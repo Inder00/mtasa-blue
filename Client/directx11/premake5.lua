@@ -2,11 +2,22 @@ project "Client Directx11"
 	language "C++"
 	kind "SharedLib"
 	targetname "directx11"
+	targetdir(buildpath("mta"))
 
     DEGFX_Bind()
 
+	-- TODO remove unnecessary
 	filter {}
 		includedirs {
+			"../../Shared/sdk",
+			".",
+			"../sdk",
+			"../../vendor/tinygettext",
+			"../../vendor/zlib",
+			"../../vendor/jpeg-9d",
+			"../../vendor/pthreads/include",
+			"../../vendor/sparsehash/src/",
+			"../../vendor/detours/4.0.1/src",
 		}
 
 	pchheader "StdInc.h"

@@ -1,6 +1,10 @@
 #include "StdInc.h"
 
-__declspec(dllexport) CDirectx11Base* InitializeDirectx11(HWND nativeWindowHandle)
+#include "../sdk/core/CCoreBasicInterface.h"
+#include "SharedUtil.Defines.h"
+#include <cassert>
+
+MTAEXPORT CDirectx11Base* InitializeDirectx11(CCoreBasicInterface* basicInterface)
 {
-    return new CDirectx11(nativeWindowHandle);
+    return new CDirectx11(basicInterface->GetHookedWindow());
 }
