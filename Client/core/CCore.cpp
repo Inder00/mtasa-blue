@@ -1241,6 +1241,8 @@ void CCore::DoPostFramePulse()
 
     GetJoystickManager()->DoPulse();            // Note: This may indirectly call CMessageLoopHook::ProcessMessage
     m_pKeyBinds->DoPostFramePulse();
+    
+    m_pDirectx11->DoPulse();
 
     if (m_pWebCore)
         m_pWebCore->DoPulse();
