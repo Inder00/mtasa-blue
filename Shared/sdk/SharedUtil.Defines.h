@@ -191,4 +191,6 @@
                 : __DATE__ [2] == 't' ? 9 \
                 : __DATE__ [2] == 'v' ? 10 : 11)
 #define BUILD_DAY ((__DATE__ [4]==' ' ? 0 : __DATE__[4]-'0')*10+(__DATE__[5]-'0'))
+#ifndef FLOAT_EPSILON
 static constexpr float FLOAT_EPSILON = 0.0001f;
+#endif

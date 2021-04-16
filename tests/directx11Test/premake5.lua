@@ -5,6 +5,11 @@ project "Client Directx11 Test"
 	targetdir ("../../bintests/Directx11")
 	pchheader "StdInc.h"
 	pchsource "StdInc.cpp"
+	
+	filter {}
+		includedirs {
+			"../../Shared/sdk",
+		}
 
 	vpaths {
 		["Headers/*"] = "**.h",

@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
 #define UNICODE
 #include <windows.h>
 #include <d3d11_1.h>
@@ -10,7 +9,14 @@
 
 #include <assert.h>
 #include "../../Client/sdk/core/CCoreBasicInterface.h"
+#include <diligentCore/Common/interface/BasicMath.hpp>
+
+using namespace Diligent;
+
 #include "./../Client/directx11/base/CDirectx11Base.h"
+#include "./../Client/directx11/logic/Vertex.h"
+
+
 
 static bool global_windowDidResize = false;
 
@@ -93,33 +99,38 @@ HWND CreateWin(HINSTANCE hInstance)
 void PumpMessage(HWND hookedWindow)
 {
     MSG msg;
-    // if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
-    //    if (msg.message == WM_QUIT || msg.message == WM_CLOSE || msg.message == WM_DESTROY || msg.message == WM_NCDESTROY || msg.message == WM_HSCROLL ||
-    //        msg.message == WM_VSCROLL)
-    //        return;
 
-    // Voodoo
     unsigned int uiUnusedMessageId = 0x3039;
     PostMessage(hookedWindow, uiUnusedMessageId, 0, 0);
     PeekMessage(&msg, NULL, uiUnusedMessageId, uiUnusedMessageId, PM_REMOVE);
     PeekMessage(&msg, NULL, uiUnusedMessageId, uiUnusedMessageId, PM_REMOVE);
 }
 
+
+std::vector<Vertex> CubeVerts = {
+    {float3(-1, -1, -1), float4(1, 0, 0, 1)}, {float3(-1, +1, -1), float4(0, 1, 0, 1)},
+    {float3(+1, +1, -1), float4(0, 0, 1, 1)}, {float3(+1, -1, -1), float4(1, 1, 1, 1)},
+
+    {float3(-1, -1, +1), float4(1, 1, 0, 1)}, {float3(-1, +1, +1), float4(0, 1, 1, 1)},
+    {float3(+1, +1, +1), float4(1, 0, 1, 1)}, {float3(+1, -1, +1), float4(0.2f, 0.2f, 0.2f, 1)},
+};
+
+void start(CDirectx11Base* directx11)
+{
+    directx11->CreateMesh(CubeVerts, {2, 0, 1, 2, 3, 0, 4, 6, 5, 4, 7, 6, 0, 7, 4, 0, 3, 7, 1, 0, 4, 1, 4, 5, 1, 5, 2, 5, 6, 2, 3, 6, 7, 3, 2, 6});
+}
+
 int main()
 {
-    BOOL   fFreeResult, fRunTimeLinkSuccess = FALSE;
-
-    // Get a handle to the DLL module.
-    // MTAEXPORT CDirectx11Base* InitializeDirectx11(CCoreBasicInterface* basicInterface)
-
     HINSTANCE module = LoadLibrary(TEXT("./../../Bin/MTA/directx11_d.dll"));
-    // D:\VISUAL STUDIO\MTASA-BLUE\CLIENT\DIRECTX11\BASE\CDIRECTX11BASE.H
+
     typedef CDirectx11Base* (*PFNINITIALIZER)(CCoreBasicInterface*);
     PFNINITIALIZER pfnInit = (PFNINITIALIZER)(GetProcAddress(module, "InitializeDirectx11"));
 
     HWND win = CreateWin(GetModuleHandle(nullptr));
     CDirectx11Base* directx11 = pfnInit(new CCore(win));
 
+    bool bStart = false;
     while (true)
     {
         printf(".");
@@ -134,6 +145,11 @@ int main()
             DispatchMessageW(&msg);
         }
         directx11->DoPulse();
+        if (!bStart)
+        {
+            bStart = true;
+            start(directx11);
+        }
 
         // PumpMessage(win);
         Sleep(10);

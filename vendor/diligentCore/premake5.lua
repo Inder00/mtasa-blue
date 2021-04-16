@@ -52,20 +52,20 @@ end
 
 function DEGFX_AttachDefines()
     if degfx_windows then
-        defines { "PLATFORM_WIN32" }
+        defines { "PLATFORM_WIN32", "DILIGENT_DEVELOPMENT" }
     end
     if degfx_android then
-        defines { "PLATFORM_ANDROID" }
+        defines { "PLATFORM_ANDROID", "DILIGENT_DEVELOPMENT" }
     end
     
     if degfx_useD3D11 then
-        defines { "D3D11_SUPPORTED" }
+        defines { "D3D11_SUPPORTED", "DILIGENT_DEVELOPMENT" }
     end
     if degfx_useD3D12 then
-        defines { "D3D11_SUPPORTED" }
+        defines { "D3D11_SUPPORTED", "DILIGENT_DEVELOPMENT" }
     end
     if degfx_useVulkan then
-        defines { "VULKAN_SUPPORTED" }
+        defines { "VULKAN_SUPPORTED", "DILIGENT_DEVELOPMENT" }
     end
 end
 
