@@ -10,7 +10,7 @@ class CDirectx11 : public CDirectx11Base
 {
 public:
     CDirectx11(CCoreBasicInterface* nativeWindowHandle);
-    void         CreatePipelineState();
+
     void         DoPulse();
     CMeshBase*   CreateMesh(const std::vector<ColorVertex>& vertices, const std::vector<Uint32>& indices);
     CModelBase*  CreateModel(unsigned int id, CMeshBase* pMesh);

@@ -67,8 +67,7 @@ void CCamera::SetRotation(float Yaw, float Pitch)
     m_fPitchAngle = Pitch;
 }
 
-void CCamera::SetProjAttribs(Float32 NearClipPlane, Float32 FarClipPlane, Float32 AspectRatio, Float32 FOV, SURFACE_TRANSFORM SrfPreTransform,
-                                       bool IsGL)
+void CCamera::SetProjAttribs(Float32 NearClipPlane, Float32 FarClipPlane, Float32 AspectRatio, Float32 FOV, SURFACE_TRANSFORM SrfPreTransform, bool IsGL)
 {
     m_ProjAttribs.NearClipPlane = NearClipPlane;
     m_ProjAttribs.FarClipPlane = FarClipPlane;
@@ -99,4 +98,3 @@ void CCamera::SetProjAttribs(Float32 NearClipPlane, Float32 FarClipPlane, Float3
 
     m_ProjMatrix = float4x4::Projection(m_ProjAttribs.FOV, m_ProjAttribs.AspectRatio, m_ProjAttribs.NearClipPlane, m_ProjAttribs.FarClipPlane, IsGL);
 }
-

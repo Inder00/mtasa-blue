@@ -10,11 +10,6 @@ CDirectx11::CDirectx11(CCoreBasicInterface* pBasicInterface) : m_pBasicInterface
     freopen("CONOUT$", "w", stderr);
 }
 
-void CDirectx11::CreatePipelineState()
-{
-
-}
-
 void CDirectx11::DoPulse()
 {
     printf("------- RENDER START -------\n");
@@ -86,6 +81,4 @@ void CDirectx11::Create(HWND window)
 
     m_pFactoryD3D11->CreateDeviceAndContextsD3D11(EngineCI, &m_pDevice, &m_pImmediateContext);
     m_pFactoryD3D11->CreateSwapChainD3D11(m_pDevice, m_pImmediateContext, chainDesc, FullScreenModeDesc{}, NativeWindow{window}, &m_pSwapChain);
-
-    CreatePipelineState();
 }

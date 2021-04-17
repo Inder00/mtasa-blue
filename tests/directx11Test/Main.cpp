@@ -123,15 +123,19 @@ void start(CDirectx11Base* directx11)
     CMeshBase* pMesh = directx11->CreateMesh(CubeVerts, {2, 0, 1, 2, 3, 0, 4, 6, 5, 4, 7, 6, 0, 7, 4, 0, 3, 7, 1, 0, 4, 1, 4, 5, 1, 5, 2, 5, 6, 2, 3, 6, 7, 3, 2, 6});
     directx11->CreateModel(0, pMesh);
 
-    pObject = directx11->CreateObject(0, {-300, -300, -100});
+    pObject = directx11->CreateObject(0, {0, 0, 0});
 }
 
-int i = 0;
+float i = 0.0f;
 
 int main()
 {
     HINSTANCE module = LoadLibrary(TEXT("./../../Bin/MTA/directx11_d.dll"));
-
+    if (!module)
+    {
+        printf("Failed to load directx11_d.dll");
+        return -1;
+    }
     typedef CDirectx11Base* (*PFNINITIALIZER)(CCoreBasicInterface*);
     PFNINITIALIZER pfnInit = (PFNINITIALIZER)(GetProcAddress(module, "InitializeDirectx11"));
 
@@ -141,7 +145,6 @@ int main()
     bool bStart = false;
     while (true)
     {
-        printf(".");
         MSG msg = {};
         while (PeekMessageW(&msg, 0, 0, 0, PM_REMOVE))
         {
@@ -158,8 +161,9 @@ int main()
             bStart = true;
             start(directx11);
         }
-        i++;
-        pObject->SetPosition(float3(sin(i / 50.0f) * 100.0f, cos(i / 50.0f) * 100.0f, cos(i / 20.0f) * 100.0f));
+        i += 0.01f;
+        pObject->SetPosition({0, 0, 0});
+        pObject->SetRotation({i, 0, 0});
         // PumpMessage(win);
         Sleep(10);
     }

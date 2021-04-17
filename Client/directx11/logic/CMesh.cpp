@@ -13,10 +13,10 @@ void CMesh::CreateVertexBuffer()
     VertBuffDesc.Name = "Cube vertex buffer";
     VertBuffDesc.Usage = USAGE_IMMUTABLE;
     VertBuffDesc.BindFlags = BIND_VERTEX_BUFFER;
-    VertBuffDesc.uiSizeInBytes = m_vecVertices.size() * sizeof(Vertex);
+    VertBuffDesc.uiSizeInBytes = m_vecVertices.size() * sizeof(ColorVertex);
     BufferData VBData;
     VBData.pData = &m_vecVertices[0];
-    VBData.DataSize = m_vecVertices.size() * sizeof(Vertex);
+    VBData.DataSize = m_vecVertices.size() * sizeof(ColorVertex);
     m_pDirectx11->GetDevice()->CreateBuffer(VertBuffDesc, &VBData, &m_vertexBuffer);
 }
 
@@ -27,10 +27,10 @@ void CMesh::CreateIndexBuffer()
     IndBuffDesc.Name = "Cube index buffer";
     IndBuffDesc.Usage = USAGE_IMMUTABLE;
     IndBuffDesc.BindFlags = BIND_INDEX_BUFFER;
-    IndBuffDesc.uiSizeInBytes = m_vecIndices.size() * sizeof(Vertex);
+    IndBuffDesc.uiSizeInBytes = m_vecIndices.size() * sizeof(Uint32);
     BufferData IBData;
     IBData.pData = &m_vecIndices[0];
-    IBData.DataSize = m_vecIndices.size() * sizeof(Vertex);
+    IBData.DataSize = m_vecIndices.size() * sizeof(Uint32);
     m_pDirectx11->GetDevice()->CreateBuffer(IndBuffDesc, &IBData, &m_indexBuffer);
 }
 

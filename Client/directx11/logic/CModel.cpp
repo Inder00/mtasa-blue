@@ -5,6 +5,13 @@ CModel::CModel(CMesh* pMesh) : m_pMesh(pMesh)
     CreatePipeline();
 }
 
+struct VSConstants
+{
+    float4x4 WorldViewProj;
+    //float4x4 View;
+    //float4x4 Projection;
+};
+
 void CModel::CreatePipeline()
 {
     CDirectx11* pDirectx = m_pMesh->GetDirectx11();
@@ -59,7 +66,7 @@ void CModel::CreatePipeline()
         // Dynamic buffers can be frequently updated by the CPU
         BufferDesc CBDesc;
         CBDesc.Name = "VS constants CB";
-        CBDesc.uiSizeInBytes = sizeof(float4x4);
+        CBDesc.uiSizeInBytes = sizeof(VSConstants);
         CBDesc.Usage = USAGE_DYNAMIC;
         CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
         CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
@@ -86,14 +93,88 @@ void CModel::CreatePipeline()
     PSOCreateInfo.PSODesc.ResourceLayout.DefaultVariableType = SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 
     pDirectx->GetDevice()->CreateGraphicsPipelineState(PSOCreateInfo, &m_pPSO);
+    if (!m_pPSO)
+    {
+        printf("Error while creating a shader\n");
+        return;
+    }
 
     // Since we did not explcitly specify the type for 'Constants' variable, default
     // type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables never
     // change and are bound directly through the pipeline state object.
-    m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "Constants")->Set(m_VSConstants);
+    auto* constaints = m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "Constants");
+    if (constaints)
+    {
+        m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "Constants")->Set(m_VSConstants);
+    }
+    else
+    {
+        printf("'Constants' not found!\n");
+        return;
+    }
 
     // Create a shader resource binding object and bind all static resources in it
     m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
+}
+
+float4x4 GetAdjustedProjectionMatrix(CDirectx11* pDirectx11, float FOV, float NearPlane, float FarPlane)
+{
+    const auto& SCDesc = pDirectx11->GetSwapChain()->GetDesc();
+
+    float AspectRatio = static_cast<float>(SCDesc.Width) / static_cast<float>(SCDesc.Height);
+    float XScale, YScale;
+    if (SCDesc.PreTransform == SURFACE_TRANSFORM_ROTATE_90 || SCDesc.PreTransform == SURFACE_TRANSFORM_ROTATE_270 ||
+        SCDesc.PreTransform == SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90 || SCDesc.PreTransform == SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270)
+    {
+        // When the screen is rotated, vertical FOV becomes horizontal FOV
+        XScale = 1.f / std::tan(FOV / 2.f);
+        // Aspect ratio is inversed
+        YScale = XScale * AspectRatio;
+    }
+    else
+    {
+        YScale = 1.f / std::tan(FOV / 2.f);
+        XScale = YScale / AspectRatio;
+    }
+
+    float4x4 Proj;
+    Proj._11 = XScale;
+    Proj._22 = YScale;
+    Proj.SetNearFarClipPlanes(NearPlane, FarPlane, pDirectx11->GetDevice()->GetDeviceCaps().IsGLDevice());
+    return Proj;
+}
+
+float4x4 GetSurfacePretransformMatrix(CDirectx11* pDirectx11, const float3& f3CameraViewAxis)
+{
+    const auto& SCDesc = pDirectx11->GetSwapChain()->GetDesc();
+    switch (SCDesc.PreTransform)
+    {
+        case SURFACE_TRANSFORM_ROTATE_90:
+            // The image content is rotated 90 degrees clockwise.
+            return float4x4::RotationArbitrary(f3CameraViewAxis, -PI_F / 2.f);
+
+        case SURFACE_TRANSFORM_ROTATE_180:
+            // The image content is rotated 180 degrees clockwise.
+            return float4x4::RotationArbitrary(f3CameraViewAxis, -PI_F);
+
+        case SURFACE_TRANSFORM_ROTATE_270:
+            // The image content is rotated 270 degrees clockwise.
+            return float4x4::RotationArbitrary(f3CameraViewAxis, -PI_F * 3.f / 2.f);
+
+        case SURFACE_TRANSFORM_OPTIMAL:
+            UNEXPECTED("SURFACE_TRANSFORM_OPTIMAL is only valid as parameter during swap chain initialization.");
+            return float4x4::Identity();
+
+        case SURFACE_TRANSFORM_HORIZONTAL_MIRROR:
+        case SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90:
+        case SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180:
+        case SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270:
+            UNEXPECTED("Mirror transforms are not supported");
+            return float4x4::Identity();
+
+        default:
+            return float4x4::Identity();
+    }
 }
 
 void CModel::Draw(float4x4 matrix)
@@ -101,13 +182,20 @@ void CModel::Draw(float4x4 matrix)
     IDeviceContext* pImmediateContext = m_pMesh->GetDirectx11()->GetImmediateContext();
     pImmediateContext->SetPipelineState(m_pPSO);
     pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-    {
-        struct VSConstants
-        {
-            float4x4 WorldViewProj;
-        };
-        MapHelper<VSConstants> CBConstants(pImmediateContext, m_VSConstants, MAP_WRITE, MAP_FLAG_DISCARD);
-        CBConstants->WorldViewProj = matrix;
-    }
+    VSConstants values;
+
+    // Camera is at (0, 0, -5) looking along the Z axis
+    float4x4 View = float4x4::Translation(0.f, 0.0f, -200.0f);
+
+    // Get pretransform matrix that rotates the scene according the surface orientation
+    auto SrfPreTransform = GetSurfacePretransformMatrix(m_pMesh->GetDirectx11() , float3{0, 0, 1});
+
+    // Get projection matrix adjusted to the current screen orientation
+    auto Proj = GetAdjustedProjectionMatrix(m_pMesh->GetDirectx11(), PI_F / 4.0f, 0.01f, 100.f);
+
+    // Compute world-view-projection matrix
+    values.WorldViewProj = matrix * View * SrfPreTransform * Proj;
+    SetShaderValues(values);
+
     m_pMesh->Draw();
 }
