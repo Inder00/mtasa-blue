@@ -1,4 +1,6 @@
-#undef PI
+#ifdef PI
+    #undef PI
+#endif
 #include <diligentCore/Common/interface/BasicMath.hpp>
 
 typedef uint32_t Uint32;            ///< 32-bit unsigned integer

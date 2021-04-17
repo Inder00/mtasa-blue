@@ -9,12 +9,13 @@
 
 #include <assert.h>
 #include "../../Client/sdk/core/CCoreBasicInterface.h"
-#include <diligentCore/Common/interface/BasicMath.hpp>
+
+#include "./../Client/directx11/headers/DiligentCore.h"
 
 using namespace Diligent;
 
 #include "./../Client/directx11/base/CDirectx11Base.h"
-#include "./../Client/directx11/logic/Vertex.h"
+#include "./../Client/directx11/logic/utils/Vertex.h"
 
 
 
@@ -107,18 +108,25 @@ void PumpMessage(HWND hookedWindow)
 }
 
 
-std::vector<Vertex> CubeVerts = {
-    {float3(-1, -1, -1), float4(1, 0, 0, 1)}, {float3(-1, +1, -1), float4(0, 1, 0, 1)},
-    {float3(+1, +1, -1), float4(0, 0, 1, 1)}, {float3(+1, -1, -1), float4(1, 1, 1, 1)},
+std::vector<ColorVertex> CubeVerts = {
+    {float3(-1, -1, -1), float4(1, 0, 0, 1)}, {float3(-1, 1, -1), float4(0, 1, 0, 1)},
+    {float3(1, 1, -1), float4(0, 0, 1, 1)}, {float3(1, -1, -1), float4(1, 1, 1, 1)},
 
-    {float3(-1, -1, +1), float4(1, 1, 0, 1)}, {float3(-1, +1, +1), float4(0, 1, 1, 1)},
-    {float3(+1, +1, +1), float4(1, 0, 1, 1)}, {float3(+1, -1, +1), float4(0.2f, 0.2f, 0.2f, 1)},
+    {float3(-1, -1, 1), float4(1, 1, 0, 1)}, {float3(-1, 1, 1), float4(0, 1, 1, 1)},
+    {float3(1, 1, 1), float4(1, 0, 1, 1)}, {float3(1, -1, 1), float4(0.2f, 0.2f, 0.2f, 1)},
 };
+
+CObjectBase* pObject = nullptr;
 
 void start(CDirectx11Base* directx11)
 {
-    directx11->CreateMesh(CubeVerts, {2, 0, 1, 2, 3, 0, 4, 6, 5, 4, 7, 6, 0, 7, 4, 0, 3, 7, 1, 0, 4, 1, 4, 5, 1, 5, 2, 5, 6, 2, 3, 6, 7, 3, 2, 6});
+    CMeshBase* pMesh = directx11->CreateMesh(CubeVerts, {2, 0, 1, 2, 3, 0, 4, 6, 5, 4, 7, 6, 0, 7, 4, 0, 3, 7, 1, 0, 4, 1, 4, 5, 1, 5, 2, 5, 6, 2, 3, 6, 7, 3, 2, 6});
+    directx11->CreateModel(0, pMesh);
+
+    pObject = directx11->CreateObject(0, {-300, -300, -100});
 }
+
+int i = 0;
 
 int main()
 {
@@ -150,7 +158,8 @@ int main()
             bStart = true;
             start(directx11);
         }
-
+        i++;
+        pObject->SetPosition(float3(sin(i / 50.0f) * 100.0f, cos(i / 50.0f) * 100.0f, cos(i / 20.0f) * 100.0f));
         // PumpMessage(win);
         Sleep(10);
     }

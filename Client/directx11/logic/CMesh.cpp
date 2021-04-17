@@ -1,6 +1,7 @@
 #include "StdInc.h"
 
-CMesh::CMesh(CDirectx11* pDirectx11, std::vector<Vertex> vertices, std::vector<unsigned int> indices) : m_pDirectx11(pDirectx11), m_vecVertices(vertices), m_vecIndices(indices)
+CMesh::CMesh(CDirectx11* pDirectx11, std::vector<ColorVertex> vertices, std::vector<unsigned int> indices)
+    : m_pDirectx11(pDirectx11), m_vecVertices(vertices), m_vecIndices(indices)
 {
     CreateVertexBuffer();
     CreateIndexBuffer();
@@ -39,14 +40,12 @@ void CMesh::Draw()
     IBuffer* pBuffs[] = {m_vertexBuffer};
     m_pDirectx11->GetImmediateContext()->SetVertexBuffers(0, 1, pBuffs, &offset, RESOURCE_STATE_TRANSITION_MODE_TRANSITION, SET_VERTEX_BUFFERS_FLAG_RESET);
     m_pDirectx11->GetImmediateContext()->SetIndexBuffer(m_indexBuffer, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-    m_pDirectx11->SetDefaultPipeline();
     DrawIndexedAttribs DrawAttrs;               // This is an indexed draw call
     DrawAttrs.IndexType = VT_UINT32;            // Index type
     DrawAttrs.NumIndices = m_vecIndices.size();
-    // Verify the state of vertex and index buffers as well as consistence of
-    // render targets and correctness of draw command arguments
     DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
     m_pDirectx11->GetImmediateContext()->DrawIndexed(DrawAttrs);
+    printf("draw mesh\n");
 }
 
 CMesh::~CMesh()

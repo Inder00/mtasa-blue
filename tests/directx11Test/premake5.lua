@@ -5,7 +5,8 @@ project "Client Directx11 Test"
 	targetdir ("../../bintests/Directx11")
 	pchheader "StdInc.h"
 	pchsource "StdInc.cpp"
-	
+
+	defines { "PLATFORM_WIN32" }
 	filter {}
 		includedirs {
 			"../../Shared/sdk",
