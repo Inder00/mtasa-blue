@@ -18,14 +18,14 @@ public:
     void loadResources(std::string path, std::string name);
 
 private:
-    bool                frameRenderingQueued(const FrameEvent& evt);
+    bool          frameRenderingQueued(const FrameEvent& evt);
     SceneManager* sceneManager;
     SceneNode*    mainCameraNode;
     SceneNode*    cubeNode;
     MeshPtr       cubeMeshV2;
 
     Quaternion sensorOrientation;
-    float            lastTime;
+    float      lastTime;
     HlmsPbs*   mHlmsPbs;
     HlmsUnlit* mHlmsUnlit;
 };

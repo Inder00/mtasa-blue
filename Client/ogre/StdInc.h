@@ -2,19 +2,22 @@
 #include <vector>
 #include <iostream>
 
-#include "Ogre.h"
+#include "OgreStableHeaders.h"
 #include "OgreRoot.h"
+#include "OgreMesh2.h"
+#include "OgreSubMesh2.h"
+#include "OgreMeshManager2.h"
+
+#include "Ogre.h"
 #include "Deprecated/OgreRenderTargetListener.h"
-#include "Compositor/OgreCompositorManager2.h"
 #include "Compositor/OgreCompositorWorkspace.h"
+
 
 #include "OgreHlmsPbs.h"
 #include "OgreHlmsUnlit.h"
 #include "OgreHlmsManager.h"
 #include "OgreHlmsPbsDatablock.h"
 #include "OgreHlmsUnlitDatablock.h"
-
-#include "OgreMesh2.h"
 #include "OgreMeshManager2.h"
 #include "OgreItem.h"
 #include "Deprecated/OgreRenderWindow.h"
