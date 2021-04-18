@@ -11,6 +11,7 @@
 
 #pragma once
 #include "CLuaDefs.h"
+#include "CSpatialDatabase.h"
 
 class CLuaElementDefs : public CLuaDefs
 {
@@ -45,7 +46,8 @@ public:
     LUA_DECLARE(getElementsByType);
     LUA_DECLARE(getElementInterior);
     LUA_DECLARE(getElementsWithinColShape);
-    LUA_DECLARE(getElementsWithinRange);
+    static CElementResult getElementsWithinRange(CVector pos, float radius, std::optional<std::string> type,
+        std::optional<unsigned short> interior, std::optional<unsigned short> dimension);
     LUA_DECLARE(getElementDimension);
     LUA_DECLARE(getElementZoneName);
     LUA_DECLARE(getElementColShape);
@@ -71,6 +73,9 @@ public:
     LUA_DECLARE(HasElementData);
     LUA_DECLARE(setElementData);
     LUA_DECLARE(removeElementData);
+    LUA_DECLARE(addElementDataSubscriber);
+    LUA_DECLARE(removeElementDataSubscriber);
+    LUA_DECLARE(hasElementDataSubscriber);
 
     // Attachement
     LUA_DECLARE(attachElements);

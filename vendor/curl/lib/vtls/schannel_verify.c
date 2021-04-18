@@ -7,11 +7,11 @@
  *
  * Copyright (C) 2012 - 2016, Marc Hoersken, <info@marc-hoersken.de>
  * Copyright (C) 2012, Mark Salisbury, <mark.salisbury@hp.com>
- * Copyright (C) 2012 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 2012 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at https://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -45,7 +45,7 @@
 #include "curl_multibyte.h"
 #include "curl_printf.h"
 #include "hostcheck.h"
-#include "system_win32.h"
+#include "version_win32.h"
 
 /* The last #include file should be: */
 #include "curl_memory.h"
@@ -57,7 +57,7 @@
 #define BEGIN_CERT "-----BEGIN CERTIFICATE-----"
 #define END_CERT "\n-----END CERTIFICATE-----"
 
-typedef struct {
+struct cert_chain_engine_config_win7 {
   DWORD cbSize;
   HCERTSTORE hRestrictedRoot;
   HCERTSTORE hRestrictedTrust;
@@ -70,7 +70,7 @@ typedef struct {
   DWORD CycleDetectionModulus;
   HCERTSTORE hExclusiveRoot;
   HCERTSTORE hExclusiveTrustedPeople;
-} CERT_CHAIN_ENGINE_CONFIG_WIN7, *PCERT_CHAIN_ENGINE_CONFIG_WIN7;
+};
 
 static int is_cr_or_lf(char c)
 {
@@ -79,10 +79,9 @@ static int is_cr_or_lf(char c)
 
 static CURLcode add_certs_to_store(HCERTSTORE trust_store,
                                    const char *ca_file,
-                                   struct connectdata *conn)
+                                   struct Curl_easy *data)
 {
   CURLcode result;
-  struct Curl_easy *data = conn->data;
   HANDLE ca_file_handle = INVALID_HANDLE_VALUE;
   LARGE_INTEGER file_size;
   char *ca_file_buffer = NULL;
@@ -94,7 +93,7 @@ static CURLcode add_certs_to_store(HCERTSTORE trust_store,
   int num_certs = 0;
   size_t END_CERT_LEN;
 
-  ca_file_tstr = Curl_convert_UTF8_to_tchar((char *)ca_file);
+  ca_file_tstr = curlx_convert_UTF8_to_tchar((char *)ca_file);
   if(!ca_file_tstr) {
     char buffer[STRERROR_LEN];
     failf(data,
@@ -288,9 +287,136 @@ cleanup:
     CloseHandle(ca_file_handle);
   }
   Curl_safefree(ca_file_buffer);
-  Curl_unicodefree(ca_file_tstr);
+  curlx_unicodefree(ca_file_tstr);
 
   return result;
+}
+
+/*
+ * Returns the number of characters necessary to populate all the host_names.
+ * If host_names is not NULL, populate it with all the host names. Each string
+ * in the host_names is null-terminated and the last string is double
+ * null-terminated. If no DNS names are found, a single null-terminated empty
+ * string is returned.
+ */
+static DWORD cert_get_name_string(struct Curl_easy *data,
+                                  CERT_CONTEXT *cert_context,
+                                  LPTSTR host_names,
+                                  DWORD length)
+{
+  DWORD actual_length = 0;
+  BOOL compute_content = FALSE;
+  CERT_INFO *cert_info = NULL;
+  CERT_EXTENSION *extension = NULL;
+  CRYPT_DECODE_PARA decode_para = {0, 0, 0};
+  CERT_ALT_NAME_INFO *alt_name_info = NULL;
+  DWORD alt_name_info_size = 0;
+  BOOL ret_val = FALSE;
+  LPTSTR current_pos = NULL;
+  DWORD i;
+
+  /* CERT_NAME_SEARCH_ALL_NAMES_FLAG is available from Windows 8 onwards. */
+  if(curlx_verify_windows_version(6, 2, PLATFORM_WINNT,
+                                  VERSION_GREATER_THAN_EQUAL)) {
+#ifdef CERT_NAME_SEARCH_ALL_NAMES_FLAG
+    /* CertGetNameString will provide the 8-bit character string without
+     * any decoding */
+    DWORD name_flags =
+      CERT_NAME_DISABLE_IE4_UTF8_FLAG | CERT_NAME_SEARCH_ALL_NAMES_FLAG;
+    actual_length = CertGetNameString(cert_context,
+                                      CERT_NAME_DNS_TYPE,
+                                      name_flags,
+                                      NULL,
+                                      host_names,
+                                      length);
+    return actual_length;
+#endif
+  }
+
+  compute_content = host_names != NULL && length != 0;
+
+  /* Initialize default return values. */
+  actual_length = 1;
+  if(compute_content) {
+    *host_names = '\0';
+  }
+
+  if(!cert_context) {
+    failf(data, "schannel: Null certificate context.");
+    return actual_length;
+  }
+
+  cert_info = cert_context->pCertInfo;
+  if(!cert_info) {
+    failf(data, "schannel: Null certificate info.");
+    return actual_length;
+  }
+
+  extension = CertFindExtension(szOID_SUBJECT_ALT_NAME2,
+                                cert_info->cExtension,
+                                cert_info->rgExtension);
+  if(!extension) {
+    failf(data, "schannel: CertFindExtension() returned no extension.");
+    return actual_length;
+  }
+
+  decode_para.cbSize = sizeof(CRYPT_DECODE_PARA);
+
+  ret_val =
+    CryptDecodeObjectEx(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+                        szOID_SUBJECT_ALT_NAME2,
+                        extension->Value.pbData,
+                        extension->Value.cbData,
+                        CRYPT_DECODE_ALLOC_FLAG | CRYPT_DECODE_NOCOPY_FLAG,
+                        &decode_para,
+                        &alt_name_info,
+                        &alt_name_info_size);
+  if(!ret_val) {
+    failf(data,
+          "schannel: CryptDecodeObjectEx() returned no alternate name "
+          "information.");
+    return actual_length;
+  }
+
+  current_pos = host_names;
+
+  /* Iterate over the alternate names and populate host_names. */
+  for(i = 0; i < alt_name_info->cAltEntry; i++) {
+    const CERT_ALT_NAME_ENTRY *entry = &alt_name_info->rgAltEntry[i];
+    wchar_t *dns_w = NULL;
+    size_t current_length = 0;
+
+    if(entry->dwAltNameChoice != CERT_ALT_NAME_DNS_NAME) {
+      continue;
+    }
+    if(entry->pwszDNSName == NULL) {
+      infof(data, "schannel: Empty DNS name.");
+      continue;
+    }
+    current_length = wcslen(entry->pwszDNSName) + 1;
+    if(!compute_content) {
+      actual_length += (DWORD)current_length;
+      continue;
+    }
+    /* Sanity check to prevent buffer overrun. */
+    if((actual_length + current_length) > length) {
+      failf(data, "schannel: Not enough memory to list all host names.");
+      break;
+    }
+    dns_w = entry->pwszDNSName;
+    /* pwszDNSName is in ia5 string format and hence doesn't contain any
+     * non-ascii characters. */
+    while(*dns_w != '\0') {
+      *current_pos++ = (char)(*dns_w++);
+    }
+    *current_pos++ = '\0';
+    actual_length += (DWORD)current_length;
+  }
+  if(compute_content) {
+    /* Last string has double null-terminator. */
+    *current_pos = '\0';
+  }
+  return actual_length;
 }
 
 static CURLcode verify_host(struct Curl_easy *data,
@@ -303,21 +429,8 @@ static CURLcode verify_host(struct Curl_easy *data,
   DWORD len = 0;
   DWORD actual_len = 0;
 
-  /* CertGetNameString will provide the 8-bit character string without
-   * any decoding */
-  DWORD name_flags = CERT_NAME_DISABLE_IE4_UTF8_FLAG;
-
-#ifdef CERT_NAME_SEARCH_ALL_NAMES_FLAG
-  name_flags |= CERT_NAME_SEARCH_ALL_NAMES_FLAG;
-#endif
-
   /* Determine the size of the string needed for the cert hostname */
-  len = CertGetNameString(pCertContextServer,
-                          CERT_NAME_DNS_TYPE,
-                          name_flags,
-                          NULL,
-                          NULL,
-                          0);
+  len = cert_get_name_string(data, pCertContextServer, NULL, 0);
   if(len == 0) {
     failf(data,
           "schannel: CertGetNameString() returned no "
@@ -334,12 +447,8 @@ static CURLcode verify_host(struct Curl_easy *data,
     result = CURLE_OUT_OF_MEMORY;
     goto cleanup;
   }
-  actual_len = CertGetNameString(pCertContextServer,
-                                 CERT_NAME_DNS_TYPE,
-                                 name_flags,
-                                 NULL,
-                                 (LPTSTR) cert_hostname_buff,
-                                 len);
+  actual_len = cert_get_name_string(
+    data, pCertContextServer, (LPTSTR)cert_hostname_buff, len);
 
   /* Sanity check */
   if(actual_len != len) {
@@ -366,8 +475,8 @@ static CURLcode verify_host(struct Curl_easy *data,
      * is acceptable since both values are assumed to use ASCII
      * (or some equivalent) encoding
      */
-    cert_hostname = Curl_convert_tchar_to_UTF8(
-        &cert_hostname_buff[cert_hostname_buff_index]);
+    cert_hostname = curlx_convert_tchar_to_UTF8(
+      &cert_hostname_buff[cert_hostname_buff_index]);
     if(!cert_hostname) {
       result = CURLE_OUT_OF_MEMORY;
     }
@@ -390,15 +499,15 @@ static CURLcode verify_host(struct Curl_easy *data,
               "against certificate name (%s)\n",
               conn_hostname, cert_hostname);
 
-        cert_hostname_len = _tcslen(
-            &cert_hostname_buff[cert_hostname_buff_index]);
+        cert_hostname_len =
+          _tcslen(&cert_hostname_buff[cert_hostname_buff_index]);
 
         /* Move on to next cert name */
         cert_hostname_buff_index += cert_hostname_len + 1;
 
         result = CURLE_PEER_FAILED_VERIFICATION;
       }
-      Curl_unicodefree(cert_hostname);
+      curlx_unicodefree(cert_hostname);
     }
   }
 
@@ -412,24 +521,28 @@ static CURLcode verify_host(struct Curl_easy *data,
     failf(data, "schannel: server certificate name verification failed");
 
 cleanup:
-  Curl_unicodefree(cert_hostname_buff);
+  Curl_safefree(cert_hostname_buff);
 
   return result;
 }
 
-CURLcode Curl_verify_certificate(struct connectdata *conn, int sockindex)
+CURLcode Curl_verify_certificate(struct Curl_easy *data,
+                                 struct connectdata *conn, int sockindex)
 {
   SECURITY_STATUS sspi_status;
-  struct Curl_easy *data = conn->data;
   struct ssl_connect_data *connssl = &conn->ssl[sockindex];
   CURLcode result = CURLE_OK;
   CERT_CONTEXT *pCertContextServer = NULL;
   const CERT_CHAIN_CONTEXT *pChainContext = NULL;
   HCERTCHAINENGINE cert_chain_engine = NULL;
   HCERTSTORE trust_store = NULL;
+#ifndef CURL_DISABLE_PROXY
   const char * const conn_hostname = SSL_IS_PROXY() ?
     conn->http_proxy.host.name :
     conn->host.name;
+#else
+  const char * const conn_hostname = conn->host.name;
+#endif
 
   sspi_status =
     s_pSecFn->QueryContextAttributes(&BACKEND->ctxt->ctxt_handle,
@@ -450,7 +563,7 @@ CURLcode Curl_verify_certificate(struct connectdata *conn, int sockindex)
      * trusted certificates. This is only supported on Windows 7+.
      */
 
-    if(Curl_verify_windows_version(6, 1, PLATFORM_WINNT, VERSION_LESS_THAN)) {
+    if(curlx_verify_windows_version(6, 1, PLATFORM_WINNT, VERSION_LESS_THAN)) {
       failf(data, "schannel: this version of Windows is too old to support "
             "certificate verification via CA bundle file.");
       result = CURLE_SSL_CACERT_BADFILE;
@@ -470,12 +583,12 @@ CURLcode Curl_verify_certificate(struct connectdata *conn, int sockindex)
       }
       else {
         result = add_certs_to_store(trust_store, SSL_CONN_CONFIG(CAfile),
-                                    conn);
+                                    data);
       }
     }
 
     if(result == CURLE_OK) {
-      CERT_CHAIN_ENGINE_CONFIG_WIN7 engine_config;
+      struct cert_chain_engine_config_win7 engine_config;
       BOOL create_engine_result;
 
       memset(&engine_config, 0, sizeof(engine_config));
@@ -526,6 +639,15 @@ CURLcode Curl_verify_certificate(struct connectdata *conn, int sockindex)
       CERT_SIMPLE_CHAIN *pSimpleChain = pChainContext->rgpChain[0];
       DWORD dwTrustErrorMask = ~(DWORD)(CERT_TRUST_IS_NOT_TIME_NESTED);
       dwTrustErrorMask &= pSimpleChain->TrustStatus.dwErrorStatus;
+
+      if(data->set.ssl.revoke_best_effort) {
+        /* Ignore errors when root certificates are missing the revocation
+         * list URL, or when the list could not be downloaded because the
+         * server is currently unreachable. */
+        dwTrustErrorMask &= ~(DWORD)(CERT_TRUST_REVOCATION_STATUS_UNKNOWN |
+          CERT_TRUST_IS_OFFLINE_REVOCATION);
+      }
+
       if(dwTrustErrorMask) {
         if(dwTrustErrorMask & CERT_TRUST_IS_REVOKED)
           failf(data, "schannel: CertGetCertificateChain trust error"
@@ -552,7 +674,7 @@ CURLcode Curl_verify_certificate(struct connectdata *conn, int sockindex)
 
   if(result == CURLE_OK) {
     if(SSL_CONN_CONFIG(verifyhost)) {
-      result = verify_host(conn->data, pCertContextServer, conn_hostname);
+      result = verify_host(data, pCertContextServer, conn_hostname);
     }
   }
 

@@ -8,8 +8,20 @@
  *  Multi Theft Auto is available from http://www.multitheftauto.com/
  *
  *****************************************************************************/
+#pragma once
 
+#include <cassert>
 #include <cmath>
+#include <deque>
+#include <list>
+#include <map>
+#include <set>
+
+#include "SString.h"
+#include "WString.h"
+#include "SharedUtil.Defines.h"
+#include "SharedUtil.Map.h"
+
 
 namespace SharedUtil
 {
@@ -46,6 +58,11 @@ namespace SharedUtil
     #ifdef _WINDOWS_
     int MessageBoxUTF8(HWND hWnd, SString lpText, SString lpCaption, UINT uType);
     #endif
+
+    //
+    // Return full path and filename of parent exe
+    //
+    SString GetParentProcessPathFilename(int pid);
 
     //
     // Get startup directory as saved in the registry by the launcher
@@ -175,25 +192,21 @@ namespace SharedUtil
     // CPU stats
     struct SThreadCPUTimes
     {
-        uint  uiProcessorNumber;
-        float fUserPercent;
-        float fKernelPercent;
-        float fTotalCPUPercent;
-        float fUserPercentAvg;
-        float fKernelPercentAvg;
-        float fTotalCPUPercentAvg;
+        uint  uiProcessorNumber = 0;
+        float fUserPercent = 0;
+        float fKernelPercent = 0;
+        float fTotalCPUPercent = 0;
+        float fUserPercentAvg = 0;
+        float fKernelPercentAvg = 0;
+        float fTotalCPUPercentAvg = 0;
     };
     struct SThreadCPUTimesStore : SThreadCPUTimes
     {
-        SThreadCPUTimesStore()
-        {
-            ZERO_POD_STRUCT(this);
-            fAvgTimeSeconds = 5;
-        }
-        uint64 ullPrevCPUMeasureTimeMs;
-        uint64 ullPrevUserTimeUs;
-        uint64 ullPrevKernelTimeUs;
-        float  fAvgTimeSeconds;
+        SThreadCPUTimesStore(){}
+        uint64 ullPrevCPUMeasureTimeMs = 0;
+        uint64 ullPrevUserTimeUs = 0;
+        uint64 ullPrevKernelTimeUs = 0;
+        float  fAvgTimeSeconds = 5.0f;
     };
     DWORD _GetCurrentProcessorNumber();
     void  GetThreadCPUTimes(uint64& outUserTime, uint64& outKernelTime);
@@ -786,6 +799,8 @@ namespace SharedUtil
         // list only
         typename LIST_TYPE ::iterator         begin() { return m_List.begin(); }
         typename LIST_TYPE ::iterator         end() { return m_List.end(); }
+        typename LIST_TYPE ::const_iterator   begin() const { return m_List.begin(); }
+        typename LIST_TYPE ::const_iterator   end() const { return m_List.end(); }
         typename LIST_TYPE ::reverse_iterator rbegin() { return m_List.rbegin(); }
         typename LIST_TYPE ::reverse_iterator rend() { return m_List.rend(); }
         uint                                  size() const { return m_List.size(); }

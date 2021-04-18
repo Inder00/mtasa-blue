@@ -46,9 +46,9 @@
 #include <net/CNet.h>
 #include <multiplayer/CMultiplayer.h>
 #include <game/CGame.h>
-#include <hwbrk.h>
 
 // Core-level includes
+#include "CQueryReceiver.h"
 #include "CrashHandler.h"
 #include "CCore.h"
 #include "CDebugView.h"

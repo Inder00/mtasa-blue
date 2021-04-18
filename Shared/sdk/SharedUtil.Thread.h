@@ -8,6 +8,9 @@
  *
  *****************************************************************************/
 
+#pragma once
+
+#include "SharedUtil.IntTypes.h"
 #include <sys/timeb.h>
 #include <pthread.h>
 

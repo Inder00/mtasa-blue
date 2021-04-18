@@ -271,6 +271,12 @@ ADD_ENUM(CAccountPassword::SHA256, "sha256")
 ADD_ENUM(CAccountPassword::MD5, "md5")
 IMPLEMENT_ENUM_END("account-password-type")
 
+IMPLEMENT_ENUM_CLASS_BEGIN(ESyncType)
+ADD_ENUM(ESyncType::BROADCAST, "broadcast")
+ADD_ENUM(ESyncType::LOCAL, "local")
+ADD_ENUM(ESyncType::SUBSCRIBE, "subscribe")
+IMPLEMENT_ENUM_CLASS_END("sync-mode")
+
 //
 // Get best guess at name of userdata type
 //
@@ -559,7 +565,7 @@ void CheckCanModifyOtherResources(CScriptArgReader& argStream, CResource* pThisR
     for (CResource* pResource : setNoPermissionResources)
     {
         ssResourceNames << pResource->GetName();
-        
+
         if (remainingElements > 1)
             ssResourceNames << ", ";
 

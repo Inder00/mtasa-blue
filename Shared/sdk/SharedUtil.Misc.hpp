@@ -9,10 +9,15 @@
  *
  *****************************************************************************/
 
+#include "SharedUtil.Misc.h"
+#include "SharedUtil.Time.h"
+#include <map>
 #include "UTF8.h"
 #include "UTF8Detect.hpp"
+#include "CDuplicateLineFilter.h"
 #ifdef WIN32
     #include <ctime>
+    #include <windows.h>
     #include <direct.h>
     #include <shellapi.h>
     #include <TlHelp32.h>
@@ -56,7 +61,7 @@ CDuplicateLineFilter<SReportLine> ms_ReportLineFilter;
 #define TROUBLE_URL1 "http://updatesa.multitheftauto.com/sa/trouble/?v=_VERSION_&id=_ID_&tr=_TROUBLE_"
 
 #ifndef MTA_DM_ASE_VERSION
-    #include <../../Client/version.h>
+    #include <version.h>
 #endif
 
 //
@@ -81,7 +86,7 @@ int SharedUtil::MessageBoxUTF8(HWND hWnd, SString lpText, SString lpCaption, UIN
 //
 // Return full path and filename of parent exe
 //
-SString GetParentProcessPathFilename(int pid)
+SString SharedUtil::GetParentProcessPathFilename(int pid)
 {
     HANDLE          hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     PROCESSENTRY32W pe = {sizeof(PROCESSENTRY32W)};
@@ -1248,7 +1253,7 @@ DWORD SharedUtil::GetMainThreadId()
         // Get the module information for the currently running process
         DWORD      processEntryPointAddress = 0;
         MODULEINFO moduleInfo = {};
-        
+
         if (GetModuleInformation(GetCurrentProcess(), GetModuleHandle(nullptr), &moduleInfo, sizeof(MODULEINFO)) != 0)
         {
             processEntryPointAddress = reinterpret_cast<DWORD>(moduleInfo.EntryPoint);

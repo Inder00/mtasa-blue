@@ -12,6 +12,7 @@
 #include <StdInc.h>
 #define ALLOC_STATS_MODULE_NAME "client"
 #include "SharedUtil.hpp"
+#include <core/CClientCommands.h>
 
 CCoreInterface*         g_pCore = NULL;
 CLocalizationInterface* g_pLocalization = NULL;
@@ -95,20 +96,20 @@ int CClient::ClientInitialize(const char* szArguments, CCoreInterface* pCore)
     g_pCore->GetCommands()->Add("showsync", "show sync data", COMMAND_ShowSyncData);
     // g_pCore->GetCommands ()->Add ( "dumpall",           "dump internals (comment)",                           COMMAND_DumpPlayers );
 #endif
-    #ifdef MTA_DEBUG
+#ifdef MTA_DEBUG
     g_pCore->GetCommands()->Add("foo", "debug command for devs", COMMAND_Foo);
-    #endif
+#endif
 
-    // Debug commands
-    #if defined (MTA_DEBUG) || defined(MTA_BETA)
+// Debug commands
+#if defined(MTA_DEBUG) || defined(MTA_BETA)
     g_pCore->GetCommands()->Add("showsyncing", "shows syncing information", COMMAND_ShowSyncing);
-    #endif
+#endif
 
 #ifdef MTA_WEPSYNCDBG
     pCore->GetCommands()->Add("showwepdata", "shows the given player weapon data (nick)", COMMAND_ShowWepdata);
 #endif
 
-    #if defined (MTA_DEBUG) || defined (MTA_DEBUG_COMMANDS)
+#if defined(MTA_DEBUG) || defined(MTA_DEBUG_COMMANDS)
     pCore->GetCommands()->Add("showwepdata", "shows the given player weapon data (nick)", COMMAND_ShowWepdata);
     pCore->GetCommands()->Add("showtasks", "shows the local player tasks (nick)", COMMAND_ShowTasks);
     pCore->GetCommands()->Add("showplayer", "shows extended player information (nick)", COMMAND_ShowPlayer);
@@ -127,7 +128,7 @@ int CClient::ClientInitialize(const char* szArguments, CCoreInterface* pCore)
     pCore->GetCommands()->Add("debug2", "debug function 2", COMMAND_Debug2);
     pCore->GetCommands()->Add("debug3", "debug function 3", COMMAND_Debug3);
     pCore->GetCommands()->Add("debug4", "debug function 4", COMMAND_Debug4);
-    #endif
+#endif
 
     // Got any arguments?
     if (szArguments && szArguments[0] != '\0')
@@ -176,7 +177,11 @@ int CClient::ClientInitialize(const char* szArguments, CCoreInterface* pCore)
                     // g_pClientGame->EnablePacketRecorder ( "log.rec" );
                     // g_pCore->GetConsole ()->Echo ( "Packetlogger is logging to log.rec" );
 
-                    g_pClientGame->StartGame(arguments.nickname.c_str(), arguments.password.c_str());
+                    SString secret = g_pCore->GetDiscordManager()->GetJoinSecret();
+
+                    // Start the game
+                    g_pClientGame->StartGame(arguments.nickname.c_str(), arguments.password.c_str(), CClientGame::SERVER_TYPE_NORMAL,
+                                             *secret);
                 }
                 else
                 {
@@ -247,8 +252,23 @@ bool CClient::WebsiteRequestResultHandler(const std::unordered_set<SString>& new
     return false;
 }
 
-bool CClient::ProcessCommand(const char* szCommandLine)
+bool CClient::ProcessCommand(const char* commandName, size_t commandNameLength, const void* userdata, size_t userdataSize)
 {
+    if (commandName == nullptr || commandNameLength == 0)
+        return false;
+
+    std::string_view command{commandName, commandNameLength};
+
+    if (command == mtasa::CMD_ALWAYS_SHOW_TRANSFERBOX)
+    {
+        if (userdata == nullptr || sizeof(bool) != userdataSize)
+            return false;
+
+        auto& alwaysShowTransferBox = *reinterpret_cast<const bool*>(userdata);
+        g_pClientGame->GetTransferBox()->SetAlwaysVisible(alwaysShowTransferBox);
+        return true;
+    }
+
     return false;
 }
 
@@ -262,8 +282,8 @@ void CClient::RestreamModel(unsigned short usModel)
 
 bool CClient::HandleException(CExceptionInformation* pExceptionInformation)
 {
-    #ifndef MTA_DEBUG
-    #ifndef MTA_ALLOW_DEBUG
+#ifndef MTA_DEBUG
+#ifndef MTA_ALLOW_DEBUG
     // Let the clientgame write its dump, then make the core terminate our process
     if (g_pClientGame && pExceptionInformation)
     {
@@ -271,14 +291,14 @@ bool CClient::HandleException(CExceptionInformation* pExceptionInformation)
     }
 
     return false;
-    #else
+#else
     // We want to be able to debug using the debugger in debug-mode
     return true;
-    #endif
-    #else
+#endif
+#else
     // We want to be able to debug using the debugger in debug-mode
     return true;
-    #endif
+#endif
 }
 
 void CClient::GetPlayerNames(std::vector<SString>& vPlayerNames)
@@ -294,6 +314,11 @@ void CClient::GetPlayerNames(std::vector<SString>& vPlayerNames)
             vPlayerNames.push_back(strPlayerName);
         }
     }
+}
+
+void CClient::TriggerDiscordJoin(SString strSecret)
+{
+    g_pClientGame->TriggerDiscordJoin(strSecret);
 }
 
 CClient::InitializeArguments CClient::ExtractInitializeArguments(const char* arguments)
