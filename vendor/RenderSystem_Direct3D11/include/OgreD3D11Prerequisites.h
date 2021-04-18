@@ -27,16 +27,29 @@ THE SOFTWARE.
 */
 #ifndef __D3D11PREREQUISITES_H__
 #define __D3D11PREREQUISITES_H__
-#ifndef OGRE_STATIC_LIB
-    #define OGRE_STATIC_LIB
-#endif
+
+
 
 #include "OgrePrerequisites.h"
-#if OGRE_PLATFORM != OGRE_PLATFORM_WINRT
-#include "WIN32/OgreMinGWSupport.h" // extra defines for MinGW to deal with DX SDK
-#endif
-#include "WIN32/OgreComPtr.h"       // too much resource leaks were caused without it by throwing constructors
+#include "OgreComPtr.h"       // too much resource leaks were caused without it by throwing constructors
 
+#include "OgreException.h"
+
+#ifdef OGRE_EXCEPT_EX
+#undef OGRE_EXCEPT_EX
+#endif
+
+#define OGRE_EXCEPT_EX(code, num, desc, src) throw Ogre::D3D11RenderingAPIException(num, desc, src, __FILE__, __LINE__)
+
+#define OGRE_CHECK_DX_ERROR(dxcall) \
+{ \
+    HRESULT hr = dxcall; \
+    if (FAILED(hr) || mDevice.isError()) \
+    { \
+        String desc = mDevice.getErrorDescription(hr); \
+        throw Ogre::D3D11RenderingAPIException(hr, desc, __FUNCTION__, __FILE__, __LINE__); \
+    } \
+}
 
 // some D3D commonly used macros
 #define SAFE_DELETE(p)       { if(p) { delete (p);     (p)=NULL; } }
@@ -49,14 +62,10 @@ THE SOFTWARE.
 
 #undef NOMINMAX
 #define NOMINMAX // required to stop windows.h screwing up std::min definition
-#if defined( _WIN32_WINNT_WIN8 ) || OGRE_COMPILER != OGRE_COMPILER_MSVC
-    #include <d3d11_1.h>
-    #if !defined(_WIN32_WINNT_WIN10)
-        #define DXGI_SWAP_EFFECT_FLIP_DISCARD ((DXGI_SWAP_EFFECT)(4)) // we want to use it on Win10 even if building with Win8 SDK
-    #endif
+#if OGRE_PLATFORM == OGRE_PLATFORM_WINRT || OGRE_D3D11_PROFILING
+#include <d3d11_1.h>
 #else
-    #include <d3d11.h>
-    #include "OgreD3D11LegacySDKEmulation.h"
+#include <d3d11.h>
 #endif
 
 #if __OGRE_WINRT_PHONE_80
@@ -91,44 +100,28 @@ namespace Ogre
 #endif
 
     // Predefine classes
-    class D3D11AsyncTextureTicket;
     class D3D11RenderSystem;
     class D3D11RenderWindowBase;
-    class D3D11CompatBufferInterface;
-    class D3D11Driver;
-    class D3D11DriverList;
-    class D3D11DynamicBuffer;
-    class D3D11VideoMode;
-    class D3D11VideoModeList;
-    class D3D11GpuProgramManager;
-    struct D3D11HlmsPso;
-    class D3D11HLSLProgramFactory;
-    class D3D11HLSLProgram;
-    class D3D11Device;
-    class D3D11StagingTexture;
-    class D3D11TextureGpu;
-    class D3D11VaoManager;
-    class D3D11VendorExtension;
-    struct D3D11VertexArrayObjectShared;
-    class D3D11Window;
-
-#ifdef OGRE_DEPRECATED_2_2
     class D3D11Texture;
     class D3D11TextureManager;
     class D3D11DepthBuffer;
-
-    typedef SharedPtr<D3D11Texture>     D3D11TexturePtr;
-#endif
-
-    namespace v1
-    {
-        class D3D11HardwareBuffer;
-        class D3D11HardwareBufferManager;
-        class D3D11HardwareIndexBuffer;
-        class D3D11HardwarePixelBuffer;
-    }
+    class D3D11Driver;
+    class D3D11DriverList;
+    class D3D11VideoMode;
+    class D3D11VideoModeList;
+    class GpuProgramManager;
+    class D3D11HardwareBufferManager;
+    class D3D11HardwareIndexBuffer;
+    class D3D11HLSLProgramFactory;
+    class D3D11HLSLProgram;
+    class D3D11VertexDeclaration;
+    class D3D11Device;
+    class D3D11HardwareBuffer;
+    class D3D11HardwarePixelBuffer;
+    class D3D11RenderTarget;
 
     typedef SharedPtr<D3D11HLSLProgram> D3D11HLSLProgramPtr;
+    typedef SharedPtr<D3D11Texture>     D3D11TexturePtr;
 
     //-------------------------------------------
     // Windows setttings
@@ -146,5 +139,22 @@ namespace Ogre
 #else
 #   define _OgreD3D11Export
 #endif  // OGRE_WIN32
+
+    class _OgreD3D11Export D3D11RenderingAPIException : public RenderingAPIException
+    {
+        int hresult;
+    public:
+        D3D11RenderingAPIException(int hr, const String& inDescription, const String& inSource, const char* inFile, long inLine)
+            : RenderingAPIException(hr, inDescription, inSource, inFile, inLine), hresult(hr) {}
+
+        int getHResult() const { return hresult; }
+
+        const String& getFullDescription(void) const {
+            StringStream ss;
+            ss << RenderingAPIException::getFullDescription() << " HRESULT=0x" << std::hex << hresult;
+            fullDesc = ss.str();
+            return fullDesc;
+        }
+    };
 }
 #endif

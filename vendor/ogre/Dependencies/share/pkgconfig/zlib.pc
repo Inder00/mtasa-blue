@@ -1,0 +1,13 @@
+prefix=D:/MTA SA/OGRE/repo/build/Dependencies
+exec_prefix=D:/MTA SA/OGRE/repo/build/Dependencies
+libdir=D:/MTA SA/OGRE/repo/build/Dependencies/lib
+sharedlibdir=D:/MTA SA/OGRE/repo/build/Dependencies/lib
+includedir=D:/MTA SA/OGRE/repo/build/Dependencies/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.2.11
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}

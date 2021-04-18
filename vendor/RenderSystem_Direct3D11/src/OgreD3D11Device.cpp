@@ -48,8 +48,8 @@ namespace Ogre
         // Clear state
         if (mImmediateContext)
         {
-            mImmediateContext->Flush();
             mImmediateContext->ClearState();
+            mImmediateContext->Flush();
         }
 #if OGRE_D3D11_PROFILING
         mPerf.Reset();
@@ -57,74 +57,42 @@ namespace Ogre
         mInfoQueue.Reset();
         mClassLinkage.Reset();
         mImmediateContext.Reset();
-        mImmediateContext1.Reset();
-
-        /*
-        //Uncomment this code to get detailed information of resource leaks.
-        if( mD3D11Device )
-        {
-            ID3D11Debug *d3dDebug = 0;
-            mD3D11Device->QueryInterface( __uuidof(ID3D11Debug), reinterpret_cast<void**>(&d3dDebug) );
-            if( d3dDebug )
-            {
-                d3dDebug->ReportLiveDeviceObjects( D3D11_RLDO_DETAIL );
-                d3dDebug->Release();
-            }
-        }*/
-
         mD3D11Device.Reset();
-        mD3D11Device1.Reset();
         mDXGIFactory.Reset();
-        mDXGIFactory2.Reset();
         mDriverVersion.QuadPart = 0;
     }
     //---------------------------------------------------------------------
-    void D3D11Device::TransferOwnership( ComPtr<ID3D11Device>& d3d11device )
+    void D3D11Device::TransferOwnership(ID3D11DeviceN* d3d11device)
     {
-        assert( mD3D11Device.Get() != d3d11device.Get() );
-        assert( mD3D11Device1.Get() != d3d11device.Get() );
+        assert(mD3D11Device.Get() != d3d11device);
         ReleaseAll();
 
         if (d3d11device)
         {
             HRESULT hr = S_OK;
 
-            d3d11device.As(&mD3D11Device);
-#if defined(_WIN32_WINNT_WIN8)
-            d3d11device.As(&mD3D11Device1);
-#endif
+            mD3D11Device.Attach(d3d11device);
 
             // get DXGI factory from device
             ComPtr<IDXGIDeviceN> pDXGIDevice;
             ComPtr<IDXGIAdapterN> pDXGIAdapter;
-            if( SUCCEEDED( mD3D11Device.As(&pDXGIDevice) )
-                && SUCCEEDED( pDXGIDevice->GetParent( __uuidof(IDXGIAdapterN),
-                                                      (void **)pDXGIAdapter.GetAddressOf() ) ) )
+            if(SUCCEEDED(mD3D11Device.As(&pDXGIDevice))
+            && SUCCEEDED(pDXGIDevice->GetParent(__uuidof(IDXGIAdapterN), (void **)pDXGIAdapter.GetAddressOf())))
             {
-                pDXGIAdapter->GetParent( __uuidof(IDXGIFactoryN),
-                                         (void **)mDXGIFactory.ReleaseAndGetAddressOf() );
+                pDXGIAdapter->GetParent(__uuidof(IDXGIFactoryN), (void **)mDXGIFactory.ReleaseAndGetAddressOf());
 
-                // We intentionally check for ID3D10Device support instead of ID3D11Device as
-                // CheckInterfaceSupport() is not supported for later.
-                // We hope, that there would be one UMD for both D3D10 and D3D11, or two different
-                // but with the same version number, or with different but correlated version numbers,
-                // so that blacklisting could be done with high confidence level.
-                if( FAILED( pDXGIAdapter->CheckInterfaceSupport(
-                                IID_ID3D10Device, // intentionally D3D10, not D3D11
-                                &mDriverVersion ) ) )
-                {
+                // We intentionally check for ID3D10Device support instead of ID3D11Device as CheckInterfaceSupport() is not supported for later.
+                // We hope, that there would be one UMD for both D3D10 and D3D11, or two different but with the same version number,
+                // or with different but correlated version numbers, so that blacklisting could be done with high confidence level.
+                if(FAILED(pDXGIAdapter->CheckInterfaceSupport(IID_ID3D10Device /* intentionally D3D10, not D3D11 */, &mDriverVersion)))
                     mDriverVersion.QuadPart = 0;
-                }
             }
 
-
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-            mD3D11Device->GetImmediateContext( mImmediateContext.ReleaseAndGetAddressOf() );
+            mD3D11Device->GetImmediateContext(mImmediateContext.ReleaseAndGetAddressOf());
 #elif OGRE_PLATFORM == OGRE_PLATFORM_WINRT
-            mD3D11Device->GetImmediateContext1( mImmediateContext.ReleaseAndGetAddressOf() );
+            mD3D11Device->GetImmediateContext1(mImmediateContext.ReleaseAndGetAddressOf());
 #endif
-            if( mD3D11Device1 )
-                mD3D11Device1->GetImmediateContext1( mImmediateContext1.ReleaseAndGetAddressOf() );
 
 #if OGRE_D3D11_PROFILING
             hr = mImmediateContext.As(&mPerf);
@@ -141,19 +109,16 @@ namespace Ogre
 
                 D3D11_INFO_QUEUE_FILTER filter;
                 ZeroMemory(&filter, sizeof(D3D11_INFO_QUEUE_FILTER));
-                vector<D3D11_MESSAGE_SEVERITY>::type severityList;
+                std::vector<D3D11_MESSAGE_SEVERITY> severityList;
 
                 switch(mExceptionsErrorLevel)
                 {
                 case D3D_NO_EXCEPTION:
                     severityList.push_back(D3D11_MESSAGE_SEVERITY_CORRUPTION);
-                    // fallthrough
                 case D3D_CORRUPTION:
                     severityList.push_back(D3D11_MESSAGE_SEVERITY_ERROR);
-                    // fallthrough
                 case D3D_ERROR:
                     severityList.push_back(D3D11_MESSAGE_SEVERITY_WARNING);
-                    // fallthrough
                 case D3D_WARNING:
                 case D3D_INFO:
                     severityList.push_back(D3D11_MESSAGE_SEVERITY_INFO);
@@ -161,9 +126,10 @@ namespace Ogre
                     break;
                 }
 
+
                 if (severityList.size() > 0)
                 {
-                    filter.DenyList.NumSeverities = static_cast<UINT>( severityList.size() );
+                    filter.DenyList.NumSeverities = severityList.size();
                     filter.DenyList.pSeverityList = &severityList[0];
                 }
 
@@ -209,25 +175,8 @@ namespace Ogre
         case E_INVALIDARG:
             res.append("invalid parameters were passed.\n");
             break;
-        case DXGI_ERROR_DEVICE_REMOVED:
-        {
-            HRESULT deviceRemovedReason = mD3D11Device->GetDeviceRemovedReason();
-            char tmp[64];
-            sprintf(tmp, "deviceRemovedReason = 0x%08X\n", (unsigned)deviceRemovedReason);
-            res.append(tmp);
-        }
-            //No 'break', fallthrough to the next switch statement
-#if OGRE_COMPILER == OGRE_COMPILER_GNUC || OGRE_COMPILER == OGRE_COMPILER_CLANG
-            __attribute__ ((fallthrough));
-#elif __cplusplus >= 201703L
-            [[fallthrough]];
-#endif
         default:
-            {
-            char tmp[64];
-            sprintf(tmp, "hr = 0x%08X\n", (unsigned)lastResult);
-            res.append(tmp);
-            }
+            res = StringUtil::format("hr = 0x%08X\n", lastResult);
         }
 
         if (mInfoQueue)
@@ -238,14 +187,11 @@ namespace Ogre
                 // Get the size of the message
                 SIZE_T messageLength = 0;
                 mInfoQueue->GetMessage(i, NULL, &messageLength);
-                if( messageLength > 0u )
-                {
-                    // Allocate space and get the message
-                    D3D11_MESSAGE * pMessage = (D3D11_MESSAGE*)malloc(messageLength);
-                    mInfoQueue->GetMessage(i, pMessage, &messageLength);
-                    res = res + pMessage->pDescription + "\n";
-                    free(pMessage);
-                }
+                // Allocate space and get the message
+                D3D11_MESSAGE * pMessage = (D3D11_MESSAGE*)malloc(messageLength);
+                mInfoQueue->GetMessage(i, pMessage, &messageLength);
+                res = res + pMessage->pDescription + "\n";
+                free(pMessage);
             }
         }
 
@@ -268,48 +214,45 @@ namespace Ogre
                 // Get the size of the message
                 SIZE_T messageLength = 0;
                 mInfoQueue->GetMessage(i, NULL, &messageLength);
-                if( messageLength > 0u )
+                // Allocate space and get the message
+                D3D11_MESSAGE * pMessage = (D3D11_MESSAGE*)malloc(messageLength);
+                mInfoQueue->GetMessage(i, pMessage, &messageLength);
+
+                bool res = false;
+                switch(pMessage->Severity)
                 {
-                    // Allocate space and get the message
-                    D3D11_MESSAGE * pMessage = (D3D11_MESSAGE*)malloc(messageLength);
-                    mInfoQueue->GetMessage(i, pMessage, &messageLength);
-
-                    bool res = false;
-                    switch(pMessage->Severity)
+                case D3D11_MESSAGE_SEVERITY_CORRUPTION:
+                    if (D3D_CORRUPTION == mExceptionsErrorLevel)
                     {
-                    case D3D11_MESSAGE_SEVERITY_CORRUPTION:
-                        if (D3D_CORRUPTION == mExceptionsErrorLevel)
-                        {
-                            res = true;
-                        }
-                        break;
-                    case D3D11_MESSAGE_SEVERITY_ERROR:
-                        switch(mExceptionsErrorLevel)
-                        {
-                        case D3D_INFO:
-                        case D3D_WARNING:
-                        case D3D_ERROR:
-                            res = true;
-                        }
-                        break;
-                    case D3D11_MESSAGE_SEVERITY_WARNING:
-                        switch(mExceptionsErrorLevel)
-                        {
-                        case D3D_INFO:
-                        case D3D_WARNING:
-                            res = true;
-                        }
-                        break;
+                        res = true;
                     }
-
-                    free(pMessage);
-
-                    if (res)
+                    break;
+                case D3D11_MESSAGE_SEVERITY_ERROR:
+                    switch(mExceptionsErrorLevel)
                     {
-                        // we don't need to loop anymore...
-                        return true;
+                    case D3D_INFO:
+                    case D3D_WARNING:
+                    case D3D_ERROR:
+                        res = true;
                     }
+                    break;
+                case D3D11_MESSAGE_SEVERITY_WARNING:
+                    switch(mExceptionsErrorLevel)
+                    {
+                    case D3D_INFO:
+                    case D3D_WARNING:
+                        res = true;
+                    }
+                    break;
                 }
+
+                free(pMessage);
+                if (res)
+                {
+                    // we don't need to loop anymore...
+                    return true;
+                }
+
             }
 
             clearStoredErrorMessages();
@@ -334,7 +277,7 @@ namespace Ogre
         }
     }
     //---------------------------------------------------------------------
-    D3D11Device::eExceptionsErrorLevel D3D11Device::getExceptionsErrorLevel()
+    const D3D11Device::eExceptionsErrorLevel D3D11Device::getExceptionsErrorLevel()
     {
         return mExceptionsErrorLevel;
     }
@@ -346,7 +289,7 @@ namespace Ogre
     //---------------------------------------------------------------------
     void D3D11Device::setExceptionsErrorLevel( const Ogre::String& exceptionsErrorLevel )
     {
-        eExceptionsErrorLevel onlyIfDebugMode = OGRE_DEBUG_MODE >= OGRE_DEBUG_HIGH ? D3D11Device::D3D_ERROR : D3D11Device::D3D_NO_EXCEPTION;
+        eExceptionsErrorLevel onlyIfDebugMode = OGRE_DEBUG_MODE ? D3D11Device::D3D_ERROR : D3D11Device::D3D_NO_EXCEPTION;
         if("No information queue exceptions" == exceptionsErrorLevel)       setExceptionsErrorLevel(onlyIfDebugMode);
         else if("Corruption" == exceptionsErrorLevel)                       setExceptionsErrorLevel(D3D11Device::D3D_CORRUPTION);
         else if("Error" == exceptionsErrorLevel)                            setExceptionsErrorLevel(D3D11Device::D3D_ERROR);
@@ -363,9 +306,6 @@ namespace Ogre
         if(value == "10.0") return D3D_FEATURE_LEVEL_10_0;
         if(value == "10.1") return D3D_FEATURE_LEVEL_10_1;
         if(value == "11.0") return D3D_FEATURE_LEVEL_11_0;
-#if defined(_WIN32_WINNT_WIN8)
-        if(value == "11.1") return D3D_FEATURE_LEVEL_11_1;
-#endif
         return fallback;
     }
     //---------------------------------------------------------------------

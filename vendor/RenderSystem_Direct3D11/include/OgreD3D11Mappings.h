@@ -30,20 +30,16 @@ THE SOFTWARE.
 
 #include "OgreD3D11Prerequisites.h"
 #include "OgreTextureUnitState.h"
-#include "OgreHlmsSamplerblock.h"
 #include "OgreRenderSystem.h"
 #include "OgreHardwareIndexBuffer.h"
-#include "OgreRoot.h"
-#include "OgrePixelFormatGpu.h"
-#include "OgreTextureGpu.h"
 
 namespace Ogre 
 {
     class _OgreD3D11Export D3D11Mappings
 	{
 	public:
-        /// return a D3D11 equivalent for a Ogre TextureAddressingMode value
-        static D3D11_TEXTURE_ADDRESS_MODE get(TextureAddressingMode tam);
+		/// return a D3D11 equivalent for a Ogre TextureAddressingMode value
+		static D3D11_TEXTURE_ADDRESS_MODE get(TextureAddressingMode tam);
 		/// return a D3D11 equivalent for a Ogre SceneBlendFactor value
 		static D3D11_BLEND get(SceneBlendFactor sbf, bool forAlpha);
 		/// return a D3D11 equivalent for a Ogre SceneBlendOperation value
@@ -59,9 +55,9 @@ namespace Ogre
 		/// return a D3D11 state type for Ogre FilterOption min/mag/mip values
 		static D3D11_FILTER get(const FilterOptions minification, const FilterOptions magnification, const FilterOptions mips, const bool comparison = false);
 		/// Get lock options
-        static D3D11_MAP get(v1::HardwareBuffer::LockOptions options, v1::HardwareBuffer::Usage usage);
+		static D3D11_MAP get(HardwareBuffer::LockOptions options, HardwareBuffer::Usage usage);
 		/// Get index type
-        static DXGI_FORMAT getFormat(v1::HardwareIndexBuffer::IndexType itype);
+		static DXGI_FORMAT getFormat(HardwareIndexBuffer::IndexType itype);
 		/// Get vertex data type
 		static DXGI_FORMAT get(VertexElementType vType);
 		/// Get vertex semantic
@@ -70,16 +66,33 @@ namespace Ogre
 		/// Get dx11 color
 		static void get(const ColourValue& inColour, float * outColour );
 
-        static D3D11_USAGE _getUsage(v1::HardwareBuffer::Usage usage);
-        static UINT _getAccessFlags(v1::HardwareBuffer::Usage usage);
-        static bool _isDynamic(v1::HardwareBuffer::Usage usage);
+		/// utility method, generates Ogre PixelBox using usual parameters and dataPtr/rowPitch/slicePitch from D3D11_MAPPED_SUBRESOURCE
+		static PixelBox getPixelBoxWithMapping(D3D11_BOX extents, DXGI_FORMAT pixelFormat, const D3D11_MAPPED_SUBRESOURCE& mapping);
+		/// utility method, applies dataPtr/rowPitch/slicePitch from D3D11_MAPPED_SUBRESOURCE to Ogre PixelBox
+		static void setPixelBoxMapping(PixelBox& box, const D3D11_MAPPED_SUBRESOURCE& mapping);
 
-        static UINT get( MsaaPatterns::MsaaPatterns msaaPatterns );
-        static D3D11_SRV_DIMENSION get( TextureTypes::TextureTypes type,
-                                        bool cubemapsAs2DArrays, bool forMsaa );
-        static DXGI_FORMAT get( PixelFormatGpu pf );
-        static DXGI_FORMAT getForSrv( PixelFormatGpu pf );
-        static DXGI_FORMAT getFamily( PixelFormatGpu pf );
+		/// utility method, convert D3D11 pixel format to Ogre pixel format
+		static PixelFormat _getPF(DXGI_FORMAT d3dPF);
+		/// utility method, convert Ogre pixel format to D3D11 pixel format
+		static DXGI_FORMAT _getPF(PixelFormat ogrePF);
+		/// utility method, optionally maps plain format to _SRGB counterparts
+		static DXGI_FORMAT _getGammaFormat(DXGI_FORMAT format, bool appendSRGB);
+		static bool _isBinaryCompressedFormat(DXGI_FORMAT d3dPF);
+
+		static D3D11_USAGE _getUsage(HardwareBuffer::Usage usage);
+		static D3D11_USAGE _getUsage(TextureUsage usage) { return _getUsage(static_cast<HardwareBuffer::Usage>(usage)); }
+		static UINT _getAccessFlags(HardwareBuffer::Usage usage);
+		static UINT _getAccessFlags(TextureUsage usage) { return _getAccessFlags(static_cast<HardwareBuffer::Usage>(usage)); }
+		static bool _isDynamic(HardwareBuffer::Usage usage);
+		static bool _isDynamic(TextureUsage usage) { return _isDynamic(static_cast<HardwareBuffer::Usage>(usage)); }
+
+		/// utility method, find closest Ogre pixel format that D3D11 can support
+		static PixelFormat _getClosestSupportedPF(PixelFormat ogrePF);
+
+		static TextureType _getTexType(D3D11_SRV_DIMENSION type);
+
+		static UINT _getTextureBindFlags(DXGI_FORMAT format, TextureUsage usage);
+		static UINT _getTextureMiscFlags(UINT bindflags, TextureType textype, TextureUsage usage);
 	};
 }
 #endif

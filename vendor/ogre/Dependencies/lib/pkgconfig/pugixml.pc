@@ -1,0 +1,11 @@
+prefix=D:/MTA SA/OGRE/repo/build/Dependencies
+exec_prefix=${prefix}
+includedir=D:/MTA SA/OGRE/repo/build/Dependencies/include
+libdir=D:/MTA SA/OGRE/repo/build/Dependencies/lib
+
+Name: pugixml
+Description: Light-weight, simple and fast XML parser for C++ with XPath support.
+URL: https://pugixml.org/
+Version: 1.10
+Cflags: -I${includedir}
+Libs: -L${libdir} -lpugixml

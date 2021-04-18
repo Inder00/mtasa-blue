@@ -1,0 +1,11 @@
+prefix=D:/MTA SA/OGRE/repo/build/Dependencies
+exec_prefix=D:/MTA SA/OGRE/repo/build/Dependencies/
+libdir=D:/MTA SA/OGRE/repo/build/Dependencies/lib
+includedir=D:/MTA SA/OGRE/repo/build/Dependencies/../include/include
+
+Name: Assimp
+Description: Import various well-known 3D model formats in an uniform manner.
+Version: 5.0.0
+Libs: -L${libdir} -lassimp
+Libs.private:  -lz
+Cflags: -I${includedir}

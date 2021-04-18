@@ -26,78 +26,86 @@ THE SOFTWARE.
 -----------------------------------------------------------------------------
 */
 #include "OgreD3D11HardwareBufferManager.h"
-#include "OgreD3D11HardwareVertexBuffer.h"
-#include "OgreD3D11HardwareIndexBuffer.h"
-#include "OgreD3D11HardwareUniformBuffer.h"
+#include "OgreD3D11HardwareBuffer.h"
+#include "OgreD3D11VertexDeclaration.h"
+#include "OgreD3D11RenderToVertexBuffer.h"
 #include "OgreLogManager.h"
 #include "OgreStringConverter.h"
 #include "OgreD3D11Device.h"
 
 namespace Ogre {
-namespace v1 {
 	//-----------------------------------------------------------------------
-	D3D11HardwareBufferManagerBase::D3D11HardwareBufferManagerBase(D3D11Device & device)
+	D3D11HardwareBufferManager::D3D11HardwareBufferManager(D3D11Device & device)
 		: mlpD3DDevice(device)
 	{
 	}
 	//-----------------------------------------------------------------------
-	D3D11HardwareBufferManagerBase::~D3D11HardwareBufferManagerBase()
+	D3D11HardwareBufferManager::~D3D11HardwareBufferManager()
 	{
 		destroyAllDeclarations();
 		destroyAllBindings();
 	}
 	//-----------------------------------------------------------------------
 	HardwareVertexBufferSharedPtr
-		D3D11HardwareBufferManagerBase::
+		D3D11HardwareBufferManager::
 		createVertexBuffer(size_t vertexSize, size_t numVerts, HardwareBuffer::Usage usage,
 		bool useShadowBuffer)
 	{
 		assert(numVerts > 0);
-		D3D11HardwareVertexBuffer* vbuf = new D3D11HardwareVertexBuffer(
-			this, vertexSize, numVerts, usage, mlpD3DDevice, false, useShadowBuffer, false);
-		{
-			OGRE_LOCK_MUTEX(mVertexBuffersMutex);
-			mVertexBuffers.insert(vbuf);
-		}
-		return HardwareVertexBufferSharedPtr(vbuf);
+		auto impl = new D3D11HardwareBuffer(D3D11HardwareBuffer::VERTEX_BUFFER, vertexSize * numVerts, usage, mlpD3DDevice, useShadowBuffer, false);
+        auto buf = std::make_shared<HardwareVertexBuffer>(this, vertexSize, numVerts, impl);
+        {
+            OGRE_LOCK_MUTEX(mVertexBuffersMutex);
+            mVertexBuffers.insert(buf.get());
+        }
+        return buf;
 	}
 	//-----------------------------------------------------------------------
 	HardwareVertexBufferSharedPtr
-		D3D11HardwareBufferManagerBase::
+		D3D11HardwareBufferManager::
 		createStreamOutputVertexBuffer(size_t vertexSize, size_t numVerts, HardwareBuffer::Usage usage,
 		bool useShadowBuffer)
 	{
 		assert(numVerts > 0);
-		D3D11HardwareVertexBuffer* vbuf = new D3D11HardwareVertexBuffer(
-			this, vertexSize, numVerts, usage, mlpD3DDevice, false, useShadowBuffer, true);
-		{
-			OGRE_LOCK_MUTEX(mVertexBuffersMutex);
-			mVertexBuffers.insert(vbuf);
-		}
-		return HardwareVertexBufferSharedPtr(vbuf);
+
+		auto impl = new D3D11HardwareBuffer(D3D11HardwareBuffer::VERTEX_BUFFER, vertexSize * numVerts, usage, mlpD3DDevice, useShadowBuffer, true);
+        auto buf = std::make_shared<HardwareVertexBuffer>(this, vertexSize, numVerts, impl);
+        {
+            OGRE_LOCK_MUTEX(mVertexBuffersMutex);
+            mVertexBuffers.insert(buf.get());
+        }
+        return buf;
 	}
 	//-----------------------------------------------------------------------
 	HardwareIndexBufferSharedPtr
-		D3D11HardwareBufferManagerBase::
+		D3D11HardwareBufferManager::
 		createIndexBuffer(HardwareIndexBuffer::IndexType itype, size_t numIndexes,
 		HardwareBuffer::Usage usage, bool useShadowBuffer)
 	{
 		assert(numIndexes > 0);
-		D3D11HardwareIndexBuffer* idx = new D3D11HardwareIndexBuffer(
-			this, itype, numIndexes, usage, mlpD3DDevice, false, useShadowBuffer);
-		{
-			OGRE_LOCK_MUTEX(mIndexBuffersMutex);
-			mIndexBuffers.insert(idx);
-		}
-		return HardwareIndexBufferSharedPtr(idx);
 
-    }
+        auto indexSize = HardwareIndexBuffer::indexSize(itype);
+        auto impl = new D3D11HardwareBuffer(D3D11HardwareBuffer::INDEX_BUFFER, indexSize * numIndexes, usage, mlpD3DDevice, useShadowBuffer, false);
+
+        auto buf = std::make_shared<HardwareIndexBuffer>(this, itype, numIndexes, impl);
+        {
+            OGRE_LOCK_MUTEX(mIndexBuffersMutex);
+            mIndexBuffers.insert(buf.get());
+        }
+        return buf;
+
+	}
+	//-----------------------------------------------------------------------
+	RenderToVertexBufferSharedPtr
+		D3D11HardwareBufferManager::createRenderToVertexBuffer()
+	{
+		return RenderToVertexBufferSharedPtr(new D3D11RenderToVertexBuffer(mlpD3DDevice, this));
+	}
 	//-----------------------------------------------------------------------
 	HardwareUniformBufferSharedPtr
-		D3D11HardwareBufferManagerBase::createUniformBuffer(size_t sizeBytes, HardwareBuffer::Usage usage, bool useShadowBuffer, const String& name)
+		D3D11HardwareBufferManager::createUniformBuffer(size_t sizeBytes, HardwareBuffer::Usage usage, bool useShadowBuffer, const String& name)
 	{
 		assert(sizeBytes > 0);
-		D3D11HardwareUniformBuffer* uni = 0;
 		/*
 		if (name != "")
 		{
@@ -120,23 +128,20 @@ namespace v1 {
 		}
 		else
 		{*/
-			uni = new D3D11HardwareUniformBuffer(this, sizeBytes, usage, useShadowBuffer, name, mlpD3DDevice);
-			{
-				OGRE_LOCK_MUTEX(mUniformBuffersMutex);
-				mUniformBuffers.insert(uni);
-			}
+		auto impl = new D3D11HardwareBuffer(D3D11HardwareBuffer::CONSTANT_BUFFER,
+										sizeBytes, usage, mlpD3DDevice, useShadowBuffer, false);
+		auto buf = std::make_shared<HardwareUniformBuffer>(this, impl);
+		{
+			OGRE_LOCK_MUTEX(mUniformBuffersMutex);
+			mUniformBuffers.insert(buf.get());
+		}
 		//}
 
-		return HardwareUniformBufferSharedPtr(uni);
+		return buf;
 	}
 	//-----------------------------------------------------------------------
-	HardwareCounterBufferSharedPtr
-		D3D11HardwareBufferManagerBase::createCounterBuffer(size_t sizeBytes,
-		HardwareBuffer::Usage usage, bool useShadowBuffer, const String& name)
+	VertexDeclaration* D3D11HardwareBufferManager::createVertexDeclarationImpl(void)
 	{
-		OGRE_EXCEPT(Exception::ERR_RENDERINGAPI_ERROR,
-			"*** not implemented ***",
-			"D3D11HardwareBufferManagerBase::createCounterBuffer");
-    }
-}
+		return new D3D11VertexDeclaration(mlpD3DDevice);
+	}
 }

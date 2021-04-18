@@ -32,11 +32,10 @@ THE SOFTWARE.
 #include "OgreD3D11DeviceResource.h"
 #include "OgreHighLevelGpuProgram.h"
 #include "OgreHardwareUniformBuffer.h"
-#include "Vao/OgreVertexBufferPacked.h"
 
 
 namespace Ogre {
-    typedef vector<byte>::type MicroCode;
+    typedef std::vector<byte> MicroCode;
 
     /** Specialization of HighLevelGpuProgram to provide support for D3D11 
     High-Level Shader Language (HLSL).
@@ -65,13 +64,6 @@ namespace Ogre {
             String doGet(const void* target) const;
             void doSet(void* target, const String& val);
         };
-        /// Command object for setting macro defines
-        class CmdPreprocessorDefines : public ParamCommand
-        {
-        public:
-            String doGet(const void* target) const;
-            void doSet(void* target, const String& val);
-        };
         /// Command object for setting matrix packing in column-major order
         class CmdColumnMajorMatrices : public ParamCommand
         {
@@ -89,37 +81,16 @@ namespace Ogre {
 
     protected:
 
-        struct InputLayoutVaoBind
-        {
-            uint32              vaoName;
-            ID3D11InputLayout   *inputLayout;
-
-            InputLayoutVaoBind() {}
-
-            InputLayoutVaoBind( uint32 _vaoName, ID3D11InputLayout *_inputLayout ) :
-                vaoName( _vaoName ),
-                inputLayout( _inputLayout )
-            {
-            }
-
-            bool operator < ( const InputLayoutVaoBind &_r ) const
-            {
-                return this->vaoName < _r.vaoName;
-            }
-        };
-
         static CmdEntryPoint msCmdEntryPoint;
         static CmdTarget msCmdTarget;
-        static CmdPreprocessorDefines msCmdPreprocessorDefines;
         static CmdColumnMajorMatrices msCmdColumnMajorMatrices;
         static CmdEnableBackwardsCompatibility msCmdEnableBackwardsCompatibility;
         
         void notifyDeviceLost(D3D11Device* device);
         void notifyDeviceRestored(D3D11Device* device);
 
-        /** Internal method for creating an appropriate low-level program from this
-        high-level program, must be implemented by subclasses. */
-        void createLowLevelImpl(void);
+        /// noop
+        void createLowLevelImpl(void) {}
         /// Internal unload implementation, must be implemented by subclasses
         void unloadHighLevelImpl(void);
         /// Populate the passed parameters with name->index map, must be overridden
@@ -130,20 +101,16 @@ namespace Ogre {
 
         void populateDef(D3D11_SHADER_TYPE_DESC& d3dDesc, GpuConstantDefinition& def) const;
 		
-		void getDefines(String& stringBuffer, vector<D3D_SHADER_MACRO>::type& defines, const String& definesString);
-
+		void getDefines(String& stringBuffer, std::vector<D3D_SHADER_MACRO>& defines, const String& definesString);
+		
         String mTarget;
         String mEntryPoint;
-        String mPreprocessorDefines;
         bool mColumnMajorMatrices;
         bool mEnableBackwardsCompatibility;
 
         bool mErrorsInCompile;
         MicroCode mMicroCode;
         ComPtr<ID3D11Buffer> mConstantBuffer;
-        
-        D3D_SHADER_MACRO* mShaderMacros;
-        bool shaderMacroSet;
 
         D3D11Device & mDevice;
 
@@ -168,7 +135,7 @@ namespace Ogre {
                 return *this;
             }
         };
-        typedef vector<ShaderVarWithPosInBuf>::type ShaderVars;
+        typedef std::vector<ShaderVarWithPosInBuf> ShaderVars;
         typedef ShaderVars::iterator ShaderVarsIter;
         typedef ShaderVars::const_iterator ShaderVarsConstIter; 
 
@@ -187,15 +154,15 @@ namespace Ogre {
             static _StringHash mHash;
             unsigned int mIdx;
             String mName;
-            mutable v1::HardwareUniformBufferSharedPtr mUniformBuffer;
+            mutable HardwareUniformBufferSharedPtr mUniformBuffer;
             mutable ShaderVars mShaderVars;
                 
             // Default constructor
-            BufferInfo() : mIdx(0), mName("") { mUniformBuffer.setNull(); }
+            BufferInfo() : mIdx(0), mName("") { mUniformBuffer.reset(); }
             BufferInfo(unsigned int index, const String& name)
                 : mIdx(index), mName(name)
             {
-                mUniformBuffer.setNull();
+                mUniformBuffer.reset();
             }
             
             // Copy constructor
@@ -253,9 +220,9 @@ namespace Ogre {
         };
 
         // Make sure that objects have index and name, or some search will fail
-//        typedef std::set<BufferInfo> BufferInfoMap;
-//        typedef std::set<BufferInfo>::iterator BufferInfoIterator;
-//        BufferInfoMap mBufferInfoMap;
+        typedef std::set<BufferInfo> BufferInfoMap;
+        typedef std::set<BufferInfo>::iterator BufferInfoIterator;
+        BufferInfoMap mBufferInfoMap;
 
         // Map to store interface slot position. 
         // Number of interface slots is size of this map.
@@ -263,18 +230,18 @@ namespace Ogre {
         typedef std::map<String, unsigned int>::const_iterator SlotIterator;
         SlotMap mSlotMap;
 
-        typedef vector<D3D11_SIGNATURE_PARAMETER_DESC>::type D3d11ShaderParameters;
+        typedef std::vector<D3D11_SIGNATURE_PARAMETER_DESC> D3d11ShaderParameters;
         typedef D3d11ShaderParameters::iterator D3d11ShaderParametersIter; 
 
 
-        typedef vector<D3D11_SHADER_VARIABLE_DESC>::type D3d11ShaderVariables;
+        typedef std::vector<D3D11_SHADER_VARIABLE_DESC> D3d11ShaderVariables;
         typedef D3d11ShaderVariables::iterator D3d11ShaderVariablesIter; 
 
         struct GpuConstantDefinitionWithName : GpuConstantDefinition
         {
             LPCSTR                  Name;          
         };
-        typedef vector<GpuConstantDefinitionWithName>::type D3d11ShaderVariableSubparts;
+        typedef std::vector<GpuConstantDefinitionWithName> D3d11ShaderVariableSubparts;
         typedef D3d11ShaderVariableSubparts::iterator D3d11ShaderVariableSubpartsIter; 
 
         struct MemberTypeName
@@ -282,12 +249,12 @@ namespace Ogre {
             LPCSTR                  Name;           
         };
 
-        vector<String *>::type mSerStrings;
+        std::vector<String *> mSerStrings;
 
-        typedef vector<D3D11_SHADER_BUFFER_DESC>::type D3d11ShaderBufferDescs;
-        typedef vector<D3D11_SHADER_TYPE_DESC>::type D3d11ShaderTypeDescs;
-        typedef vector<UINT>::type InterfaceSlots;
-        typedef vector<MemberTypeName>::type MemberTypeNames;
+        typedef std::vector<D3D11_SHADER_BUFFER_DESC> D3d11ShaderBufferDescs;
+        typedef std::vector<D3D11_SHADER_TYPE_DESC> D3d11ShaderTypeDescs;
+        typedef std::vector<UINT> InterfaceSlots;
+        typedef std::vector<MemberTypeName> MemberTypeNames;
 
         UINT mConstantBufferSize;
         UINT mConstantBufferNr;
@@ -302,21 +269,12 @@ namespace Ogre {
         D3d11ShaderVariables mVarDescPointer;
         D3d11ShaderTypeDescs mD3d11ShaderTypeDescs;
         D3d11ShaderTypeDescs mMemberTypeDesc;
-        enum DefaultBufferTypes
-        {
-            BufferGlobal,
-            BufferParam,
-            NumDefaultBufferTypes
-        };
-        //D3D11_SHADER_INPUT_BIND_DESC    mDefaultBufferBindPoints[NumDefaultBufferTypes];
-        UINT        mDefaultBufferBindPoint;
-        BufferInfo  mDefaultBuffers[NumDefaultBufferTypes];
         MemberTypeNames mMemberTypeName;
         InterfaceSlots mInterfaceSlots;
 
         void createConstantBuffer(const UINT ByteWidth);
         void analizeMicrocode();
-        void getMicrocodeFromCache(void);
+        void getMicrocodeFromCache(uint32 id);
         void compileMicrocode(void);
     public:
         D3D11HLSLProgram(ResourceManager* creator, const String& name, ResourceHandle handle,
@@ -332,14 +290,8 @@ namespace Ogre {
         /** Gets the shader target to compile down to, e.g. 'vs_1_1'. */
         const String& getTarget(void) const { return mTarget; }
         /** Gets the shader target promoted to the first compatible, e.g. 'vs_4_0' or 'ps_4_0' if backward compatibility is enabled. */
-        const String& getCompatibleTarget(void) const;
-        /** Sets shader macros created manually*/
-        void setShaderMacros(D3D_SHADER_MACRO* shaderMacros);
+        const char* getCompatibleTarget(void) const;
 
-        /** Sets the preprocessor defines use to compile the program. */
-        void setPreprocessorDefines(const String& defines) { mPreprocessorDefines = defines; }
-        /** Sets the preprocessor defines use to compile the program. */
-        const String& getPreprocessorDefines(void) const { return mPreprocessorDefines; }
         /** Sets whether matrix packing in column-major order. */ 
         void setColumnMajorMatrices(bool columnMajor) { mColumnMajorMatrices = columnMajor; }
         /** Gets whether matrix packed in column-major order. */
@@ -364,14 +316,14 @@ namespace Ogre {
         ID3D11ComputeShader* getComputeShader(void) const;
         const MicroCode &  getMicroCode(void) const;  
 
-        /// buffers must have a capacity of 2, i.e. ID3D11Buffer *buffers[2];
-        void getConstantBuffers( ID3D11Buffer** buffers, UINT &outSlotStart, UINT &outNumBuffers,
-                                 GpuProgramParametersSharedPtr params, uint16 variabilityMask );
+        ID3D11Buffer* getConstantBuffer(GpuProgramParametersSharedPtr params, uint16 variabilityMask);
+
+        void getConstantBuffers(ID3D11Buffer** buffers, unsigned int& numBuffers,
+                                ID3D11ClassInstance** classes, unsigned int& numInstances,
+                                GpuProgramParametersSharedPtr params, uint16 variabilityMask);
 
         // Get slot for a specific interface
         unsigned int getSubroutineSlot(const String& subroutineSlotName) const;
-
-        ID3D11InputLayout* getLayoutForPso( const VertexElement2VecVec &vertexElements );
 
         void CreateVertexShader();
         void CreatePixelShader();
@@ -380,9 +332,14 @@ namespace Ogre {
         void CreateHullShader();
         void CreateComputeShader();
 
+        /// shortcut as we there is no low-level separation here
+        GpuProgram* _getBindingDelegate(void) { return this; }
+
         /** Internal load implementation, must be implemented by subclasses.
         */
         void loadFromSource(void);
+
+        void prepareImpl();
 
         void reinterpretGSForStreamOut(void);
         bool mReinterpretingGS;
@@ -390,7 +347,7 @@ namespace Ogre {
         unsigned int getNumInputs(void)const;
         unsigned int getNumOutputs(void)const;
 
-        String getNameForMicrocodeCache();
+        uint32 getNameForMicrocodeCache();
 
         const D3D11_SIGNATURE_PARAMETER_DESC & getInputParamDesc(unsigned int index) const;
         const D3D11_SIGNATURE_PARAMETER_DESC & getOutputParamDesc(unsigned int index) const;    

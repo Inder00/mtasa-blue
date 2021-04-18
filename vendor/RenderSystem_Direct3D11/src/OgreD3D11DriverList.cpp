@@ -52,21 +52,18 @@ namespace Ogre
     void D3D11DriverList::refresh()
     {
         clear();
-        map<std::wstring, unsigned>::type sameNameCounter;
+        std::map<std::wstring, unsigned> sameNameCounter;
 
         LogManager::getSingleton().logMessage( "D3D11: Driver Detection Starts" );
 
         // We need fresh IDXGIFactory to get fresh driver list
         ComPtr<IDXGIFactoryN> pDXGIFactory;
+        HRESULT hr = CreateDXGIFactory1(__uuidof(IDXGIFactoryN), (void**)pDXGIFactory.GetAddressOf());
+        if( FAILED(hr) )
         {
-            HRESULT hr = CreateDXGIFactory1( __uuidof(IDXGIFactoryN),
-                                             (void**)pDXGIFactory.GetAddressOf() );
-            if( FAILED(hr) )
-            {
-                OGRE_EXCEPT_EX(Exception::ERR_RENDERINGAPI_ERROR, hr,
-                               "Failed to create Direct3D11 DXGIFactory1",
-                               "D3D11DriverList::refresh");
-            }
+            OGRE_EXCEPT_EX(Exception::ERR_RENDERINGAPI_ERROR, hr,
+                "Failed to create Direct3D11 DXGIFactory1",
+                "D3D11DriverList::refresh");
         }
 
         for( UINT iAdapter=0; ; iAdapter++ )
@@ -85,8 +82,7 @@ namespace Ogre
                     "D3D11DriverList::refresh");
             }
 
-            DXGI_ADAPTER_DESC1 desc1;
-            memset( &desc1, 0, sizeof( desc1 ) );
+            DXGI_ADAPTER_DESC1 desc1 = {0};
             hr = pDXGIAdapter->GetDesc1(&desc1);
             if( FAILED(hr) )
             {
@@ -95,18 +91,14 @@ namespace Ogre
                     "D3D11DriverList::refresh");
             }
 
-            // inserted map entry would be zero-initialized by map::operator[]
-            unsigned sameNameIndex = sameNameCounter[std::wstring( desc1.Description )]++;
+            unsigned sameNameIndex = sameNameCounter[std::wstring(desc1.Description)]++;
 
-            SharedPtr<D3D11Driver> driver(
-                        OGRE_NEW_T( D3D11Driver, MEMCATEGORY_GENERAL )(
-                            pDXGIAdapter.Get(), desc1, sameNameIndex ), SPFM_DELETE_T );
+            SharedPtr<D3D11Driver> driver(OGRE_NEW_T(D3D11Driver, MEMCATEGORY_GENERAL)(pDXGIAdapter.Get(), desc1, sameNameIndex), SPFM_DELETE_T);
 
             LogManager::getSingleton().logMessage("D3D11: \"" + driver->DriverDescription() + "\"");
 
             // we don't want NVIDIA PerfHUD in the list, so place it to the hidden part of drivers list
-            const bool isHidden = wcscmp( driver->getAdapterIdentifier().Description,
-                                          L"NVIDIA PerfHUD") == 0;
+            const bool isHidden = wcscmp(driver->getAdapterIdentifier().Description, L"NVIDIA PerfHUD") == 0;
             if(isHidden)
             {
                 mDriverList.push_back(driver);
@@ -133,14 +125,10 @@ namespace Ogre
     //-----------------------------------------------------------------------
     D3D11Driver* D3D11DriverList::item( const String &name )
     {
-        vector< SharedPtr<D3D11Driver> >::type::iterator itor = mDriverList.begin();
-        vector< SharedPtr<D3D11Driver> >::type::iterator end  = mDriverList.end();
-
-        while( itor != end )
+        for(std::vector<SharedPtr<D3D11Driver> >::iterator it = mDriverList.begin(), it_end = mDriverList.end(); it != mDriverList.end(); ++it)
         {
-            if( (*itor)->DriverDescription() == name )
-                return itor->get();
-            ++itor;
+            if((*it)->DriverDescription() == name)
+                return (*it).get();
         }
 
         return NULL;

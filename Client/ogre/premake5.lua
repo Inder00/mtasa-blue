@@ -4,12 +4,12 @@ project "MtaOgre"
 	targetname "MtaOgre"
 	targetdir(buildpath("mta"))
 
-	defines { "OGRE_TEST", "DEBUG", "OGRE_DEPRECATED_2_2"}
+	defines { "OGRE_TEST", "DEBUG",}
 	links { "RenderSystem_Direct3D11", "ogre", "OgreHlmsUnlit","OgreHlmsPbs", "dxgi.lib", "dxguid.lib" }
 
 	vpaths {
-		["Headers/*"] = {"**.h"},
-		["Sources/*"] = {"**.cpp"},
+		["Headers"] = {"../../vendor/ogre/include/*.h","../../vendor/ogre/include/threading/*.h"},
+		["Sources"] = {"../../vendor/ogre/src/*.cpp","../../vendor/ogre/src/threading/*.cpp",},
 		["*"] = "premake5.lua"
 	}
 	
@@ -21,6 +21,8 @@ project "MtaOgre"
 		includedirs {
 			".",
 			"../../vendor/ogre/include",
+			"../../vendor/ogre/include/threading",
+			"../../vendor/ogre/src",
 			"../../vendor/OgreHlmsUnlit/include",
 			"../../vendor/OgreHlmsPbs/include",
 			"../../vendor/RenderSystem_Direct3D11/include",
@@ -28,8 +30,8 @@ project "MtaOgre"
 
 	files {
 		"premake5.lua",
-		"**.h",
 		"**.cpp",
+		"**.h",
 		"../../Client/mods/deathmatch/logic/ogre/**.h",
 		"../../Client/mods/deathmatch/logic/ogre/**.cpp",
 	}
