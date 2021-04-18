@@ -138,12 +138,15 @@ workspace "MTASA"
 		include "vendor/pthreads"
 		include "vendor/libspeex"
 		include "vendor/detours"
-		include "vendor/ogre"
-		include "vendor/ogretest"
-		include "vendor/RenderSystem_Direct3D11"
-		include "vendor/OgreHlmsUnlit"
-		include "vendor/OgreHlmsPbs"
-		--include "vendor/OgreRTShaderSystem"
+		group "Vendor/Ogre"
+			include "vendor/ogre"
+			include "vendor/RenderSystem_Direct3D11"
+			include "vendor/OgreHlmsUnlit"
+			include "vendor/OgreHlmsPbs"
+			--include "vendor/OgreRTShaderSystem"
+
+		group "Tests/Client"
+			include "vendor/ogretest"
 	end
 
 	filter {}

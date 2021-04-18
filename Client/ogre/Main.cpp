@@ -1,9 +1,9 @@
-#include "COgre.h"
+#include "StdInc.h"
 
-int main(int argc, char* argv[])
+extern "C" __declspec(dllimport) COgreBase* Init();
+
+COgreBase* Init()
 {
     COgre* engine = new COgre();
-    engine->init();
-
-    return 0;
+    return engine;
 }

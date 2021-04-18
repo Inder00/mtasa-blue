@@ -4,8 +4,10 @@ project "Ogre test"
 	targetname "OgreTest"
 	targetdir(buildpath("ogretest"))
 
-	defines { "OGRE_TEST", "DEBUG"}
-	links { "RenderSystem_Direct3D11", "ogre", "OgreHlmsUnlit","OgreHlmsPbs", "dxgi.lib", "dxguid.lib" }
+	links { }
+	
+	pchheader "StdInc.h"
+	pchsource "StdInc.cpp"
 
 	vpaths {
 		["Headers/*"] = {"**.h"},
@@ -16,20 +18,13 @@ project "Ogre test"
 	filter {}
 		includedirs {
 			".",
-			"../../vendor/assimp/include",
-			"../../vendor/ogre/include",
-			"../../vendor/OgreHlmsUnlit/include",
-			"../../vendor/OgreHlmsPbs/include",
-			"../../vendor/RenderSystem_Direct3D11/include",
-			"../../Client/mods/deathmatch/logic/ogre"
+			"../../Client/ogre/headers"
 	}
 
 	files {
 		"premake5.lua",
 		"**.h",
 		"**.cpp",
-		"../../Client/mods/deathmatch/logic/ogre/**.h",
-		"../../Client/mods/deathmatch/logic/ogre/**.cpp",
 	}
 
 	removeincludedirs {

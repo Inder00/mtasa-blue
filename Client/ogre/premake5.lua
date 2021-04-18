@@ -1,10 +1,10 @@
 project "MtaOgre"
 	language "C++"
-	kind "ConsoleApp"
+	kind "SharedLib"
 	targetname "MtaOgre"
 	targetdir(buildpath("mta"))
 
-	defines { "OGRE_TEST", "DEBUG"}
+	defines { "OGRE_TEST", "DEBUG", "OGRE_DEPRECATED_2_2"}
 	links { "RenderSystem_Direct3D11", "ogre", "OgreHlmsUnlit","OgreHlmsPbs", "dxgi.lib", "dxguid.lib" }
 
 	vpaths {
@@ -12,6 +12,10 @@ project "MtaOgre"
 		["Sources/*"] = {"**.cpp"},
 		["*"] = "premake5.lua"
 	}
+	
+	pchheader "StdInc.h"
+	pchsource "StdInc.cpp"
+
 
 	filter {}
 		includedirs {
@@ -20,7 +24,6 @@ project "MtaOgre"
 			"../../vendor/OgreHlmsUnlit/include",
 			"../../vendor/OgreHlmsPbs/include",
 			"../../vendor/RenderSystem_Direct3D11/include",
-			"../../Client/mods/deathmatch/logic/ogre"
 	}
 
 	files {
