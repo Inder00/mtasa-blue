@@ -49,7 +49,6 @@ void COgre::init()
     // Create the SceneManager
     sceneManager = root->createSceneManager(ST_GENERIC, 4, "SceneManager");
     sceneManager->setAmbientLight(ColourValue(0.5, 0.5, 0.5), ColourValue(0.5, 0.5, 0.5), Vector3(0,0,-1));            // Set ambient lighting
-
                                                                                                                        // Create the MainCamera
     Camera* mainCamera = sceneManager->createCamera("Camera");
     mainCamera->setAutoAspectRatio(true);
@@ -77,11 +76,6 @@ void COgre::init()
     //loadResources("D:/mtablue/mtasa-blue/Bin/ogretest/shaders/", "shaders");
     //loadResources("D:/mtablue/mtasa-blue/Bin/ogretest/meshes/", "meshes");
 
-    //// Create a basic Workspace
-    root->getCompositorManager2()->createBasicWorkspaceDef("sceneworkspace", ColourValue::Blue);
-    CompositorWorkspace* workspace =
-        root->getCompositorManager2()->addWorkspace(sceneManager, renderWindow->getTexture(), mainCamera, "sceneworkspace", true);
-    
     // register HLMS
     String rootHlmsFolder = "D:/MTA SA/OGRE/";
     // mName = "D:/MTA SA/OGRE/Hlms/Unlit/HLSL"
@@ -177,10 +171,6 @@ void COgre::init()
     Item* testplane =  sceneManager->createItem(mesh);
     testNode->attachObject(testplane);
 
-    Ogre::TexturePtr myTexture = Ogre::TextureManager::getSingletonPtr()->createManual(
-        "MyTexture", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, 128, 128, 0, Ogre::PF_A8R8G8B8, Ogre::TU_DYNAMIC_WRITE_ONLY);
-
-    cubeDatablock->setTexture(Ogre::PBSM_DIFFUSE, texLocation.xIdx, texLocation.texture);
     root->startRendering();
 }
 
@@ -195,6 +185,6 @@ void COgre::loadResources(std::string path, std::string name)
 bool COgre::frameRenderingQueued(const FrameEvent& evt)
 {
     //cubeNode->rotate(Quaternion(Radian(Degree(50 * evt.timeSinceLastFrame).valueRadians()), Vector3::UNIT_Y));
-
+    Sleep(10);
     return true;
 }
