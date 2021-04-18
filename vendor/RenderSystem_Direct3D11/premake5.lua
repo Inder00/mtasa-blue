@@ -3,7 +3,7 @@ project "RenderSystem_Direct3D11"
 	language "C++"
 	kind "StaticLib"
 
-  links { "ogre", "d3d11" }
+  links { "d3d11" }
 	defines { "OGRE_STATIC_LIB", "OGRE_NO_ZIP_ARCHIVE", "OGRE_NO_TBB_SCHEDULER" }
 
   includedirs { ".",

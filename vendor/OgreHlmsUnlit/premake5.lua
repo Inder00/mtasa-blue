@@ -3,7 +3,6 @@ project "OgreHlmsUnlit"
 	language "C++"
 	kind "StaticLib"
 
-  links { "ogre" }
 	defines { "OGRE_STATIC_LIB", "OGRE_NO_ZIP_ARCHIVE", "OGRE_NO_TBB_SCHEDULER" }
 
   includedirs { ".",

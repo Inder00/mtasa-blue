@@ -1,8 +1,9 @@
 project "ogre"
 	targetname "ogre"
 	language "C++"
-	kind "StaticLib"
-
+	kind "SharedLib"
+	
+	links { "RenderSystem_Direct3D11", "OgreHlmsUnlit","OgreHlmsPbs", "dxgi.lib", "dxguid.lib" }
 	defines { "OGRE_STATIC_LIB", "OGRE_NO_ZIP_ARCHIVE", "OGRE_NO_TBB_SCHEDULER", "OGRE_DEPRECATED_2_2" }
 
 	includedirs { ".",
@@ -24,7 +25,6 @@ project "ogre"
 		"include/NaCI",
 		"include/Threading",
 		"include/Vao",
-		"include/WIN32",
 		"include/Android",
 		"include/Deprecated",
   
@@ -45,7 +45,6 @@ project "ogre"
 		"src/Math/Simple/C",
 		"src/Threading",
 		"src/Vao",
-		"src/WIN32",
 		"src/Android",
 		"src/Android/JNI",
 	}
@@ -53,9 +52,6 @@ project "ogre"
 	warnings "Off";
 
 	vpaths { 
-		["Headers"] = "include/*.h",
-		["Sources"] = "src/*.cpp",
-		
 		["Headers/Animation"] = "include/Animation/*.h",
 		["Headers/CommandBuffer"] = "include/CommandBuffer/*.h",
 		["Headers/Compositor"] = "include/Compositor/*.h",
@@ -73,9 +69,7 @@ project "ogre"
 		["Headers/NaCI"] = "include/NaCI/*.h",
 		["Headers/Threading"] = "include/Threading/*.h",
 		["Headers/Vao"] = "include/Vao/*.h",
-		["Headers/WIN32"] = "include/WIN32/*.h",
 		["Headers/Android"] = "include/Android/*.h",
-		["Headers/Android/JNI"] = "include/Android/JNI/*.h",
 		["Headers/Deprecated"] = "include/Deprecated*.h",
 
 		["Sources/Animation"] = "src/Animation/*.cpp",
@@ -92,12 +86,10 @@ project "ogre"
 		["Sources/Math/Simple/C"] = "src/Math/Simple/C/*.cpp",
 		["Sources/Threading"] = "src/Threading/*.cpp",
 		["Sources/Vao"] = "src/Vao/*.cpp",
-		["Sources/WIN32"] = "src/WIN32/*.cpp",
-		["Sources/Android"] = "src/Android/*.cpp",
 		["Sources/Deprecated"] = "src/Deprecated/*.cpp",
 		["*"] = "premake5.lua"
 	}
-	
+
 	files {
 		"premake5.lua",
 		"src/**.cpp",
