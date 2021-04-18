@@ -66,8 +66,6 @@ void lua_pushvector(lua_State* luaVM, const CVector& vector);
 void lua_pushvector(lua_State* luaVM, const CVector2D& vector);
 void lua_pushmatrix(lua_State* luaVM, const CMatrix& matrix);
 
-void lua_pushassetnode(lua_State* luaVM, CLuaAssetNode* pElement);
-void lua_pushassetmesh(lua_State* luaVM, CLuaAssetMesh* pElement);
     // Internal use
 void lua_initclasses(lua_State* luaVM);
 

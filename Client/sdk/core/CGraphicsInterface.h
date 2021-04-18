@@ -173,7 +173,6 @@ public:
                                   short siSegments, float fRatio, bool bPostGUI) = 0;
 
     virtual void DrawWiredSphere(CVector vecPosition, float fRadius, SColor color, float fLineWidth, int iterations) = 0;
-    virtual void DrawAssetNode(SRenderingSettings& settings) = 0;
 
     virtual bool IsValidPrimitiveSize (int iNumVertives, D3DPRIMITIVETYPE eType) = 0;
 

@@ -35,10 +35,6 @@ class CAspectRatioConverter;
 struct IDirect3DDevice9;
 struct IDirect3DSurface9;
 
-class CLuaAssetNode;
-struct SRenderingSettings;
-
-
 namespace EDrawMode
 {
     enum EDrawModeType
@@ -164,7 +160,6 @@ public:
     void DrawCircleQueued(float fX, float fY, float fRadius, float fStartAngle, float fStopAngle, unsigned long ulColor, unsigned long ulColorCenter,
                           short siSegments, float fRatio, bool bPostGUI);
 
-    void DrawAssetNode(SRenderingSettings& settings);
     void DrawWiredSphere(CVector vecPosition, float radius, SColor color, float fLineWidth, int iterations);
 
 
@@ -242,7 +237,6 @@ private:
     CPrimitive3DBatcher*         m_pPrimitive3DBatcherPostGUI = nullptr;
     CMaterialPrimitive3DBatcher* m_pMaterialPrimitive3DBatcherPreGUI = nullptr;
     CMaterialPrimitive3DBatcher* m_pMaterialPrimitive3DBatcherPostGUI = nullptr;
-    CAsset3DBatcher*             m_pAssetBatcher = nullptr;
     CAspectRatioConverter*       m_pAspectRatioConverter = nullptr;
 
     // Fonts

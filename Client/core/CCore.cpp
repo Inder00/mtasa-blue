@@ -116,7 +116,6 @@ CCore::CCore() : m_DiscordManager(new CDiscordManager())
     m_pDirectInputHookManager = new CDirectInputHookManager();
     m_pMessageLoopHook = new CMessageLoopHook();
     m_pSetCursorPosHook = new CSetCursorPosHook();
-    m_pAssets = new CAssetsManager();
 
     // Register internal commands.
     RegisterCommands();
@@ -207,8 +206,6 @@ CCore::~CCore()
 
     // Delete last so calls to GetHookedWindowHandle do not crash
     delete m_pMessageLoopHook;
-
-    delete m_pAssets;
 }
 
 eCoreVersion CCore::GetVersion()

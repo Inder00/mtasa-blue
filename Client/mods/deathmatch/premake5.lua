@@ -10,7 +10,6 @@ project "Client Deathmatch"
 	defines { "LUA_USE_APICHECK", "SDK_WITH_BCRYPT" }
 	links {
 		"Lua_Client", "pcre", "json-c", "ws2_32", "portaudio", "zlib", "cryptopp", "libspeex", "blowfish_bcrypt",
-		"assimp", "RenderSystem_Direct3D11", "ogre",
 		"../../../vendor/bass/lib/bass",
 		"../../../vendor/bass/lib/bass_fx",
 		"../../../vendor/bass/lib/bassmix",
@@ -48,9 +47,6 @@ project "Client Deathmatch"
 			"../../../Shared/mods/deathmatch/logic",
 			"../../../Shared/animation",
 			"../../../vendor/sparsehash/src/",
-			"../../../vendor/assimp/include",
-			"../../../vendor/ogre/include",
-			"../../../vendor/RenderSystem_Direct3D11/include",
 	}
 
 	removeincludedirs {

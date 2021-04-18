@@ -341,8 +341,6 @@ CClientGame::CClientGame(bool bLocalPlay) : m_ServerInfo(new CServerInfo())
 
     // Setup builtin Lua events
     SetupGlobalLuaEvents();
-
-    m_pOgre = new COgre();
     
     g_pCore->GetConsole()->Printf("start game");
 }

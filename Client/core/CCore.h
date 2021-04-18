@@ -39,7 +39,6 @@ class CCore;
 #include <ijsify.h>
 #include <core/CWebCoreInterface.h>
 #include "CTrayIcon.h"
-#include "CAssetsManager.h"
 
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
@@ -103,7 +102,6 @@ public:
     CWebCoreInterface*        GetWebCore();
     CTrayIconInterface*       GetTrayIcon() { return m_pTrayIcon; };
     CDiscordManagerInterface* GetDiscordManager() { return reinterpret_cast<CDiscordManagerInterface*>(m_DiscordManager.get()); }
-    CAssetsManagerInterface* GetAssetsManager() { return m_pAssets; };
 
     void SaveConfig(bool bWaitUntilFinished = false);
 
@@ -298,7 +296,6 @@ private:
     CClientVariables   m_ClientVariables;
     CWebCoreInterface* m_pWebCore = nullptr;
     CTrayIcon*         m_pTrayIcon;
-    CAssetsManager*    m_pAssets;
 
     std::unique_ptr<class CDiscordManager> m_DiscordManager;
 

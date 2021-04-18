@@ -68,5 +68,3 @@
 #include "CNickGen.h"
 #include <core/CWebViewInterface.h>
 #include "CTrayIcon.h"
-#include "CAssetsManager.h"
-#include "CAssetInstance.h"

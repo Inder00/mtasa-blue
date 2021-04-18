@@ -1,9 +1,9 @@
-#include "COgre.h"
+//#include "COgre.h"
 
 int main(int argc, char* argv[])
 {
-    COgre* engine = new COgre();
-    engine->init();
+    //COgre* engine = new COgre();
+    //engine->init();
 
     return 0;
 }

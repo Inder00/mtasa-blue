@@ -54,7 +54,6 @@ CClientManager::CClientManager()
     m_pPointLightsManager = new CClientPointLightsManager(this);
     m_pModelManager = new CClientModelManager();
     m_pPacketRecorder = new CClientPacketRecorder(this);
-    m_pAssetModelManager = new CClientAssetModelManager(this);
 
     m_bBeingDeleted = false;
     m_bGameUnloadedFlag = false;

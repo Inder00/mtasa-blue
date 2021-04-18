@@ -385,15 +385,6 @@ inline SString GetClassTypeName(CLuaTimer*)
 {
     return "lua-timer";
 }
-inline SString GetClassTypeName(CLuaAssetNode*)
-{
-    return "asset-node";
-}
-
-inline SString GetClassTypeName(CLuaAssetMesh*)
-{
-    return "asset-mesh";
-}
 inline SString GetClassTypeName(CEntity*)
 {
     return "entity";
@@ -542,24 +533,6 @@ template <class T>
 CLuaMatrix* UserDataCast(CLuaMatrix*, void* ptr, lua_State* luaVM)
 {
     return CLuaMatrix::GetFromScriptID(reinterpret_cast<unsigned int>(ptr));
-}
-
-//
-// CLuaAssetNode from userdata
-//
-template <class T>
-CLuaAssetNode* UserDataCast(CLuaAssetNode*, void* ptr, lua_State* luaVM)
-{
-    return CLuaAssetNode::GetFromScriptID(reinterpret_cast<unsigned int>(ptr));
-}
-//
-// CLuaAssetMesh from userdata
-//
-
-template <class T>
-CLuaAssetMesh* UserDataCast(CLuaAssetMesh*, void* ptr, lua_State* luaVM)
-{
-    return CLuaAssetMesh::GetFromScriptID(reinterpret_cast<unsigned int>(ptr));
 }
 
 //

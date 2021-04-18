@@ -22,9 +22,8 @@
 #include "CCVarsInterface.h"
 #include "CWebCoreInterface.h"
 #include "CTrayIconInterface.h"
-#include "CLuaAssetNodeInterface.h"
 #include "CChatInterface.h"
-#include "CAssetsManagerInterface.h"
+#include "CDiscordManagerInterface.h"
 #include "xml/CXML.h"
 #include <gui/CGUI.h>
 
@@ -175,9 +174,7 @@ public:
     virtual SString     GetBlueCopyrightString() = 0;
     virtual bool        ClearChat() = 0;
     virtual void        OnGameTimerUpdate() = 0;
-
     virtual CDiscordManagerInterface* GetDiscordManager() = 0;
-    virtual CAssetsManagerInterface* GetAssetsManager() = 0;
 };
 
 class CClientTime

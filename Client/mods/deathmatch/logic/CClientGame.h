@@ -44,7 +44,6 @@
 #include "CVoiceRecorder.h"
 #include "CSingularFileDownloadManager.h"
 #include "CObjectRespawner.h"
-#include "ogre/COgre.h"
 
 #define HeliKill_List_Clear_Rate 500
 #define MIN_PUSH_ANTISPAM_RATE 1500
@@ -848,8 +847,6 @@ private:
     AnimAssociations_type                                m_mapOfCustomAnimationAssociations;
     // Key is the task and value is the CClientPed*
     RunNamedAnimTask_type m_mapOfRunNamedAnimTasks;
-
-    COgre* m_pOgre;
 };
 
 extern CClientGame* g_pClientGame;
