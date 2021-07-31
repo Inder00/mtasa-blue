@@ -12,3 +12,4 @@ if /I "%ANSWER%"=="y" (
 )
 
 if %0 == "%~0" pause
+#
