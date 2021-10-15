@@ -256,7 +256,7 @@ int CLuaCryptDefs::PasswordVerify(lua_State* luaVM)
 
 int CLuaCryptDefs::EncodeString(lua_State* luaVM)
 {
-    StringEncryptFunction algorithm;
+    StringEncodeFunction algorithm;
     SString               data;
     CStringMap            options;
     CLuaFunctionRef       luaFunctionRef;
@@ -273,7 +273,7 @@ int CLuaCryptDefs::EncodeString(lua_State* luaVM)
     {
         switch (algorithm)
         {
-            case StringEncryptFunction::TEA:
+            case StringEncodeFunction::TEA:
             {
                 SString& key = options["key"];
 
@@ -318,12 +318,12 @@ int CLuaCryptDefs::EncodeString(lua_State* luaVM)
                 }
                 return 1;
             }
-            case StringEncryptFunction::BASE32:
+            case StringEncodeFunction::BASE32:
             {
                 lua::Push(luaVM, SharedUtil::Base32encode(data));
                 return 1;
             }
-            case StringEncryptFunction::BASE64:
+            case StringEncodeFunction::BASE64:
             {
                 lua::Push(luaVM, SharedUtil::Base64encode(data));
                 return 1;
@@ -345,7 +345,7 @@ int CLuaCryptDefs::EncodeString(lua_State* luaVM)
 
 int CLuaCryptDefs::DecodeString(lua_State* luaVM)
 {
-    StringEncryptFunction algorithm;
+    StringEncodeFunction algorithm;
     SString               data;
     CStringMap            options;
     CLuaFunctionRef       luaFunctionRef;
@@ -362,7 +362,7 @@ int CLuaCryptDefs::DecodeString(lua_State* luaVM)
     {
         switch (algorithm)
         {
-            case StringEncryptFunction::TEA:
+            case StringEncodeFunction::TEA:
             {
                 SString& key = options["key"];
 
@@ -407,12 +407,12 @@ int CLuaCryptDefs::DecodeString(lua_State* luaVM)
                 }
                 return 1;
             }
-            case StringEncryptFunction::BASE32:
+            case StringEncodeFunction::BASE32:
             {
                 lua::Push(luaVM, SharedUtil::Base32decode(data));
                 return 1;
             }
-            case StringEncryptFunction::BASE64:
+            case StringEncodeFunction::BASE64:
             {
                 lua::Push(luaVM, SharedUtil::Base64decode(data));
                 return 1;
