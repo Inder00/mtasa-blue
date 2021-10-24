@@ -1,7 +1,7 @@
 name: Build
 
 # Trigger the workflow on push or pull request
-on: [push]
+on: [push, workflow_dispatch]
 
 jobs:
   windows-release:
@@ -17,7 +17,7 @@ jobs:
           key: dxfiles-0001
 
       - name: Download DirectX
-        if: steps.cache-dxfiles.outputs.cache-hit != 'true'
+        if: steps.cache-dxfiles.outputs.cache-hit != 'true'--
         run: Invoke-WebRequest https://mirror.mtasa.com/bdata/DXFiles.zip -OutFile utils/DXFiles.zip
         shell: powershell
 
