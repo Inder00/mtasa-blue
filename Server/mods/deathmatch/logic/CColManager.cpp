@@ -128,7 +128,7 @@ void CColManager::HandleHitDetectionResult(bool bHit, CColShape* pShape, CElemen
     if (bHit)
     {
         // If they havn't collided yet
-        if (!pEntity->CollisionExists(pShape))
+        if (pEntity && !pEntity->CollisionExists(pShape) && !pEntity->IsBeingDeleted())
         {
             // Add the collision and the collider
             pShape->AddCollider(pEntity);
@@ -156,7 +156,7 @@ void CColManager::HandleHitDetectionResult(bool bHit, CColShape* pShape, CElemen
     else
     {
         // If they collided before
-        if (pEntity->CollisionExists(pShape))
+        if (pEntity && pEntity->CollisionExists(pShape) && !pEntity->IsBeingDeleted())
         {
             // Remove the collision and the collider
             pShape->RemoveCollider(pEntity);
