@@ -1469,7 +1469,7 @@ bool CStaticFunctionDefinitions::SetElementModel(CClientEntity& Entity, unsigned
             if (!CClientVehicleManager::IsValidModel(usModel))
                 return false;
 
-            Vehicle.SetModelBlocking(usModel, 255, 255);
+            Vehicle.SetModelBlocking(usModel, 255, 255, Entity.IsLocalEntity());
 
             CLuaArguments Arguments;
             Arguments.PushNumber(usCurrentModel);
